@@ -18,12 +18,11 @@ To start the development server:
 npm run dev
 ```
 
-If you wish to add a new feature or component, please open an issue to discuss it first.
+You are welcome to add new features or components, please open an issue to discuss it first.
 
 ## TODO
 
 -   Documentation
--   Contrubiting Section
 -   Inspiration
 
 ## License
