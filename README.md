@@ -2,7 +2,7 @@
 
 A UI component library for Svelte implementing Google's Material Design specification.
 
-## Contrubiting
+## Contributing
 
 Pull requests are always welcome!
 
