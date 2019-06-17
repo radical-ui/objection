@@ -1,16 +1,23 @@
 {
-	"name": "svelte-component",
+	"name": "svelte-toolbox",
 	"svelte": "src/components/components.module.js",
 	"module": "dist/index.mjs",
 	"main": "dist/index.js",
+	"version": "0.0.0",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/svelte-toolbox/svelte-toolbox"
+	},
 	"devDependencies": {
 		"eslint": "~5.16.0",
 		"eslint-config-prettier": "~5.0.0",
-		"eslint-plugin-svelte3": "~1.2.3",
+		"eslint-plugin-svelte3": "^1.2.3",
 		"husky": "~2.4.1",
 		"lint-staged": "~8.2.1",
 		"npm-run-all": "~4.1.5",
-		"prettier": "~1.18.2",
+		"prettier": "^1.18.2",
+		"prettier-plugin-svelte": "^0.6.0",
 		"rollup": "~1.15.6",
 		"rollup-plugin-commonjs": "~10.0.0",
 		"rollup-plugin-livereload": "~1.0.1",
@@ -26,7 +33,8 @@
 		"dev": "run-p start:dev autobuild",
 		"start": "sirv public",
 		"start:dev": "sirv public --dev",
-		"prepublishOnly": "npm run build"
+		"prepublishOnly": "npm run build",
+		"lint": "eslint ./src && prettier --write \"./**\""
 	},
 	"keywords": [
 		"svelte"

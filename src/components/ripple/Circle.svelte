@@ -1,11 +1,3 @@
-<style>
-	div {
-		position: absolute;
-		opacity: 1;
-		border-radius: 50%;
-	}
-</style>
-
 <script>
 	import { tweened } from 'svelte/motion';
 	import { onMount, createEventDispatcher } from 'svelte';
@@ -21,7 +13,7 @@
 	const dispatch = createEventDispatcher();
 
 	const opacity = tweened(1, {
-		duration: time
+		duration: time,
 	});
 	const size = tweened(0, {
 		duration: time,
@@ -32,15 +24,25 @@
 		size.set(spread);
 
 		let done = false;
-		opacity.subscribe(val => {
+		opacity.subscribe((val) => {
 			if (done && val == 0) finish();
 			else done = true;
-		})
-	})
+		});
+	});
 
 	function finish() {
 		dispatch('finished');
 	}
 </script>
 
-<div style="background: {color}; opacity: {$opacity}; width: {$size}px; height: {$size}px; top: {y - $size / 2 - top}px; left: {x - $size / 2 - left}px;"></div>
+<style>
+	div {
+		position: absolute;
+		opacity: 1;
+		border-radius: 50%;
+	}
+</style>
+
+<div
+	style="background: {color}; opacity: {$opacity}; width: {$size}px; height: {$size}px;
+	top: {y - $size / 2 - top}px; left: {x - $size / 2 - left}px;" />

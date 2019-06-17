@@ -1,0 +1,6 @@
+LICENSE
+public/**
+node_modules/**
+.gitattributes
+.gitignore
+.prettierignore

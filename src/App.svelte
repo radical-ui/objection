@@ -6,9 +6,9 @@
 
 </style>
 
-<br>
-<br>
+<br />
+<br />
 
 <Ripple>
-	<p>Look at this!  Boy is it nice!</p>
+	<p>Look at this! Boy is it nice!</p>
 </Ripple>
