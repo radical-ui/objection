@@ -1,0 +1,47 @@
+
+<style>
+	div {
+		position: relative;
+	}
+</style>
+
+<script>
+	import Circle from './Circle.svelte';
+	import { createEventDispatcher } from 'svelte';
+
+	export let color = 'rgba(0, 0, 0, 0.2)';
+	export let spread = 100;
+	export let time = 500;
+	export let hideOverflow = true;
+
+	const dispatch = createEventDispatcher();
+
+	let ripples = [ ];
+	let container;
+
+	function startRipple(e) {
+		ripples.push({
+			x: e.clientX,
+			y: e.clientY,
+			top: container.getBoundingClientRect().top,
+			left: container.getBoundingClientRect().left
+		});
+		update();
+	}
+
+	function stopRipple(index) {
+		ripples.splice(index, 1);
+		update();
+	}
+
+	function update() {
+		ripples = ripples;
+	}
+</script>
+
+<div on:click={startRipple} bind:this={container} style="overflow: {hideOverflow ? 'hidden' : 'visibile'}">
+	{#each ripples as ripple, index}
+		<Circle {...ripple} {color} {spread} {time} on:finished={_ => {dispatch('rippleEnded'); stopRipple(index);}}/>
+	{/each}
+	<slot>Some text</slot>
+</div>
