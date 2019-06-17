@@ -18,7 +18,12 @@ To start the development server:
 npm run dev
 ```
 
-You are welcome to add new features or components, please open an issue to discuss it first.
+To clean up the project and format the files:
+```bash
+npm run lint
+```
+
+You are welcome to add new features or components, but please open an issue to discuss your idea first.
 
 ## TODO
 
