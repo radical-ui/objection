@@ -2,7 +2,7 @@
 
 ## TODO
 - Documentation
-- Contrubiting
+- Contrubiting Section
 - Inspiration
 
 ## License
