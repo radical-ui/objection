@@ -7,7 +7,7 @@ A UI component library for Svelte implementing Google's Material Design specific
 Pull requests are always welcome!
 
 ```bash
-git clone https://github.com/[your-fork]/svelte-toolbox.git
+git clone https://github.com/svelte-toolbox/svelte-toolbox.git
 cd svelte-toolbox
 npm install
 ```
