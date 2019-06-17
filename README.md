@@ -1,4 +1,5 @@
 # Svelte Toolbox
+A UI component library for Svelte implementing Google's Material Design specification.
 
 ## TODO
 - Documentation
