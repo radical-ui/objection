@@ -31,7 +31,12 @@ You are welcome to add new features or components, but please open an issue to d
 ## TODO
 
 -   Documentation
--   Inspiration
+
+## Inspiration
+
+As I was working on an app using [Sapper](http://sapper.dev), I was made made aware of the fact that if there was a UI component library out there for [Svelte](http://svelte.dev), it would make developing a Svelte app so much easier!
+
+I am a big fan of the Google Material Design patterns, and because I really like [React Toolbox](https://github.com/react-toolbox/react-toolbox), I decided to make something like it for Svelte.
 
 ## License
 
