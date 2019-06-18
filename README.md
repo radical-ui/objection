@@ -2,6 +2,8 @@
 
 A UI component library for Svelte implementing Google's Material Design specification.
 
+Beacuse Svelte Toolbox is early in development, some things may change before we hit `v1.0.0`.
+
 ## Contributing
 
 Pull requests are always welcome!
