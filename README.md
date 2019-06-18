@@ -19,6 +19,7 @@ npm run dev
 ```
 
 To clean up the project and format the files:
+
 ```bash
 npm run lint
 ```
