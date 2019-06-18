@@ -20,6 +20,8 @@ Causes a ripple animation when the user clicks on it.
 | `spread`       | `number`  | `100`                | The amount of pixels the ripple will span at it's widest.                    |
 | `time`         | `number`  | `500`                | The number of miliseconds it takes for the ripple to disapear.               |
 | `hideOverflow` | `boolean` | `true`               | Specifies if the overflow from the ripples should be `hidden` or `visibile`. |
+| `block`        | `boolean` | `false`              | If true, ripple container will have `display: block` on it.                  |
+| `disabled`     | `boolean` | `false`              | This prop, as can be guessed, disables the ripple.                           |
 
 # Events
 

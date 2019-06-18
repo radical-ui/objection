@@ -9,13 +9,18 @@
 </style>
 
 <div class="over">
-	<br />
-	<br />
 
-	<Ripple>
-		<p>Look at this! Boy is it nice!</p>
+	<h1>Svelte Toolbox</h1>
+
+	<h2>Ripple</h2>
+	<Ripple block={true}>
+		<p>Full width</p>
 	</Ripple>
 
+	<Ripple disabled={true}>Disabled</Ripple>
+	<Ripple hideOverflow={false}>Visibile overflow</Ripple>
+
+	<h2>Button</h2>
 	<Button>Cancel</Button>
 	<Button on:click={(e) => console.log(e)}>Save</Button>
 

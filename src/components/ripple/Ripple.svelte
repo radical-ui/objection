@@ -2,10 +2,12 @@
 	import Circle from './Circle.svelte';
 	import { createEventDispatcher } from 'svelte';
 
-	export let color = 'rgba(0, 0, 0, 0.2)';
-	export let spread = 100;
-	export let time = 500;
+	export let color = 'rgba(0, 0, 0, 0.3)';
+	export let spread = 300;
+	export let time = 300;
 	export let hideOverflow = true;
+	export let disabled = false;
+	export let block = false;
 
 	const dispatch = createEventDispatcher();
 
@@ -13,6 +15,7 @@
 	let container;
 
 	function startRipple(e) {
+		if (disabled) return;
 		ripples.push({
 			x: e.clientX,
 			y: e.clientY,
@@ -38,13 +41,22 @@
 <style>
 	div {
 		position: relative;
+		overflow: visible;
+		display: inline-block;
+	}
+	.hideOverflow {
+		overflow: hidden;
+	}
+	.block {
+		display: block;
 	}
 </style>
 
 <div
 	on:click={startRipple}
 	bind:this={container}
-	style="overflow: {hideOverflow ? 'hidden' : 'visibile'}">
+	class:hideOverflow
+	class:block>
 	{#each ripples as { x, y, top, left, id }, index (id)}
 		<Circle
 			{x}
