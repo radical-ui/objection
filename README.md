@@ -30,7 +30,7 @@ You are welcome to add new features or components, but please open an issue to d
 
 ## TODO
 
--   Documentation
+* [ ] Documentation
 
 ## Inspiration
 
