@@ -1,9 +1,9 @@
 {
 	"name": "svelte-toolbox",
 	"svelte": "src/components/components.module.js",
-	"module": "dist/index.mjs",
-	"main": "dist/index.js",
-	"version": "0.0.1-alpha.3",
+	"module": "dist/index.min.mjs",
+	"main": "dist/index.min.js",
+	"version": "0.0.1-alpha.4",
 	"license": "MIT",
 	"repository": {
 		"type": "git",
@@ -41,8 +41,8 @@
 	],
 	"files": [
 		"src",
-		"dist/index.mjs",
-		"dist/index.js"
+		"dist/index.min.mjs",
+		"dist/index.min.js"
 	],
 	"husky": {
 		"hooks": {
