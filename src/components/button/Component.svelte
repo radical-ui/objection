@@ -1,37 +1,23 @@
-<style>
-	button {
-		font-size: 1.2rem;
-		padding: 0 12px;
-		line-height: 2rem;
-		font-weight: 500;
-		font-family: Roboto, Helvetica, Arial, sans-serif;
-		box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14),
-			0 3px 1px -2px rgba(0, 0, 0, 0.2), 0 1px 5px 0 rgba(0, 0, 0, 0.12);
-		border: none;
-		background: rgba(0, 0, 0, 0);
-		outline: none;
-	}
-
-	.uppercase {
-		text-transform: uppercase;
-	}
-
-	.flat {
-		box-shadow: none;
-	}
-</style>
-
 <script>
 	import { createEventDispatcher } from 'svelte';
 	import Ripple from '../ripple/Ripple.svelte';
 
+	export let raised = false;
+	export let primary = false;
+	export let transition = 200;
+	export let ripple = true;
+	export let block = false;
+	export let disabled = false;
+	export let color = 'var(--buttons)';
+	export let textColor = 'var(--primary-buttons-text-color)';
+	export let hoverColor = `var(--buttons-hover-color)`;
+	export let primaryHoverColor = `var(--primary-buttons-hover-color)`;
 	export let uppercase = true;
-	export let label = 'Click me';
-	export let icon = null;
-	export let showHTML = false;
-	export let flat = true;
+	export let rippleColor = `var(--buttons-ripple-color)`;
+	export let primaryRippleColor = `var(--primary-buttons-ripple-color)`;
 
 	let element;
+	let hovering = false;
 
 	const dispatch = createEventDispatcher();
 
@@ -44,22 +30,60 @@
 	}
 </script>
 
-<Ripple hideOverflow={false}>
-	<button on:click={click} on:hover={hover} class:uppercase class:flat>
-		{#if icon != null}
-			{#if typeof icon == 'string' && showHTML}
-				{@html icon}
-			{:else if icon == 'string'}
-				{icon}
-			{:else if typeof icon == 'element'}
-				<div bind:this={element} />
-			{:else}
-				<svelte:component this={icon} />
-			{/if}
-		{/if}
-		{#if showHTML}
-			{@html label}
-		{:else}{label}{/if}
-		<slot>Some text</slot>
-	</button>
-</Ripple>
+<style>
+	button {
+		font-size: 1.2rem;
+		padding: 0;
+		margin: 0;
+		line-height: 2rem;
+		font-weight: 500;
+		font-family: Roboto, Helvetica, Arial, sans-serif;
+
+		border: none;
+		background: rgba(0, 0, 0, 0);
+		outline: none;
+		border-radius: 3px;
+		overflow: hidden;
+	}
+	button:not(.button-disabled) {
+		cursor: pointer;
+	}
+
+	.uppercase {
+		text-transform: uppercase;
+	}
+
+	.raised {
+		box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14),
+			0 3px 1px -2px rgba(0, 0, 0, 0.2), 0 1px 5px 0 rgba(0, 0, 0, 0.12);
+	}
+	.block {
+		display: block;
+	}
+</style>
+
+<button
+	on:click={click}
+	on:mouseover={(e) => {
+		hovering = true;
+		hover();
+	}}
+	on:mouseout={(e) => (hovering = false)}
+	class:raised
+	class:block
+	class:uppercase
+	class:button-disabled={disabled}
+	{disabled}
+	style="{primary ? `background: ${hovering ? primaryHoverColor : color}; color: ${textColor}` : `color: ${color}; background: ${hovering ? hoverColor : 'rgba(0, 0, 0, 0)'}`};
+	transition: opacity {transition}ms, background {transition}ms">
+
+	<Ripple
+		disabled={!ripple || disabled}
+		block={true}
+		time={600}
+		color={primary ? primaryRippleColor : rippleColor}>
+		<div style="padding: 0 12px;">
+			<slot>Some text</slot>
+		</div>
+	</Ripple>
+</button>
