@@ -28,9 +28,50 @@ npm run lint
 
 You are welcome to add new features or components, but please open an issue to discuss your idea first.
 
-## TODO
+## Usage
 
-* [ ] Documentation
+```shell
+npm i svelte-toolbox
+```
+
+There is detailed documentation about each of the components [below](#documentation), but the basic usage looks like this:
+
+```html
+<script>
+	import { UIButton, Ripple } from 'svelte-toolbox';
+</script>
+
+<UIButton on:click="{() => alert('done!')}">Click me!</UIButton>
+
+<Ripple>
+	There is a nice ripple effect on this text.
+</Ripple>
+```
+
+### Global Styles
+
+We recommend adding these lines to your global stylesheet. These will be the default styles for the components you import from `svelte-toolbox`.
+
+```css
+:root {
+	/* buttons */
+	--buttons: #303ba6;
+	--primary-buttons-text-color: white;
+	--buttons-hover-color: #303ca649;
+	--primary-buttons-hover-color: var(--buttons);
+	--buttons-ripple-color: #303ca69d;
+	--primary-buttons-ripple-color: rgba(255, 255, 255, 0.5);
+}
+.button-disabled {
+	opacity: 0.4;
+	cursor: not-allowed;
+}
+```
+
+### Documentation
+
+-   [Ripple](https://github.com/svelte-toolbox/svelte-toolbox/tree/master/src/components/ripple/README.md)
+-   [Button](https://github.com/svelte-toolbox/svelte-toolbox/tree/master/src/components/button/README.md)
 
 ## Inspiration
 
