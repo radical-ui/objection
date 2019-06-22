@@ -34,7 +34,8 @@
 		"start": "sirv public",
 		"start:dev": "sirv public --dev",
 		"prepublishOnly": "npm run build",
-		"lint": "eslint ./src && prettier --write \"./**\""
+		"lint": "eslint ./src && prettier --write \"./**\"",
+		"lint:test": "eslint ./src && prettier --check \"./**\""
 	},
 	"keywords": [
 		"svelte"
