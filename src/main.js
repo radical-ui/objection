@@ -5,4 +5,4 @@ const app = new App({
 	props: {},
 });
 
-export default app;
+	export default app;
