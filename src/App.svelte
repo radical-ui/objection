@@ -51,8 +51,8 @@
 		</span>
 	</UIButton>
 	<br />
-	<UIButton href="bar">
-		Should go to
+	<UIButton href="bar" disabled={true}>
+		Should not go to
 		<span>
 			<i>host</i>
 			/bar

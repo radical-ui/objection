@@ -1,6 +1,7 @@
 <script>
 	import { createEventDispatcher } from 'svelte';
 	import Ripple from '../ripple/Ripple.svelte';
+	import AWrapper from './AWrapper.svelte';
 
 	export let raised = false;
 	export let primary = false;
@@ -15,6 +16,7 @@
 	export let uppercase = true;
 	export let rippleColor = `var(--buttons-ripple-color)`;
 	export let primaryRippleColor = `var(--primary-buttons-ripple-color)`;
+	export let href = null;
 
 	let element;
 	let hovering = false;
@@ -62,28 +64,30 @@
 	}
 </style>
 
-<button
-	on:click={click}
-	on:mouseover={(e) => {
-		hovering = true;
-		hover();
-	}}
-	on:mouseout={(e) => (hovering = false)}
-	class:raised
-	class:block
-	class:uppercase
-	class:button-disabled={disabled}
-	{disabled}
-	style="{primary ? `background: ${hovering ? primaryHoverColor : color}; color: ${textColor}` : `color: ${color}; background: ${hovering ? hoverColor : 'rgba(0, 0, 0, 0)'}`};
-	transition: opacity {transition}ms, background {transition}ms">
+<AWrapper {href} {disabled}>
+	<button
+		on:click={click}
+		on:mouseover={(e) => {
+			hovering = true;
+			hover();
+		}}
+		on:mouseout={(e) => (hovering = false)}
+		class:raised
+		class:block
+		class:uppercase
+		class:button-disabled={disabled}
+		{disabled}
+		style="{primary ? `background: ${hovering ? primaryHoverColor : color}; color: ${textColor}` : `color: ${color}; background: ${hovering ? hoverColor : 'rgba(0, 0, 0, 0)'}`};
+		transition: opacity {transition}ms, background {transition}ms">
 
-	<Ripple
-		disabled={!ripple || disabled}
-		block={true}
-		time={600}
-		color={primary ? primaryRippleColor : rippleColor}>
-		<div style="padding: 0 12px;">
-			<slot>Some text</slot>
-		</div>
-	</Ripple>
-</button>
+		<Ripple
+			disabled={!ripple || disabled}
+			block={true}
+			time={600}
+			color={primary ? primaryRippleColor : rippleColor}>
+			<div style="padding: 0 12px;">
+				<slot>Some text</slot>
+			</div>
+		</Ripple>
+	</button>
+</AWrapper>
