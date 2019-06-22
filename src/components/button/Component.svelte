@@ -15,6 +15,7 @@
 	export let uppercase = true;
 	export let rippleColor = `var(--buttons-ripple-color)`;
 	export let primaryRippleColor = `var(--primary-buttons-ripple-color)`;
+	export let href = null;
 
 	let element;
 	let hovering = false;
@@ -23,6 +24,10 @@
 
 	function click(e) {
 		dispatch('click', e);
+		if (href == null) return;
+		let anchor = document.createElement('a');
+		anchor.setAttribute('href', href);
+		anchor.click();
 	}
 
 	function hover(e) {
