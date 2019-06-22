@@ -48,6 +48,7 @@ An input/textarea component with an animated bottom border.
 | `maxChars`         | `number`  | `null`                      | If a value is given, UIInput will not allow more characters than the given value.                                                                    |
 | `error`            | `string`  | `null`                      | If a value is given, show an error underneath the input.                                                                                             |
 | `disabled`         | `boolean` | `false`                     | This prop, as can be guessed, disables the button.                                                                                                   |
+| `block`            | `boolean` | `true`                      | Specifies if the input should take up all available space.                                                                                           |
 
 ## Events
 
