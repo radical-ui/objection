@@ -8,7 +8,7 @@ Causes a ripple animation when the user clicks on it.
 </script>
 
 <Ripple>
-	Click here!
+Click here!
 </Ripple>
 ```
 
