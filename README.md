@@ -54,17 +54,32 @@ We recommend adding these lines to your global stylesheet. These will be the def
 
 ```css
 :root {
-	/* buttons */
+	// buttons
 	--buttons: #303ba6;
 	--primary-buttons-text-color: white;
 	--buttons-hover-color: #303ca649;
 	--primary-buttons-hover-color: var(--buttons);
 	--buttons-ripple-color: #303ca69d;
 	--primary-buttons-ripple-color: rgba(255, 255, 255, 0.5);
+
+	// inputs
+	--inputs: var(--buttons);
+	--inputs-background: #ecebeb;
+	--inputs-background-hover: #ebebeb;
+	--inputs-background-focus: #e7e4e4;
+	--inputs-placeholder: #696969;
+	--inputs-outline: grey;
+	--inputs-outline-hover: var(--inputs-outline);
+
+	// error
+	--all-errors: #b00020;
 }
 .button-disabled {
 	opacity: 0.4;
 	cursor: not-allowed;
+}
+i {
+	outline: none;
 }
 ```
 
