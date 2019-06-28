@@ -4,4 +4,10 @@ node_modules/**
 .gitattributes
 .gitignore
 .prettierignore
+.eslintignore
+.npmignore
+src/styles/internal/mdc.css
+src/styles/internal/mdc.css.map
+src/styles/internal/wrapped-styles.js
+src/components/Style.svelte
 dist

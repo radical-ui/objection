@@ -36,8 +36,8 @@
 		"start": "sirv public",
 		"start:dev": "sirv public --dev",
 		"prepublishOnly": "npm run build",
-		"lint": "eslint ./src && prettier --write \"./**\"",
-		"lint:test": "eslint ./src && prettier --check \"./**\"",
+		"lint": "eslint . && prettier --write \"./**\"",
+		"lint:test": "eslint . && prettier --check \"./**\"",
 		"compile:scss": "sass --watch ./src/styles/mdc.scss ./src/styles/internal/mdc.css --load-path=\"node_modules\"",
 		"wrap:css": "node ./src/styles/internal/wrap-css.js"
 	},
