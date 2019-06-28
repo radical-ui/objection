@@ -180,7 +180,7 @@
 
 		{#if leadingIcon}
 			<i
-				class="material-icons mdc-text-field__icon"
+				class="material-icons mdc-text-field__icon leading-icon"
 				tabindex="0"
 				on:click={(e) => dispatch('leadingiconclick', e)}
 				on:mouseover={(e) => {
@@ -234,14 +234,14 @@
 
 		{#if error && showErrorIcon}
 			<i
-				class="material-icons mdc-text-field__icon"
+				class="material-icons mdc-text-field__icon error-icon"
 				tabindex="0"
 				style="color: {errors}">
 				error
 			</i>
 		{:else if trailingIcon}
 			<i
-				class="material-icons mdc-text-field__icon"
+				class="material-icons mdc-text-field__icon trailing-icon"
 				tabindex="0"
 				on:click={(e) => dispatch('trailingiconclick', e)}
 				on:mouseover={(e) => {
