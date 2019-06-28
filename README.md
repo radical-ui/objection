@@ -54,10 +54,10 @@ We recommend adding these lines to your global stylesheet. These will be the def
 
 ```css
 :root {
-    /* buttons */
-    --buttons: #303ba6;
-    --primary-buttons-text-color: white;
-    --buttons-hover-color: #303ca649;
+	/* buttons */
+	--buttons: #303ba6;
+	--primary-buttons-text-color: white;
+	--buttons-hover-color: #303ca649;
 	--primary-buttons-hover-color: var(--buttons);
 	--buttons-ripple-color: #303ca69d;
 	--primary-buttons-ripple-color: rgba(255, 255, 255, 0.5);
@@ -85,10 +85,9 @@ We recommend adding these lines to your global stylesheet. These will be the def
 Svelte Toolbox expects to find a [`icons.woff2`](https://github.com/svelte-toolbox/svelte-toolbox/blob/master/public/icons.woff2) in the same directory as the hosting file (usually `index.html`).
 
 To get the Material Design Icons to work:
-- Download [`icons.woff2`](https://github.com/svelte-toolbox/svelte-toolbox/blob/master/public/icons.woff2)
-- For most Projects place the downloaded file is the same directory as you hosting file, which would be:
-	- `public/` for a Svelte project
-	- `static/` for a Sapper project
+
+-   Download [`icons.woff2`](https://github.com/svelte-toolbox/svelte-toolbox/blob/master/public/icons.woff2)
+-   For most Projects place the downloaded file is the same directory as you hosting file, which would be: - `public/` for a Svelte project - `static/` for a Sapper project
 
 ### Documentation
 

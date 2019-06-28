@@ -5,16 +5,23 @@
 
 	let create = false;
 	let style = null;
-	let id = `svelte-toolbox-style-id-${(Math.random() * Math.random() * new Date().getTime()).toFixed(0)}`;
+	let id = `svelte-toolbox-style-id-${(
+		Math.random() *
+		Math.random() *
+		new Date().getTime()
+	).toFixed(0)}`;
 
-	numberOfCreated.update(num => {num.push(id); return num;})
+	numberOfCreated.update((num) => {
+		num.push(id);
+		return num;
+	});
 
 	onMount(async () => {
 		if (id == $numberOfCreated[0]) {
-			style = `<style>${rawStyle}</style>`;
-			create = true
+			style = '<style>' + rawStyle + '</style>';
+			create = true;
 		}
-	})
+	});
 </script>
 
 <svelte:head>

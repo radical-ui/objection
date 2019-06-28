@@ -1,6 +1,7 @@
 i {
 	outline: none;
+	user-select: none;
 }
 
-@import "@material/textfield/mdc-text-field.scss";
-@import "./internal/icons.scss";
+@import '@material/textfield/mdc-text-field.scss';
+@import './internal/icons.scss';

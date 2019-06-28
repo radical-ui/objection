@@ -6,6 +6,7 @@
 	} from './components/components.module.js';
 
 	let value = 'John Smith';
+	let trailingIconHovering;
 
 	function log(e) {
 		console.log(e);
@@ -112,6 +113,30 @@
 		helper="We respect your privacy"
 		maxChars={50} />
 
+	<p>Icons:</p>
+	<p>leadingIcon, placeholder</p>
+	<UIInput placeholder="Input with leadingIcon" leadingIcon="favorite" />
+	<p>trailingIcon, placeholder</p>
+	<UIInput
+		placeholder="Input with trailingIcon"
+		trailingIcon="favorite_border"
+		bind:trailingIconHovering
+		trailingIconIsButton={true}
+		trailingIconColor={trailingIconHovering ? 'red' : undefined}
+		on:trailingiconclick={log}
+		on:trailingiconhover={log} />
+	<p>leadingIcon, trailingIcon, placeholder</p>
+	<UIInput
+		placeholder="Input w/ both"
+		trailingIcon="done"
+		leadingIcon="favorite" />
+	<p>leadingIcon, trailingIcon, placeholder, outlined</p>
+	<UIInput
+		placeholder="Input w/ both"
+		trailingIcon="done"
+		leadingIcon="favorite"
+		outlined={true} />
+
 	<p>Events:</p>
 	<UIInput
 		on:valuechanged={log}
@@ -119,5 +144,9 @@
 		on:focus={log}
 		on:blur={log}
 		on:keypress={log}
-		on:done={log} />
+		on:done={log}
+		on:leadingiconclick={log}
+		on:leadingiconhover={log}
+		on:trailingiconclick={log}
+		on:trailingiconhover={log} />
 </div>
