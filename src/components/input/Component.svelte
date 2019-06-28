@@ -1,6 +1,7 @@
 <script>
 	import { createEventDispatcher, onMount, tick, afterUpdate } from 'svelte';
 	import { MDCTextField } from '@material/textfield/index';
+	import MDCStyles from '../Style.svelte';
 
 	export let value = null;
 	export let placeholder = null;
@@ -140,6 +141,8 @@
 		overflow: hidden;
 	}
 </style>
+
+<MDCStyles/>
 
 <div class="over" class:mdc-custom-inline-block={!block}>
 	<div

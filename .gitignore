@@ -2,3 +2,6 @@
 dist
 node_modules
 public/bundle.*
+src/styles/internal/mdc.css
+src/styles/internal/mdc.css.map
+src/styles/internal/wrapped-styles.js

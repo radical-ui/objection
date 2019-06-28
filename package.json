@@ -27,18 +27,19 @@
 		"rollup-plugin-terser": "~5.0.0",
 		"sirv-cli": "~0.4.4",
 		"svelte": "~3.5.1",
-		"svelte-preprocess-sass": "^0.2.0"
+		"write": "^1.0.3"
 	},
 	"scripts": {
 		"build": "rollup -c",
 		"autobuild": "rollup -c -w",
-		"dev": "run-p start:dev autobuild compile:scss",
+		"dev": "run-p start:dev autobuild compile:scss wrap:css",
 		"start": "sirv public",
 		"start:dev": "sirv public --dev",
 		"prepublishOnly": "npm run build",
 		"lint": "eslint ./src && prettier --write \"./**\"",
 		"lint:test": "eslint ./src && prettier --check \"./**\"",
-		"compile:scss": "sass --watch ./public/mdc.scss ./public/mdc.css --load-path=\"node_modules\""
+		"compile:scss": "sass --watch ./src/styles/mdc.scss ./src/styles/internal/mdc.css --load-path=\"node_modules\"",
+		"wrap:css": "node ./src/styles/internal/wrap-css.js"
 	},
 	"keywords": [
 		"svelte"
