@@ -17,3 +17,8 @@ ${css}
 }
 
 writeCSS();
+
+fs.watch('./src/styles/internal/mdc.css', 'utf-8', (_) => {
+	console.log('./src/styles/internal/mdc.css changed.  Wrapping CSS...');
+	writeCSS();
+});

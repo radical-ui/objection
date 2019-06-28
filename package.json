@@ -32,14 +32,15 @@
 	"scripts": {
 		"build": "rollup -c",
 		"autobuild": "rollup -c -w",
-		"dev": "run-p start:dev autobuild compile:scss wrap:css",
+		"dev": "run-p start:dev autobuild compile:scss wrap:css:watch",
 		"start": "sirv public",
 		"start:dev": "sirv public --dev",
-		"prepublishOnly": "npm run build",
+		"prepublishOnly": "npm run wrap:css && npm run build",
 		"lint": "eslint . && prettier --write \"./**\"",
 		"lint:test": "eslint . && prettier --check \"./**\"",
 		"compile:scss": "sass --watch ./src/styles/mdc.scss ./src/styles/internal/mdc.css --load-path=\"node_modules\"",
-		"wrap:css": "node ./src/styles/internal/wrap-css.js"
+		"wrap:css": "node ./src/styles/internal/wrap-css.js",
+		"wrap:css:watch": "node ./src/styles/internal/wrap-css-watch.js"
 	},
 	"keywords": [
 		"svelte"
