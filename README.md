@@ -61,6 +61,18 @@ We recommend adding these lines to your global stylesheet. These will be the def
 	--primary-buttons-hover-color: var(--buttons);
 	--buttons-ripple-color: #303ca69d;
 	--primary-buttons-ripple-color: rgba(255, 255, 255, 0.5);
+
+	/* inputs */
+	--inputs: var(--buttons);
+	--inputs-background: #ecebeb;
+	--inputs-background-hover: #ebebeb;
+	--inputs-background-focus: #e7e4e4;
+	--inputs-placeholder: #696969;
+	--inputs-outline: grey;
+	--inputs-outline-hover: var(--inputs-outline);
+
+	/* error */
+	--all-errors: #b00020;
 }
 .button-disabled {
 	opacity: 0.4;
@@ -68,10 +80,20 @@ We recommend adding these lines to your global stylesheet. These will be the def
 }
 ```
 
+### Icons
+
+Svelte Toolbox expects to find a [`icons.woff2`](https://github.com/svelte-toolbox/svelte-toolbox/blob/master/public/icons.woff2) in the same directory as the hosting file (usually `index.html`).
+
+To get the Material Design Icons to work:
+
+-   Download [`icons.woff2`](https://github.com/svelte-toolbox/svelte-toolbox/blob/master/public/icons.woff2)
+-   For most Projects place the downloaded file is the same directory as you hosting file, which would be: - `public/` for a Svelte project - `static/` for a Sapper project
+
 ### Documentation
 
 -   [Ripple](https://github.com/svelte-toolbox/svelte-toolbox/tree/master/src/components/ripple/README.md)
--   [Button](https://github.com/svelte-toolbox/svelte-toolbox/tree/master/src/components/button/README.md)
+-   [UIButton](https://github.com/svelte-toolbox/svelte-toolbox/tree/master/src/components/button/README.md)
+-   [UIInput](https://github.com/svelte-toolbox/svelte-toolbox/tree/master/src/components/input/README.md)
 
 ## Inspiration
 

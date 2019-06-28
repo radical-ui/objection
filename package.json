@@ -15,6 +15,7 @@
 		"eslint-plugin-svelte3": "^1.2.3",
 		"husky": "~2.4.1",
 		"lint-staged": "~8.2.1",
+		"node-sass": "^4.12.0",
 		"npm-run-all": "~4.1.5",
 		"prettier": "^1.18.2",
 		"prettier-plugin-svelte": "^0.6.0",
@@ -24,18 +25,24 @@
 		"rollup-plugin-node-resolve": "~5.0.3",
 		"rollup-plugin-svelte": "~5.1.0",
 		"rollup-plugin-terser": "~5.0.0",
+		"sass": "^1.22.1",
 		"sirv-cli": "~0.4.4",
-		"svelte": "~3.5.1"
+		"svelte": "~3.5.1",
+		"write": "^1.0.3"
 	},
 	"scripts": {
 		"build": "rollup -c",
 		"autobuild": "rollup -c -w",
-		"dev": "run-p start:dev autobuild",
+		"dev": "run-p start:dev autobuild compile:scss:watch wrap:css:watch",
 		"start": "sirv public",
 		"start:dev": "sirv public --dev",
-		"prepublishOnly": "npm run build",
-		"lint": "eslint ./src && prettier --write \"./**\"",
-		"lint:test": "eslint ./src && prettier --check \"./**\""
+		"prepublishOnly": "npm run wrap:css && npm run build",
+		"lint": "eslint . && prettier --write \"./**\"",
+		"lint:test": "eslint . && prettier --check \"./**\"",
+		"compile:scss:watch": "sass --watch ./src/styles/mdc.scss ./src/styles/internal/mdc.css --load-path=\"node_modules\"",
+		"compile:scss": "sass ./src/styles/mdc.scss ./src/styles/internal/mdc.css --load-path=\"node_modules\"",
+		"wrap:css": "node ./src/styles/internal/wrap-css.js",
+		"wrap:css:watch": "node ./src/styles/internal/wrap-css-watch.js"
 	},
 	"keywords": [
 		"svelte"
@@ -59,5 +66,9 @@
 			"prettier --write",
 			"git add"
 		]
+	},
+	"dependencies": {
+		"@material/textfield": "^2.3.1",
+		"material-design-icons": "^3.0.1"
 	}
 }
