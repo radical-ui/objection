@@ -103,6 +103,7 @@
 		compress={false} />
 	<p>placeholder, block</p>
 	<UIInput placeholder="Enter name..." block={true} />
+	<p>placeholder, outlined, rows == null, allowEnter, helper, maxChars</p>
 	<UIInput
 		placeholder="Username or email"
 		outlined={true}
