@@ -80,6 +80,16 @@ We recommend adding these lines to your global stylesheet. These will be the def
 }
 ```
 
+### Icons
+
+Svelte Toolbox expects to find a [`icons.woff2`](https://github.com/svelte-toolbox/svelte-toolbox/blob/master/public/icons.woff2) in the same directory as the hosting file (usually `index.html`).
+
+To get the Material Design Icons to work:
+- Download [`icons.woff2`](https://github.com/svelte-toolbox/svelte-toolbox/blob/master/public/icons.woff2)
+- For most Projects place the downloaded file is the same directory as you hosting file, which would be:
+	- `public/` for a Svelte project
+	- `static/` for a Sapper project
+
 ### Documentation
 
 -   [Ripple](https://github.com/svelte-toolbox/svelte-toolbox/tree/master/src/components/ripple/README.md)
