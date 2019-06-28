@@ -25,6 +25,7 @@
 		"rollup-plugin-node-resolve": "~5.0.3",
 		"rollup-plugin-svelte": "~5.1.0",
 		"rollup-plugin-terser": "~5.0.0",
+		"sass": "^1.22.1",
 		"sirv-cli": "~0.4.4",
 		"svelte": "~3.5.1",
 		"write": "^1.0.3"
