@@ -26,6 +26,8 @@
 	export let block = false;
 	export let showErrorIcon = true;
 	export let trim = false;
+	export let leadingIcon = null;
+	export let trailingIcon = null;
 
 	let textField;
 	let startUpEl;
@@ -34,8 +36,9 @@
 	let errors = 'var(--all-errors)';
 	let randomId = 'input-component-' + Math.random() * Math.random();
 	let showTextarea = rows > 1 || rows == null;
-	let rowSize = 28;
-	let padding = 44 - 28;
+	let remSize = parseInt(getComputedStyle(document.documentElement).fontSize);
+	let rowSize = remSize * 1.75;
+	let padding = rows == 1 ? 30 : 16;
 	let maxSize = rowSize * rows + padding;
 
 	const dispatch = createEventDispatcher();
@@ -57,15 +60,22 @@
 
 	function resizeTextarea(el) {
 		if (compress) {
-			if (rows == null || el.scrollHeight <= maxSize) {
-				el.style.height = 'auto';
-				el.style.height = el.scrollHeight + 'px';
-			} else if (el.style.height == '') {
-				if (el.scrollHeight < maxSize)
-					el.style.height = el.scrollHeight + 'px';
-				else el.height = maxSize + 'px';
+			if (rows != null) {
+				if (el.scrollHeight > maxSize) return;
 			}
+
+			if (el.value == '') el.style.height = addPx(rowSize + padding);
+			else {
+				el.style.height = 'auto';
+				el.style.height = addPx(el.scrollHeight);
+			}
+		} else {
+			el.style.height = addPx(maxSize);
 		}
+	}
+
+	function addPx(val) {
+		return `${val}px`;
 	}
 
 	// Events
