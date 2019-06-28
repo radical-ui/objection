@@ -28,6 +28,12 @@
 	export let trim = false;
 	export let leadingIcon = null;
 	export let trailingIcon = null;
+	export let leadingIconColor = 'var(--inputs-placeholder)';
+	export let trailingIconColor = 'var(--inputs-placeholder)';
+	export let leadingIconIsButton = false;
+	export let trailingIconIsButton = false;
+	export let leadingIconHovering = false;
+	export let trailingIconHovering = false;
 
 	let textField;
 	let startUpEl;
@@ -152,7 +158,7 @@
 	}
 </style>
 
-<MDCStyles/>
+<MDCStyles />
 
 <div class="over" class:mdc-custom-inline-block={!block}>
 	<div
@@ -161,7 +167,8 @@
 		class:mdc-text-field--textarea={showTextarea}
 		class:mdc-text-field--no-label={!placeholder}
 		class:mdc-text-field--disabled={disabled}
-		class:mdc-text-field--with-trailing-icon={error && showErrorIcon}
+		class:mdc-text-field--with-leading-icon={leadingIcon}
+		class:mdc-text-field--with-trailing-icon={(error && showErrorIcon) || trailingIcon}
 		class:mdc-text-field--outlined={outlined}
 		class:input-disabled={disabled}
 		class:input-focused={isFocused}
@@ -170,6 +177,21 @@
 		style="background-color: {outlined ? 'unset' : isFocused ? backgroundFocus : hovering ? backgroundHover : background};"
 		on:mouseover={handleMouseover}
 		on:mouseleave={handleMouseleave}>
+
+		{#if leadingIcon}
+			<i
+				class="material-icons mdc-text-field__icon"
+				tabindex="0"
+				on:click={(e) => dispatch('leadingiconclick', e)}
+				on:mouseover={(e) => {
+					leadingIconHovering = true;
+					dispatch('leadingiconhover', e);
+				}}
+				on:mouseout={(e) => (leadingIconHovering = false)}
+				style="{!leadingIconIsButton ? 'z-index: -1;' : ''}color: {leadingIconColor}">
+				{leadingIcon}
+			</i>
+		{/if}
 
 		{#if showTextarea}
 			<textarea
@@ -216,6 +238,19 @@
 				tabindex="0"
 				style="color: {errors}">
 				error
+			</i>
+		{:else if trailingIcon}
+			<i
+				class="material-icons mdc-text-field__icon"
+				tabindex="0"
+				on:click={(e) => dispatch('trailingiconclick', e)}
+				on:mouseover={(e) => {
+					trailingIconHovering = true;
+					dispatch('trailingiconhover', e);
+				}}
+				on:mouseout={(e) => (trailingIconHovering = false)}
+				style="{!trailingIconIsButton ? 'z-index: -1;' : ''}color: {trailingIconColor}">
+				{trailingIcon}
 			</i>
 		{/if}
 
