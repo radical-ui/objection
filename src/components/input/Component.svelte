@@ -58,13 +58,15 @@
 		if (isFocused) textField.focus();
 
 		resizeTextarea(inputEl);
-		if (value != null && value != undefined && value != "") {
+		if (value != null && value != undefined && value != '') {
 			inputEl.value = value;
 			floatAboveStart = true;
-			
+
 			if (outlined) {
 				await tick();
-				outlinedElement.style.width = addPx(labelOutlined.offsetWidth * 0.75 + 8);
+				outlinedElement.style.width = addPx(
+					labelOutlined.offsetWidth * 0.75 + 8
+				);
 			}
 		}
 	});
@@ -269,7 +271,8 @@
 		{/if}
 
 		{#if outlined}
-			<div class="mdc-notched-outline"
+			<div
+				class="mdc-notched-outline"
 				class:mdc-notched-outline--notched={floatAboveStart}>
 				<div
 					class="mdc-notched-outline__leading"
@@ -277,7 +280,8 @@
 				{#if placeholder != null}
 					<div
 						class="mdc-notched-outline__notch"
-						style="border-color: {isFocused ? color : hovering ? outlineHover : outlineColor}" bind:this={outlinedElement}>
+						style="border-color: {isFocused ? color : hovering ? outlineHover : outlineColor}"
+						bind:this={outlinedElement}>
 						<label
 							for={randomId}
 							bind:this={labelOutlined}
