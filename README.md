@@ -71,6 +71,12 @@ We recommend adding these lines to your global stylesheet. These will be the def
 	--inputs-outline: grey;
 	--inputs-outline-hover: var(--inputs-outline);
 
+	/* IconButtons */
+	--icon-buttons: var(--buttons);
+	--icon-buttons-hover: rgba(0, 0, 0, 0.07);
+	--icon-buttons-active: rgba(0, 0, 0, 0.1);
+	--icon-buttons-ripple: rgba(0, 0, 0, 0.2);
+
 	/* error */
 	--all-errors: #b00020;
 }
