@@ -3,6 +3,7 @@
 		Ripple,
 		UIButton,
 		UIInput,
+		IconButton,
 	} from './components/components.module.js';
 
 	let value = 'John Smith';
@@ -16,6 +17,7 @@
 <style>
 	.over {
 		font-size: 1rem;
+		padding-bottom: 100px;
 	}
 	span {
 		text-transform: none;
@@ -150,4 +152,8 @@
 		on:leadingiconhover={log}
 		on:trailingiconclick={log}
 		on:trailingiconhover={log} />
+
+	<h1>IconButton</h1>
+	<IconButton />
+	<IconButton icon="favorite" />
 </div>
