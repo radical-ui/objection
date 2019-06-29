@@ -50,7 +50,7 @@
 	],
 	"files": [
 		"src/components",
-		"src/styles/wrapped-styles.js",
+		"src/styles/internal/wrapped-styles.js",
 		"src/store.js",
 		"dist/index.min.mjs",
 		"dist/index.min.js"
