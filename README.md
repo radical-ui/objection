@@ -87,7 +87,9 @@ Svelte Toolbox expects to find a [`icons.woff2`](https://github.com/svelte-toolb
 To get the Material Design Icons to work:
 
 -   Download [`icons.woff2`](https://github.com/svelte-toolbox/svelte-toolbox/blob/master/public/icons.woff2)
--   For most Projects place the downloaded file is the same directory as you hosting file, which would be: - `public/` for a Svelte project - `static/` for a Sapper project
+-   For most projects place the downloaded file is the same directory as your hosting file, which would be:
+	-	`public/` for a Svelte project
+	-	`static/` for a Sapper project
 
 ### Documentation
 
