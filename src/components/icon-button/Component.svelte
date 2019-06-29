@@ -1,5 +1,6 @@
 <script>
 	import Ripple from '../ripple/Ripple.svelte';
+	import Icon from './Icon.svelte';
 	import { createEventDispatcher } from 'svelte';
 
 	export let icon = 'error';
@@ -9,17 +10,28 @@
 	export let hoverColor = 'var(--icon-buttons-hover)';
 	export let rippleColor = 'var(--icon-buttons-ripple)';
 
-	let toggle = typeof icon == 'array';
-	let detail = typeof icon == 'object';
+	let toggle = typeof icon == 'object' && icon[0] != undefined;
+	let detail = typeof icon == 'object' && icon[0] == undefined;
 	let simple = typeof icon == 'string';
-
-	let defaultColor = 'var(--icon-buttons)';
 
 	let active = false;
 	let hovering = false;
 	let insideClicked = false;
 	let backgroundColor = 'rgba(0, 0, 0, 0)';
 
+	function getIconDetail(icon) {
+		let detailedIcon = {};
+		const values = ['name', 'href', 'style', 'color'];
+		values.forEach(element => {
+			if (icon[element] != undefined) {
+				if (typeof icon[element] == 'string') detailedIcon[element] = icon[element];
+				else throw new TypeError(`Unexpected type in 'icon': '${element}' IconButton expected a string, but recieved '${typeof icon[element]}'.`);
+			}
+		});
+		return detailedIcon;
+	}
+
+	// Events
 	const dispatch = createEventDispatcher();
 
 	function handleMouseover(e) {
@@ -31,6 +43,7 @@
 		dispatch('click', e);
 		insideClicked = true;
 		active = true;
+		on = !on;
 	}
 
 	function handleMouseout(e) {
@@ -54,7 +67,6 @@
 		padding: 0;
 		position: relative;
 		z-index: 1;
-		padding: 10px;
 		transition: background 300ms;
 	}
 	.wrapper {
@@ -67,11 +79,7 @@
 <svelte:window on:click={handleOutsideClick} />
 
 <div class="wrapper">
-	<Ripple
-		time={400}
-		spread={100}
-		hideOverflow={false}
-		color={rippleColor}>
+	<Ripple time={400} spread={100} hideOverflow={false} color={rippleColor}>
 		<button
 			style="background: {active ? activeColor : hovering ? hoverColor : backgroundColor}"
 			on:mouseover={handleMouseover}
@@ -79,17 +87,15 @@
 			on:click={handleClick}>
 
 			{#if simple}
-				<i class="material-icons" style="color: {defaultColor}">
-					{icon}
-				</i>
+				<Icon name={icon} />
 			{:else if detail}
-				<i class="material-icons" style="color: {defaultColor}">
-					{icon}
-				</i>
+				<Icon {...getIconDetail(icon)} />
 			{:else if toggle}
-				<i class="material-icons" style="color: {defaultColor}">
-					{icon}
-				</i>
+				{#if on}
+					<Icon {...getIconDetail(icon[0])} />
+				{:else}
+					<Icon {...getIconDetail(icon[1])} />
+				{/if}
 			{/if}
 
 		</button>
