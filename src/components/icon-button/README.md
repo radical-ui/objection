@@ -17,7 +17,6 @@ If the `icon` is a string, or an object of type [`IconObject`](#IconObject), Ico
 | Name          | Type                                      | Default                      | Description                                                                                        |
 | :------------ | :---------------------------------------- | :--------------------------- | :------------------------------------------------------------------------------------------------- |
 | `icon`        | `string | IconObject | Array<IconObject>` | `error`                      | Specifies if the button should hav a ripple effect on click.                                       |
-| `block`       | `boolean`                                 | `false`                      | If true, button will have `display: block` on it.                                                  |
 | `disabled`    | `boolean`                                 | `false`                      | This prop, as can be guessed, disables the button.                                                 |
 | `on`          | `boolean`                                 | `false`                      | Will be true if the toggle is on. Only valid if `icon` is an array of [`IconObjects`](#IconObject) |
 | `activeColor` | `string`                                  | `var(--icon-buttons-active)` | This is the color of the IconButton background after it has been clicked.                          |
