@@ -130,12 +130,13 @@
 		placeholder="Input w/ both"
 		trailingIcon="done"
 		leadingIcon="favorite" />
-	<p>leadingIcon, trailingIcon, placeholder, outlined</p>
+	<p>leadingIcon, trailingIcon, placeholder, outlined, value</p>
 	<UIInput
 		placeholder="Input w/ both"
 		trailingIcon="done"
 		leadingIcon="favorite"
-		outlined={true} />
+		outlined={true}
+		value="Good idea!" />
 
 	<p>Events:</p>
 	<UIInput

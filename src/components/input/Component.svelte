@@ -46,15 +46,27 @@
 	let rowSize = remSize * 1.75;
 	let padding = rows == 1 ? 30 : 16;
 	let maxSize = rowSize * rows + padding;
+	let floatAboveStart = false;
+	let outlinedElement;
+	let labelOutlined;
 
 	const dispatch = createEventDispatcher();
 
-	onMount(() => {
+	onMount(async () => {
 		if (maxChars != null) inputEl.setAttribute('maxlength', maxChars);
 		textField = new MDCTextField(startUpEl);
 		if (isFocused) textField.focus();
 
 		resizeTextarea(inputEl);
+		if (value != null && value != undefined && value != "") {
+			inputEl.value = value;
+			floatAboveStart = true;
+			
+			if (outlined) {
+				await tick();
+				outlinedElement.style.width = addPx(labelOutlined.offsetWidth * 0.75 + 8);
+			}
+		}
 	});
 
 	afterUpdate(() => {
@@ -226,6 +238,8 @@
 		{#if placeholder != null && !outlined}
 			<label
 				class="mdc-floating-label"
+				class:mdc-floating-label--float-above={floatAboveStart}
+				class:mdc-floating-label__float-above={floatAboveStart}
 				for={randomId}
 				style="color: {error ? errors : isFocused ? color : placeholderColor}">
 				{placeholder}
@@ -255,17 +269,21 @@
 		{/if}
 
 		{#if outlined}
-			<div class="mdc-notched-outline">
+			<div class="mdc-notched-outline"
+				class:mdc-notched-outline--notched={floatAboveStart}>
 				<div
 					class="mdc-notched-outline__leading"
 					style="border-color: {isFocused ? color : hovering ? outlineHover : outlineColor}" />
 				{#if placeholder != null}
 					<div
 						class="mdc-notched-outline__notch"
-						style="border-color: {isFocused ? color : hovering ? outlineHover : outlineColor}">
+						style="border-color: {isFocused ? color : hovering ? outlineHover : outlineColor}" bind:this={outlinedElement}>
 						<label
 							for={randomId}
+							bind:this={labelOutlined}
 							class="mdc-floating-label"
+							class:mdc-floating-label--float-above={floatAboveStart}
+							class:mdc-floating-label__float-above={floatAboveStart}
 							style="color: {isFocused ? color : placeholderColor}">
 							{placeholder}
 						</label>
