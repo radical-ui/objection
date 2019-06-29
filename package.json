@@ -42,13 +42,16 @@
 		"compile:scss:watch": "sass --watch ./src/styles/mdc.scss ./src/styles/internal/mdc.css --load-path=\"node_modules\"",
 		"compile:scss": "sass ./src/styles/mdc.scss ./src/styles/internal/mdc.css --load-path=\"node_modules\"",
 		"wrap:css": "node ./src/styles/internal/wrap-css.js",
-		"wrap:css:watch": "node ./src/styles/internal/wrap-css-watch.js"
+		"wrap:css:watch": "node ./src/styles/internal/wrap-css-watch.js",
+		"postversion": "git push && git push --tags && rm -rf build/temp && npm publish --dry-run && npm publish"
 	},
 	"keywords": [
 		"svelte"
 	],
 	"files": [
-		"src",
+		"src/components",
+		"src/styles/wrapped-styles.js",
+		"src/store.js",
 		"dist/index.min.mjs",
 		"dist/index.min.js"
 	],
