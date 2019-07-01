@@ -71,7 +71,6 @@
 		]
 	},
 	"dependencies": {
-		"@material/icon-button": "^3.0.0",
 		"@material/textfield": "^2.3.1"
 	}
 }
