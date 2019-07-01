@@ -3,6 +3,7 @@
 	export let href = null;
 	export let style = '';
 	export let color = 'var(--icon-buttons)';
+	export let newTab = false;
 
 	let cs;
 	$: cs = `color: ${color}; ${style};`;
@@ -20,7 +21,7 @@
 </style>
 
 {#if href}
-	<a {href}>
+	<a {href} target={newTab ? '_blank' : undefined}>
 		<i class="material-icons" style={cs}>{name}</i>
 	</a>
 {:else}

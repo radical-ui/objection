@@ -25,12 +25,13 @@ If the `icon` is a string, or an object of type [`IconObject`](#IconObject), Ico
 
 ## IconObject
 
-| Name    | Type     | Default               | Description                                                               |
-| :------ | :------- | :-------------------- | :------------------------------------------------------------------------ |
-| `name`  | `string` | `error`               | The name of the icon.                                                     |
-| `style` | `string` | `null`                | Icon style. This will be passed directly to the `style` attr on the icon. |
-| `color` | `string` | `var(--icon-buttons)` | The color of the icon.                                                    |
-| `href`  | `string` | `null`                | Location to go to when icon is clicked.                                   |
+| Name     | Type      | Default               | Description                                                               |
+| :------- | :-------- | :-------------------- | :------------------------------------------------------------------------ |
+| `name`   | `string`  | `error`               | The name of the icon.                                                     |
+| `style`  | `string`  | `null`                | Icon style. This will be passed directly to the `style` attr on the icon. |
+| `color`  | `string`  | `var(--icon-buttons)` | The color of the icon.                                                    |
+| `href`   | `string`  | `null`                | Location to go to when icon is clicked.                                   |
+| `newTab` | `boolean` | `false`               | Open the new location in a new tab. Only valid if `href != null`.         |
 
 ### Example
 
