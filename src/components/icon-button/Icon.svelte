@@ -5,7 +5,7 @@
 	export let color = 'var(--icon-buttons)';
 
 	let cs;
-	$: cs = `color: ${color}; ${style};`
+	$: cs = `color: ${color}; ${style};`;
 </script>
 
 <style>
