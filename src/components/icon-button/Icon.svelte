@@ -1,9 +1,12 @@
 <script>
+	import Link from './Link.svelte';
+
 	export let name = 'error';
 	export let href = null;
 	export let style = '';
 	export let color = 'var(--icon-buttons)';
 	export let newTab = false;
+	export let transition = null; // `scale`, `fade`, `swipe`, or `zoom`
 
 	let cs;
 	$: cs = `color: ${color}; ${style};`;
@@ -13,17 +16,18 @@
 	i {
 		margin: 10px;
 	}
-	a {
-		overflow: auto;
-		position: relative;
-		padding: 100px 0;
-	}
 </style>
 
-{#if href}
-	<a {href} target={newTab ? '_blank' : undefined}>
+<Link {href} {newTab}>
+	{#if transition == `scale`}
 		<i class="material-icons" style={cs}>{name}</i>
-	</a>
-{:else}
-	<i class="material-icons" style={cs}>{name}</i>
-{/if}
+	{:else if transition == `fade`}
+		<i class="material-icons" style={cs}>{name}</i>
+	{:else if transition == `swipe`}
+		<i class="material-icons" style={cs}>{name}</i>
+	{:else if transition == `zoom`}
+		<i class="material-icons" style={cs}>{name}</i>
+	{:else}
+		<i class="material-icons" style={cs}>{name}</i>
+	{/if}
+</Link>

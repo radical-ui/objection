@@ -9,6 +9,7 @@
 	export let activeColor = 'var(--icon-buttons-active)';
 	export let hoverColor = 'var(--icon-buttons-hover)';
 	export let rippleColor = 'var(--icon-buttons-ripple)';
+	export let transition = null;
 
 	let toggle = typeof icon == 'object' && icon[0] != undefined;
 	let detail = typeof icon == 'object' && icon[0] == undefined;
@@ -95,12 +96,12 @@
 			{#if simple}
 				<Icon name={icon} />
 			{:else if detail}
-				<Icon {...getIconDetail(icon)} />
+				<Icon {...getIconDetail(icon)} {transition} />
 			{:else if toggle}
 				{#if on}
-					<Icon {...getIconDetail(icon[0])} />
+					<Icon {...getIconDetail(icon[0])} {transition} />
 				{:else}
-					<Icon {...getIconDetail(icon[1])} />
+					<Icon {...getIconDetail(icon[1])} {transition} />
 				{/if}
 			{/if}
 

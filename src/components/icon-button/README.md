@@ -14,14 +14,15 @@ A Material Design style icon button.
 
 If the `icon` is a string, or an object of type [`IconObject`](#IconObject), IconButton will display that icon; however, if icon is an array of objects of type [`IconObject`](#IconObject), IconButton will become a toggle button, and display `icon[0]` for on, and `icon[1]` for off.
 
-| Name          | Type                                      | Default                      | Description                                                                                        |
-| :------------ | :---------------------------------------- | :--------------------------- | :------------------------------------------------------------------------------------------------- |
-| `icon`        | `string | IconObject | Array<IconObject>` | `error`                      | Specifies if the button should hav a ripple effect on click.                                       |
-| `disabled`    | `boolean`                                 | `false`                      | This prop, as can be guessed, disables the button.                                                 |
-| `on`          | `boolean`                                 | `false`                      | Will be true if the toggle is on. Only valid if `icon` is an array of [`IconObjects`](#IconObject) |
-| `activeColor` | `string`                                  | `var(--icon-buttons-active)` | This is the color of the IconButton background after it has been clicked.                          |
-| `hoverColor`  | `string`                                  | `var(--icon-buttons-hover)`  | The color of the IconButton background on hover.                                                   |
-| `rippleColor` | `string`                                  | `var(--icon-buttons-ripple)` | The color of the ripple that occurs on click.                                                      |
+| Name          | Type                                      | Default                      | Description                                                                                                                            |
+| :------------ | :---------------------------------------- | :--------------------------- | :------------------------------------------------------------------------------------------------------------------------------------- |
+| `icon`        | `string | IconObject | Array<IconObject>` | `error`                      | Specifies if the button should hav a ripple effect on click.                                                                           |
+| `disabled`    | `boolean`                                 | `false`                      | This prop, as can be guessed, disables the button.                                                                                     |
+| `on`          | `boolean`                                 | `false`                      | Will be true if the toggle is on. Only valid if `icon` is an array of [`IconObjects`](#IconObject)                                     |
+| `activeColor` | `string`                                  | `var(--icon-buttons-active)` | This is the color of the IconButton background after it has been clicked.                                                              |
+| `hoverColor`  | `string`                                  | `var(--icon-buttons-hover)`  | The color of the IconButton background on hover.                                                                                       |
+| `rippleColor` | `string`                                  | `var(--icon-buttons-ripple)` | The color of the ripple that occurs on click.                                                                                          |
+| `transition`  | `string`                                  | `null`                       | The transition to apply when the icon changes. Only valid if `icon` is an Array. Valid values are `scale`, `fade`, `swipe`, or `zoom`. |
 
 ## IconObject
 
