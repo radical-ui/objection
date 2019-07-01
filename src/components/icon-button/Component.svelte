@@ -22,10 +22,16 @@
 	function getIconDetail(icon) {
 		let detailedIcon = {};
 		const values = ['name', 'href', 'style', 'color'];
-		values.forEach(element => {
+		values.forEach((element) => {
 			if (icon[element] != undefined) {
-				if (typeof icon[element] == 'string') detailedIcon[element] = icon[element];
-				else throw new TypeError(`Unexpected type in 'icon': '${element}' IconButton expected a string, but recieved '${typeof icon[element]}'.`);
+				if (typeof icon[element] == 'string')
+					detailedIcon[element] = icon[element];
+				else
+					throw new TypeError(
+						`Unexpected type in 'icon': '${element}' IconButton expected a string, but recieved '${typeof icon[
+							element
+						]}'.`
+					);
 			}
 		});
 		return detailedIcon;
