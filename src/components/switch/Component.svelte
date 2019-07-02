@@ -15,9 +15,8 @@
 	let active = false;
 	let innerClicked = false;
 
-	function handleClick(e) {
+	function handleChange(e) {
 		innerClicked = true;
-		on = !on;
 		active = on && true;
 	}
 	function handleMouseover(e) {
@@ -64,6 +63,9 @@
 			0px 2px 2px 0px rgba(0, 0, 0, 0.14),
 			0px 1px 5px 0px rgba(0, 0, 0, 0.12);
 	}
+	input {
+		display: none;
+	}
 
 	.round {
 		border-radius: 50%;
@@ -72,27 +74,29 @@
 
 <svelte:window on:click={outsideClick} />
 
-<div
-	class="over"
-	on:click={handleClick}
-	on:mouseover={handleMouseover}
-	on:mouseleave={handleMouseleave}>
+<label>
 	<div
-		class="handle round"
-		style="left:{on ? '20px' : '0px'}; background: {active ? activeColor : handleHovering ? (on ? hoverOnColor : hoverColor) : 'none'}"
-		on:mouseover={(_) => (handleHovering = true)}
-		on:mouseleave={(_) => (handleHovering = false)}>
-		<Ripple
-			disabled={!shouldRipple}
-			color={on ? onColorTrack : offColorTrack}
-			spread={100}
-			center={true}>
-			<div
-				class="handle-inner round"
-				style="background: {on ? onColor : offColor}" />
-		</Ripple>
+		class="over"
+		on:mouseover={handleMouseover}
+		on:mouseleave={handleMouseleave}>
+		<div
+			class="handle round"
+			style="left:{on ? '20px' : '0px'}; background: {active ? activeColor : handleHovering ? (on ? hoverOnColor : hoverColor) : 'none'}"
+			on:mouseover={(_) => (handleHovering = true)}
+			on:mouseleave={(_) => (handleHovering = false)}>
+			<Ripple
+				disabled={!shouldRipple}
+				color={on ? onColorTrack : offColorTrack}
+				spread={100}
+				center={true}>
+				<div
+					class="handle-inner round"
+					style="background: {on ? onColor : offColor}" />
+			</Ripple>
+		</div>
+		<div
+			class="background"
+			style="background: {on ? onColorTrack : offColorTrack}" />
+		<input type="checkbox" on:change={handleChange} bind:checked={on}>
 	</div>
-	<div
-		class="background"
-		style="background: {on ? onColorTrack : offColorTrack}" />
-</div>
+</label>
