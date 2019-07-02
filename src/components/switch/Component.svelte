@@ -1,5 +1,6 @@
 <script>
 	import Ripple from '../ripple/Ripple.svelte';
+
 	export let on = false;
 	export let onColor = 'green';
 	export let offColor = '#ddd';

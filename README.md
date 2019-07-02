@@ -54,10 +54,10 @@ We recommend adding these lines to your global stylesheet. These will be the def
 
 ```css
 :root {
-	/* buttons */
-	--buttons: #303ba6;
-	--primary-buttons-text-color: white;
-	--buttons-hover-color: #303ca649;
+    /* buttons */
+    --buttons: #303ba6;
+    --primary-buttons-text-color: white;
+    --buttons-hover-color: #303ca649;
 	--primary-buttons-hover-color: var(--buttons);
 	--buttons-ripple-color: #303ca69d;
 	--primary-buttons-ripple-color: rgba(255, 255, 255, 0.5);
@@ -70,6 +70,15 @@ We recommend adding these lines to your global stylesheet. These will be the def
 	--inputs-placeholder: #696969;
 	--inputs-outline: grey;
 	--inputs-outline-hover: var(--inputs-outline);
+
+	/* switch */
+	--switch-on-color: green;
+	--switch-off-color: #ddd;
+	--switch-on-color-track: rgba(16, 122, 4, 0.5);
+	--switch-off-color-track: #aaa;
+	--switch-active-color: rgba(0, 0, 0, 0.01);
+	--switch-hover-color: rgba(0, 0, 0, 0.07);
+	--switch-hover-on-color: rgba(16, 112, 4, 0.07);
 
 	/* error */
 	--all-errors: #b00020;
