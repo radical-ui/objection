@@ -13,8 +13,8 @@
 
 {#if href}
 	<a {href} target={newTab ? '_blank' : undefined}>
-		<slot></slot>
+		<slot />
 	</a>
 {:else}
-	<slot></slot>
+	<slot />
 {/if}
