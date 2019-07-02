@@ -85,7 +85,12 @@
 <svelte:window on:click={handleOutsideClick} />
 
 <div class="wrapper">
-	<Ripple time={400} spread={100} hideOverflow={false} color={rippleColor}>
+	<Ripple
+		time={400}
+		spread={100}
+		hideOverflow={false}
+		color={rippleColor}
+		center={true}>
 		<button
 			style="background: {active ? activeColor : hovering ? hoverColor : backgroundColor}"
 			on:mouseover={handleMouseover}
