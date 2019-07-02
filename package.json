@@ -1,6 +1,7 @@
 {
 	"name": "svelte-toolbox",
 	"svelte": "src/components/components.module.js",
+	"description": "A UI component library for Svelte implementing Google's Material Design specification",
 	"module": "dist/index.min.mjs",
 	"main": "dist/index.min.js",
 	"version": "0.1.0",
@@ -46,7 +47,14 @@
 		"postversion": "git push && git push --tags && rm -rf build/temp && npm publish --dry-run && npm publish"
 	},
 	"keywords": [
-		"svelte"
+		"svelte",
+		"material",
+		"design",
+		"ui",
+		"kit",
+		"component",
+		"library",
+		"ui component library"
 	],
 	"files": [
 		"src/components",
