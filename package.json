@@ -47,7 +47,14 @@
 		"postversion": "git push && git push --tags && rm -rf build/temp && npm publish --dry-run && npm publish"
 	},
 	"keywords": [
-		"svelte"
+		"svelte",
+		"material",
+		"design",
+		"ui",
+		"kit",
+		"component",
+		"library",
+		"ui component library"
 	],
 	"files": [
 		"src/components",
