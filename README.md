@@ -71,6 +71,12 @@ We recommend adding these lines to your global stylesheet. These will be the def
 	--inputs-outline: grey;
 	--inputs-outline-hover: var(--inputs-outline);
 
+	/* IconButtons */
+	--icon-buttons: var(--buttons);
+	--icon-buttons-hover: rgba(0, 0, 0, 0.07);
+	--icon-buttons-active: rgba(0, 0, 0, 0.1);
+	--icon-buttons-ripple: rgba(0, 0, 0, 0.2);
+
 	/* error */
 	--all-errors: #b00020;
 }
@@ -96,6 +102,7 @@ To get the Material Design Icons to work:
 -   [Ripple](https://github.com/svelte-toolbox/svelte-toolbox/tree/master/src/components/ripple/README.md)
 -   [UIButton](https://github.com/svelte-toolbox/svelte-toolbox/tree/master/src/components/button/README.md)
 -   [UIInput](https://github.com/svelte-toolbox/svelte-toolbox/tree/master/src/components/input/README.md)
+-   [IconButton](https://github.com/svelte-toolbox/svelte-toolbox/tree/master/src/components/icon-button/README.md)
 
 ## Inspiration
 
