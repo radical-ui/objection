@@ -4,8 +4,8 @@
 	export let on = false;
 	export let onColor = 'green';
 	export let offColor = '#ddd';
-	export let offColorTrack = '#aaa';
 	export let onColorTrack = 'rgba(16, 112, 4, 0.5)';
+	export let offColorTrack = '#aaa';
 	export let activeColor = 'rgba(16, 112, 4, 0.1)';
 	export let hoverColor = 'rgba(0, 0, 0, 0.07)';
 	export let hoverOnColor = 'rgba(16, 112, 4, 0.07)';
