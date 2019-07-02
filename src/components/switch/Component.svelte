@@ -16,8 +16,7 @@
 	let innerClicked = false;
 
 	function handleChange(e) {
-		innerClicked = true;
-		active = on && true;
+		active = on;
 	}
 	function handleMouseover(e) {
 		hovering = true;
@@ -77,6 +76,7 @@
 <label>
 	<div
 		class="over"
+		on:click={_ => innerClicked = true}
 		on:mouseover={handleMouseover}
 		on:mouseleave={handleMouseleave}>
 		<div
