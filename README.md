@@ -54,10 +54,10 @@ We recommend adding these lines to your global stylesheet. These will be the def
 
 ```css
 :root {
-    /* buttons */
-    --buttons: #303ba6;
-    --primary-buttons-text-color: white;
-    --buttons-hover-color: #303ca649;
+	/* buttons */
+	--buttons: #303ba6;
+	--primary-buttons-text-color: white;
+	--buttons-hover-color: #303ca649;
 	--primary-buttons-hover-color: var(--buttons);
 	--buttons-ripple-color: #303ca69d;
 	--primary-buttons-ripple-color: rgba(255, 255, 255, 0.5);
