@@ -76,7 +76,7 @@
 <label>
 	<div
 		class="over"
-		on:click={_ => innerClicked = true}
+		on:click={(_) => (innerClicked = true)}
 		on:mouseover={handleMouseover}
 		on:mouseleave={handleMouseleave}>
 		<div
@@ -97,6 +97,6 @@
 		<div
 			class="background"
 			style="background: {on ? onColorTrack : offColorTrack}" />
-		<input type="checkbox" on:change={handleChange} bind:checked={on}>
+		<input type="checkbox" on:change={handleChange} bind:checked={on} />
 	</div>
 </label>
