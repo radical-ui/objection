@@ -1,5 +1,6 @@
 <script>
 	import Ripple from '../ripple/Ripple.svelte';
+	import { createEventDispatcher } from 'svelte';
 
 	export let on = false;
 	export let onColor = 'green';
@@ -16,8 +17,11 @@
 	let active = false;
 	let innerClicked = false;
 
+	const dispatch = createEventDispatcher();
+
 	function handleChange(e) {
 		active = on;
+		dispatch('change', e);
 	}
 	function handleMouseover(e) {
 		hovering = true;

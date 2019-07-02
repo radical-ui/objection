@@ -29,7 +29,9 @@ The switch is {on ? 'on' : 'off'}.
 
 ## Events
 
-_none_
+| Name          | `event.detail` | Description                     |
+| :------------ | :------------- | :------------------------------ |
+| `change` | _none_         | Fires every time the value of `on` changes. |
 
 ## CSS Selectors
 
