@@ -161,4 +161,7 @@
 		icon={{ name: 'launch', color: 'green', href: 'https://svelte.dev', style: 'margin: 5px' }} />
 	<IconButton
 		icon={[{ name: 'favorite', color: 'green' }, { name: 'favorite_border', color: 'black' }]} />
+	<p>Scale</p>
+	<IconButton
+		icon={[{ name: 'favorite', color: 'green' }, { name: 'favorite_border', color: 'black' }]} transition="scale"/>
 </div>
