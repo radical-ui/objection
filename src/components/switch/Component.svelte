@@ -50,7 +50,7 @@
 		border-radius: 7px;
 		margin: 17px 18px;
 	}
-	.handle {
+	.thumb {
 		position: absolute;
 		height: var(--height);
 		width: var(--height);
@@ -58,7 +58,7 @@
 		z-index: 1;
 		overflow: hidden;
 	}
-	.handle-inner {
+	.thumb-inner {
 		--margin: 14px;
 		margin: var(--margin);
 		width: calc(var(--height) - var(--margin) * 2);
@@ -85,7 +85,7 @@
 		on:mouseover={handleMouseover}
 		on:mouseleave={handleMouseleave}>
 		<div
-			class="handle round"
+			class="thumb round"
 			style="left:{on ? '20px' : '0px'}; background: {active ? activeColor : handleHovering ? (on ? hoverOnColor : hoverColor) : 'none'}"
 			on:mouseover={(_) => (handleHovering = true)}
 			on:mouseleave={(_) => (handleHovering = false)}>
@@ -95,7 +95,7 @@
 				spread={100}
 				center={true}>
 				<div
-					class="handle-inner round"
+					class="thumb-inner round"
 					style="background: {on ? onColor : offColor}" />
 			</Ripple>
 		</div>
