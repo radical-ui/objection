@@ -3,6 +3,7 @@
 		Ripple,
 		UIButton,
 		UIInput,
+		Switch,
 	} from './components/components.module.js';
 
 	let value = 'John Smith';
@@ -150,4 +151,7 @@
 		on:leadingiconhover={log}
 		on:trailingiconclick={log}
 		on:trailingiconhover={log} />
+
+	<h1>Switch</h1>
+	<Switch />
 </div>
