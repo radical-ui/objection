@@ -70,7 +70,7 @@
 	}
 </style>
 
-<svelte:window on:click={outsideClick}/>
+<svelte:window on:click={outsideClick} />
 
 <div
 	class="over"
@@ -79,14 +79,20 @@
 	on:mouseleave={handleMouseleave}>
 	<div
 		class="handle round"
-		style="left:{on ? '20px' : '0px'}; background: {active ? activeColor : handleHovering ? on ? hoverOnColor : hoverColor : 'none'}"
+		style="left:{on ? '20px' : '0px'}; background: {active ? activeColor : handleHovering ? (on ? hoverOnColor : hoverColor) : 'none'}"
 		on:mouseover={(_) => (handleHovering = true)}
 		on:mouseleave={(_) => (handleHovering = false)}>
-		<Ripple disabled={!shouldRipple} color={on ? onColorTrack : offColorTrack} spread={100} center={true}>
+		<Ripple
+			disabled={!shouldRipple}
+			color={on ? onColorTrack : offColorTrack}
+			spread={100}
+			center={true}>
 			<div
 				class="handle-inner round"
 				style="background: {on ? onColor : offColor}" />
 		</Ripple>
 	</div>
-	<div class="background" style="background: {on ? onColorTrack : offColorTrack}" />
+	<div
+		class="background"
+		style="background: {on ? onColorTrack : offColorTrack}" />
 </div>
