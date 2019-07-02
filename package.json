@@ -3,7 +3,7 @@
 	"svelte": "src/components/components.module.js",
 	"module": "dist/index.min.mjs",
 	"main": "dist/index.min.js",
-	"version": "0.0.5",
+	"version": "0.1.0",
 	"license": "MIT",
 	"repository": {
 		"type": "git",
