@@ -12,7 +12,7 @@
 </style>
 
 {#if href}
-	<a {href} target={newTab ? '_blank' : undefined}>
+	<a {href} target={newTab ? '_blank' : '_self'}>
 		<slot />
 	</a>
 {:else}
