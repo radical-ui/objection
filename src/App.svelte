@@ -4,6 +4,7 @@
 		UIButton,
 		UIInput,
 		Switch,
+		IconButton,
 	} from './components/components.module.js';
 
 	let value = 'John Smith';
@@ -17,6 +18,7 @@
 <style>
 	.over {
 		font-size: 1rem;
+		padding-bottom: 100px;
 	}
 	span {
 		text-transform: none;
@@ -154,4 +156,14 @@
 
 	<h1>Switch</h1>
 	<Switch />
+
+	<h1>IconButton</h1>
+	<IconButton />
+	<IconButton icon="favorite" />
+	<IconButton icon="play_arrow" />
+	<IconButton
+		icon={{ name: 'launch', color: 'green', href: 'https://svelte.dev', style: 'margin: 5px' }} />
+	<IconButton
+		icon={[{ name: 'favorite', color: 'green' }, { name: 'favorite_border', color: 'black' }]} />
+
 </div>

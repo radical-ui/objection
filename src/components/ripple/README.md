@@ -22,6 +22,7 @@ Causes a ripple animation when the user clicks on it.
 | `hideOverflow` | `boolean` | `true`               | Specifies if the overflow from the ripples should be `hidden` or `visibile`. |
 | `block`        | `boolean` | `false`              | If true, ripple container will have `display: block` on it.                  |
 | `disabled`     | `boolean` | `false`              | This prop, as can be guessed, disables the ripple.                           |
+| `center`       | `boolean` | `false`              | If `true` the ripple will come from the center of the container.             |
 
 # Events
 

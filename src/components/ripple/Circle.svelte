@@ -9,6 +9,9 @@
 	export let time;
 	export let color;
 	export let spread;
+	export let center;
+	export let height;
+	export let width;
 
 	const dispatch = createEventDispatcher();
 
@@ -45,4 +48,4 @@
 
 <div
 	style="background: {color}; opacity: {$opacity}; width: {$size}px; height: {$size}px;
-	top: {y - $size / 2 - top}px; left: {x - $size / 2 - left}px;" />
+	top: {center ? height / 2 - $size / 2 : y - $size / 2 - top}px; left: {center ? width / 2 - $size / 2 : x - $size / 2 - left}px;" />

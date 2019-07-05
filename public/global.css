@@ -1,8 +1,8 @@
 :root {
-    /* buttons */
-    --buttons: #303ba6;
-    --primary-buttons-text-color: white;
-    --buttons-hover-color: #303ca649;
+	/* buttons */
+	--buttons: #303ba6;
+	--primary-buttons-text-color: white;
+	--buttons-hover-color: #303ca649;
 	--primary-buttons-hover-color: var(--buttons);
 	--buttons-ripple-color: #303ca69d;
 	--primary-buttons-ripple-color: rgba(255, 255, 255, 0.5);
@@ -24,6 +24,12 @@
 	--switch-active-color: rgba(0, 0, 0, 0.01);
 	--switch-hover-color: rgba(0, 0, 0, 0.07);
 	--switch-hover-on-color: rgba(16, 112, 4, 0.07);
+
+	/* IconButtons */
+	--icon-buttons: var(--buttons);
+	--icon-buttons-hover: rgba(0, 0, 0, 0.07);
+	--icon-buttons-active: rgba(0, 0, 0, 0.1);
+	--icon-buttons-ripple: rgba(0, 0, 0, 0.2);
 
 	/* error */
 	--all-errors: #b00020;

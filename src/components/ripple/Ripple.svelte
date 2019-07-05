@@ -8,6 +8,7 @@
 	export let hideOverflow = true;
 	export let disabled = false;
 	export let block = false;
+	export let center = false;
 
 	const dispatch = createEventDispatcher();
 
@@ -66,6 +67,9 @@
 			{color}
 			{spread}
 			{time}
+			{center}
+			height={container.offsetHeight}
+			width={container.offsetWidth}
 			on:finished={(_) => {
 				dispatch('rippleEnded');
 				stopRipple(index, id);
