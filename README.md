@@ -2,7 +2,7 @@
 
 A UI component library for Svelte implementing Google's Material Design specification.
 
-Beacuse Svelte Toolbox is early in development, some things may change before we hit `v1.0.0`.
+Beacuse Svelte Toolbox is early in development, some things may change before we hit `v1.0.0` (Please see [Component Status](#component-status)).
 
 ## Contributing
 
@@ -33,6 +33,8 @@ You are welcome to add new features or components, but please open an issue to d
 ```shell
 npm i svelte-toolbox
 ```
+
+Not all of these components are stable. Please see the [Component Status](#component-status) section.
 
 There is detailed documentation about each of the components [below](#documentation), but the basic usage looks like this:
 
@@ -106,7 +108,19 @@ To get the Material Design Icons to work:
     -   `public/` for a Svelte project
     -   `static/` for a Sapper project
 
+### Component Status
+
+| Component                                                                                                       | Status                                                                                                    |
+| :-------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------- |
+| [Ripple](https://github.com/svelte-toolbox/svelte-toolbox/tree/master/src/components/ripple/README.md)          | **Stable**, no breaking changes or new features are expected.                                             |
+| [UIButton](https://github.com/svelte-toolbox/svelte-toolbox/tree/master/src/components/button/README.md)        | **Stable**, in that no breaking chenges are expected, but new features are.                               |
+| [UIInput](https://github.com/svelte-toolbox/svelte-toolbox/tree/master/src/components/input/README.md)          | **Mostly Stable**, there is some improvment under the hood to be done. This _might_ effect the public API. |
+| [IconButton](https://github.com/svelte-toolbox/svelte-toolbox/tree/master/src/components/icon-button/README.md) | **Stable**. Although new features are expected, no breaking changes are.                                  |
+| [Switch](https://github.com/svelte-toolbox/svelte-toolbox/tree/master/src/components/switch/README.md)          | **Unfinished**. This component is still in progress.                                                      |
+
 ### Documentation
+
+Some of these components are still unstable. Please see the [Component Status](#component-status) section.
 
 -   [Ripple](https://github.com/svelte-toolbox/svelte-toolbox/tree/master/src/components/ripple/README.md)
 -   [UIButton](https://github.com/svelte-toolbox/svelte-toolbox/tree/master/src/components/button/README.md)
