@@ -33,6 +33,31 @@ The switch is {on ? 'on' : 'off'}.
 | :------- | :------------- | :------------------------------------------ |
 | `change` | _none_         | Fires every time the value of `on` changes. |
 
-## CSS Selectors
+## Selectors
 
-_none_
+These CSS selectors only refrence the div that wraps the switch.
+
+| State | CSS3 Selector |
+| :---- | :------------ |
+| `on`  | `.switch-on`  |
+| `off` | `.switch-off` |
+
+### Sub-Selectors
+
+Add the following suffix's the the above selectors to style the inner elements.
+
+| Element         | Suffix         |
+| :-------------- | :------------- |
+| thumb container | `.thumb`       |
+| thumb           | `.thumb-inner` |
+| track           | `.track`       |
+| input           | `input`        |
+
+#### Example:
+
+```css
+/* to hide the thumb on a switches that are off */
+.switch-off .thumb-inner {
+	display: none;
+}
+```

@@ -44,7 +44,7 @@
 		position: relative;
 		cursor: pointer;
 	}
-	.background {
+	.track {
 		width: 32px;
 		height: 14px;
 		border-radius: 7px;
@@ -83,7 +83,9 @@
 		class="over"
 		on:click={(_) => (innerClicked = true)}
 		on:mouseover={handleMouseover}
-		on:mouseleave={handleMouseleave}>
+		on:mouseleave={handleMouseleave}
+		class:switch-on={on}
+		class:switch-off={!on}>
 		<div
 			class="thumb round"
 			style="left:{on ? '20px' : '0px'}; background: {active ? activeColor : handleHovering ? (on ? hoverOnColor : hoverColor) : 'none'}"
@@ -100,7 +102,7 @@
 			</Ripple>
 		</div>
 		<div
-			class="background"
+			class="track"
 			style="background: {on ? onColorTrack : offColorTrack}" />
 		<input type="checkbox" on:change={handleChange} bind:checked={on} />
 	</div>
