@@ -110,13 +110,13 @@ To get the Material Design Icons to work:
 
 ### Component Status
 
-| Component                                                                                                       | Status                                                                                                    |
-| :-------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------- |
-| [Ripple](https://github.com/svelte-toolbox/svelte-toolbox/tree/master/src/components/ripple/README.md)          | **Stable**, no breaking changes or new features are expected.                                             |
-| [UIButton](https://github.com/svelte-toolbox/svelte-toolbox/tree/master/src/components/button/README.md)        | **Stable**, in that no breaking chenges are expected, but new features are.                               |
+| Component                                                                                                       | Status                                                                                                     |
+| :-------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------- |
+| [Ripple](https://github.com/svelte-toolbox/svelte-toolbox/tree/master/src/components/ripple/README.md)          | **Stable**, no breaking changes or new features are expected.                                              |
+| [UIButton](https://github.com/svelte-toolbox/svelte-toolbox/tree/master/src/components/button/README.md)        | **Stable**, in that no breaking chenges are expected, but new features are.                                |
 | [UIInput](https://github.com/svelte-toolbox/svelte-toolbox/tree/master/src/components/input/README.md)          | **Mostly Stable**, there is some improvment under the hood to be done. This _might_ effect the public API. |
-| [IconButton](https://github.com/svelte-toolbox/svelte-toolbox/tree/master/src/components/icon-button/README.md) | **Stable**. Although new features are expected, no breaking changes are.                                  |
-| [Switch](https://github.com/svelte-toolbox/svelte-toolbox/tree/master/src/components/switch/README.md)          | **Unfinished**. This component is still in progress.                                                      |
+| [IconButton](https://github.com/svelte-toolbox/svelte-toolbox/tree/master/src/components/icon-button/README.md) | **Stable**. Although new features are expected, no breaking changes are.                                   |
+| [Switch](https://github.com/svelte-toolbox/svelte-toolbox/tree/master/src/components/switch/README.md)          | **Unfinished**. This component is still in progress.                                                       |
 
 ### Documentation
 
