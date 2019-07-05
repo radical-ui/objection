@@ -21,7 +21,7 @@
 	--switch-off-color: #ddd;
 	--switch-on-color-track: rgba(16, 122, 4, 0.5);
 	--switch-off-color-track: #aaa;
-	--switch-active-color: rgba(0, 0, 0, 0.01);
+	--switch-active-color: rgba(16, 122, 4, 0.2);
 	--switch-hover-color: rgba(0, 0, 0, 0.07);
 	--switch-hover-on-color: rgba(16, 112, 4, 0.07);
 

@@ -3,13 +3,13 @@
 	import { createEventDispatcher } from 'svelte';
 
 	export let on = false;
-	export let onColor = 'green';
-	export let offColor = '#ddd';
-	export let onColorTrack = 'rgba(16, 112, 4, 0.5)';
-	export let offColorTrack = '#aaa';
-	export let activeColor = 'rgba(16, 112, 4, 0.1)';
-	export let hoverColor = 'rgba(0, 0, 0, 0.07)';
-	export let hoverOnColor = 'rgba(16, 112, 4, 0.07)';
+	export let onColor = 'var(--switch-on-color)';
+	export let offColor = 'var(--switch-off-color)';
+	export let onColorTrack = 'var(--switch-on-color-track)';
+	export let offColorTrack = 'var(--switch-off-color-track)';
+	export let activeColor = 'var(--switch-active-color)';
+	export let hoverColor = 'var(--switch-hover-color)';
+	export let hoverOnColor = 'var(--switch-hover-on-color)';
 	export let shouldRipple = true;
 
 	let hovering = false;
@@ -95,6 +95,7 @@
 				disabled={!shouldRipple}
 				color={on ? onColorTrack : offColorTrack}
 				spread={100}
+				time={200}
 				center={true}>
 				<div
 					class="thumb-inner round"
