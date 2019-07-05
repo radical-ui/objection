@@ -99,33 +99,33 @@ We recommend adding these lines to your global stylesheet. These will be the def
 
 ### Icons
 
-Svelte Toolbox expects to find a [`icons.woff2`](https://github.com/svelte-toolbox/svelte-toolbox/blob/master/public/icons.woff2) in the same directory as the hosting file (usually `index.html`).
+Svelte Toolbox expects to find a [`icons.woff2`](public/icons.woff2) in the same directory as the hosting file (usually `index.html`).
 
 To get the Material Design Icons to work:
 
--   Download [`icons.woff2`](https://github.com/svelte-toolbox/svelte-toolbox/blob/master/public/icons.woff2)
+-   Download [`icons.woff2`](public/icons.woff2)
 -   For most projects place the downloaded file is the same directory as your hosting file, which would be:
     -   `public/` for a Svelte project
     -   `static/` for a Sapper project
 
 ### Component Status
 
-| Component                                                                                                       | Status                                                                                                     |
-| :-------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------- |
-| [Ripple](https://github.com/svelte-toolbox/svelte-toolbox/tree/master/src/components/ripple/README.md)          | **Stable**, no breaking changes or new features are expected.                                              |
-| [UIButton](https://github.com/svelte-toolbox/svelte-toolbox/tree/master/src/components/button/README.md)        | **Stable**, in that no breaking chenges are expected, but new features are.                                |
-| [UIInput](https://github.com/svelte-toolbox/svelte-toolbox/tree/master/src/components/input/README.md)          | **Mostly Stable**, there is some improvment under the hood to be done. This _might_ effect the public API. |
-| [IconButton](https://github.com/svelte-toolbox/svelte-toolbox/tree/master/src/components/icon-button/README.md) | **Stable**. Although new features are expected, no breaking changes are.                                   |
-| [Switch](https://github.com/svelte-toolbox/svelte-toolbox/tree/master/src/components/switch/README.md)          | **Unfinished**. This component is still in progress.                                                       |
+| Component                                          | Status                                                                                                     |
+| :------------------------------------------------- | :--------------------------------------------------------------------------------------------------------- |
+| [Ripple](src/components/ripple/README.md)          | **Stable**, no breaking changes or new features are expected.                                              |
+| [UIButton](src/components/button/README.md)        | **Stable**, in that no breaking chenges are expected, but new features are.                                |
+| [UIInput](src/components/input/README.md)          | **Mostly Stable**, there is some improvment under the hood to be done. This _might_ effect the public API. |
+| [IconButton](src/components/icon-button/README.md) | **Stable**. Although new features are expected, no breaking changes are.                                   |
+| [Switch](src/components/switch/README.md)          | **Unfinished**. This component is still in progress.                                                       |
 
 ### Documentation
 
 Some of these components are still unstable. Please see the [Component Status](#component-status) section.
 
--   [Ripple](https://github.com/svelte-toolbox/svelte-toolbox/tree/master/src/components/ripple/README.md)
--   [UIButton](https://github.com/svelte-toolbox/svelte-toolbox/tree/master/src/components/button/README.md)
--   [UIInput](https://github.com/svelte-toolbox/svelte-toolbox/tree/master/src/components/input/README.md)
--   [IconButton](https://github.com/svelte-toolbox/svelte-toolbox/tree/master/src/components/icon-button/README.md)
+-   [Ripple](src/components/ripple/README.md)
+-   [UIButton](src/components/button/README.md)
+-   [UIInput](src/components/input/README.md)
+-   [IconButton](src/components/icon-button/README.md)
 
 ## Inspiration
 
@@ -135,4 +135,4 @@ I am a big fan of the Google Material Design patterns, and because I really like
 
 ## License
 
-[MIT](https://github.com/svelte-toolbox/svelte-toolbox/blob/master/LICENSE)
+[MIT](LICENSE)
