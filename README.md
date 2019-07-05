@@ -104,7 +104,7 @@ Svelte Toolbox expects to find a [`icons.woff2`](public/icons.woff2) in the same
 To get the Material Design Icons to work:
 
 -   Download [`icons.woff2`](public/icons.woff2)
--   For most projects place the downloaded file is the same directory as your hosting file, which would be:
+-   For most projects place the downloaded file in the same directory as your hosting file, which would be:
     -   `public/` for a Svelte project
     -   `static/` for a Sapper project
 
@@ -126,6 +126,7 @@ Some of these components are still unstable. Please see the [Component Status](#
 -   [UIButton](src/components/button/README.md)
 -   [UIInput](src/components/input/README.md)
 -   [IconButton](src/components/icon-button/README.md)
+-	[Switch](src/components/switch/README.md)
 
 ## Inspiration
 
