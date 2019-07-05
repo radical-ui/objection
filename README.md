@@ -71,6 +71,15 @@ We recommend adding these lines to your global stylesheet. These will be the def
 	--inputs-outline: grey;
 	--inputs-outline-hover: var(--inputs-outline);
 
+	/* switch */
+	--switch-on-color: green;
+	--switch-off-color: #ddd;
+	--switch-on-color-track: rgba(16, 122, 4, 0.5);
+	--switch-off-color-track: #aaa;
+	--switch-active-color: rgba(0, 0, 0, 0.01);
+	--switch-hover-color: rgba(0, 0, 0, 0.07);
+	--switch-hover-on-color: rgba(16, 112, 4, 0.07);
+
 	/* IconButtons */
 	--icon-buttons: var(--buttons);
 	--icon-buttons-hover: rgba(0, 0, 0, 0.07);
