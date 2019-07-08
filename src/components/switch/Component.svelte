@@ -3,14 +3,16 @@
 	import { createEventDispatcher } from 'svelte';
 
 	export let on = false;
-	export let onColor = 'green';
-	export let offColor = '#ddd';
-	export let onColorTrack = 'rgba(16, 112, 4, 0.5)';
-	export let offColorTrack = '#aaa';
-	export let activeColor = 'rgba(16, 112, 4, 0.1)';
-	export let hoverColor = 'rgba(0, 0, 0, 0.07)';
-	export let hoverOnColor = 'rgba(16, 112, 4, 0.07)';
+	export let onColor = 'var(--switch-on-color)';
+	export let offColor = 'var(--switch-off-color)';
+	export let onColorTrack = 'var(--switch-on-color-track)';
+	export let offColorTrack = 'var(--switch-off-color-track)';
+	export let activeColor = 'var(--switch-active-color)';
+	export let activeOnColor = 'var(--switch-on-active-color)';
+	export let hoverColor = 'var(--switch-hover-color)';
+	export let hoverOnColor = 'var(--switch-hover-on-color)';
 	export let shouldRipple = true;
+	export let disabled = false;
 
 	let hovering = false;
 	let handleHovering = false;
@@ -20,7 +22,7 @@
 	const dispatch = createEventDispatcher();
 
 	function handleChange(e) {
-		active = on;
+		active = true;
 		dispatch('change', e);
 	}
 	function handleMouseover(e) {
@@ -74,6 +76,18 @@
 	.round {
 		border-radius: 50%;
 	}
+	.switch-disabled {
+		opacity: 0.6;
+		cursor: not-allowed;
+	}
+	.cover {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		z-index: 2;
+	}
 </style>
 
 <svelte:window on:click={outsideClick} />
@@ -85,16 +99,18 @@
 		on:mouseover={handleMouseover}
 		on:mouseleave={handleMouseleave}
 		class:switch-on={on}
-		class:switch-off={!on}>
+		class:switch-off={!on}
+		class:switch-disabled={disabled}>
 		<div
 			class="thumb round"
-			style="left:{on ? '20px' : '0px'}; background: {active ? activeColor : handleHovering ? (on ? hoverOnColor : hoverColor) : 'none'}"
+			style="left:{on ? '20px' : '0px'}; background: {active ? (on ? activeOnColor : activeColor) : handleHovering ? (on ? hoverOnColor : hoverColor) : 'none'}"
 			on:mouseover={(_) => (handleHovering = true)}
 			on:mouseleave={(_) => (handleHovering = false)}>
 			<Ripple
 				disabled={!shouldRipple}
 				color={on ? onColorTrack : offColorTrack}
 				spread={100}
+				time={200}
 				center={true}>
 				<div
 					class="thumb-inner round"
@@ -104,6 +120,13 @@
 		<div
 			class="track"
 			style="background: {on ? onColorTrack : offColorTrack}" />
-		<input type="checkbox" on:change={handleChange} bind:checked={on} />
+		<input
+			type="checkbox"
+			{disabled}
+			on:change={handleChange}
+			bind:checked={on} />
+		{#if disabled}
+			<div class="cover" />
+		{/if}
 	</div>
 </label>

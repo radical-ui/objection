@@ -156,6 +156,7 @@
 
 	<h1>Switch</h1>
 	<Switch />
+	<Switch disabled={true} />
 
 	<h1>IconButton</h1>
 	<IconButton />
