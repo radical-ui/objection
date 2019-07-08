@@ -61,7 +61,8 @@
 		"src/styles/internal/wrapped-styles.js",
 		"src/store.js",
 		"dist/index.min.mjs",
-		"dist/index.min.js"
+		"dist/index.min.js",
+		"public/bundle.css"
 	],
 	"husky": {
 		"hooks": {
