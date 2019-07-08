@@ -1,6 +1,6 @@
 # Switch
 
-An easy and user friendly expansion of `<input type="checkbox">`. [Demo]()
+An easy and user friendly expansion of `<input type="checkbox">`.
 
 ```html
 <script>
@@ -12,6 +12,8 @@ An easy and user friendly expansion of `<input type="checkbox">`. [Demo]()
 
 The switch is {on ? 'on' : 'off'}.
 ```
+
+Switch creates an `inline-block` element `48px` in height by `68px` in width.
 
 ## Props
 
