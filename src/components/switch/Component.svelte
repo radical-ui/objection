@@ -38,8 +38,13 @@
 </script>
 
 <style>
-	.over {
+	label {
 		--height: 48px;
+		display: inline-block;
+		width: 68px;
+		height: var(--height);
+	}
+	.over {
 		display: inline-block;
 		width: 68px;
 		height: var(--height);
