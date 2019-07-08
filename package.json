@@ -62,7 +62,8 @@
 		"src/store.js",
 		"dist/index.min.mjs",
 		"dist/index.min.js",
-		"public/bundle.css"
+		"public/bundle.css",
+		"public/global.css"
 	],
 	"husky": {
 		"hooks": {
