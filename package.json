@@ -32,7 +32,7 @@
 		"write": "^1.0.3"
 	},
 	"scripts": {
-		"build": "rollup -c",
+		"build": "npm run compile:scss && npm run wrap:css && rollup -c",
 		"autobuild": "rollup -c -w",
 		"dev": "run-p start:dev autobuild compile:scss:watch wrap:css:watch",
 		"start": "sirv public",
@@ -61,7 +61,9 @@
 		"src/styles/internal/wrapped-styles.js",
 		"src/store.js",
 		"dist/index.min.mjs",
-		"dist/index.min.js"
+		"dist/index.min.js",
+		"public/bundle.css",
+		"public/global.css"
 	],
 	"husky": {
 		"hooks": {
