@@ -116,7 +116,7 @@ To get the Material Design Icons to work:
 | [UIButton](src/components/button/README.md)        | **Stable**, in that no breaking chenges are expected, but new features are.                                |
 | [UIInput](src/components/input/README.md)          | **Mostly Stable**, there is some improvment under the hood to be done. This _might_ effect the public API. |
 | [IconButton](src/components/icon-button/README.md) | **Stable**. Although new features are expected, no breaking changes are.                                   |
-| [Switch](src/components/switch/README.md)          | **Unfinished**. This component is still in progress.                                                       |
+| [Switch](src/components/switch/README.md)          | **Unstable**. This component has not been tested enough. Improvments are likley to break the public API.   |
 
 ### Documentation
 
