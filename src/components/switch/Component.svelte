@@ -8,6 +8,7 @@
 	export let onColorTrack = 'var(--switch-on-color-track)';
 	export let offColorTrack = 'var(--switch-off-color-track)';
 	export let activeColor = 'var(--switch-active-color)';
+	export let activeOnColor = 'var(--switch-on-active-color)';
 	export let hoverColor = 'var(--switch-hover-color)';
 	export let hoverOnColor = 'var(--switch-hover-on-color)';
 	export let shouldRipple = true;
@@ -20,7 +21,7 @@
 	const dispatch = createEventDispatcher();
 
 	function handleChange(e) {
-		active = on;
+		active = true;
 		dispatch('change', e);
 	}
 	function handleMouseover(e) {
@@ -88,7 +89,7 @@
 		class:switch-off={!on}>
 		<div
 			class="thumb round"
-			style="left:{on ? '20px' : '0px'}; background: {active ? activeColor : handleHovering ? (on ? hoverOnColor : hoverColor) : 'none'}"
+			style="left:{on ? '20px' : '0px'}; background: {active ? (on ? activeOnColor : activeColor ): handleHovering ? (on ? hoverOnColor : hoverColor) : 'none'}"
 			on:mouseover={(_) => (handleHovering = true)}
 			on:mouseleave={(_) => (handleHovering = false)}>
 			<Ripple
