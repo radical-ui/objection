@@ -12,6 +12,7 @@
 	export let hoverColor = 'var(--switch-hover-color)';
 	export let hoverOnColor = 'var(--switch-hover-on-color)';
 	export let shouldRipple = true;
+	export let disabled = false;
 
 	let hovering = false;
 	let handleHovering = false;
@@ -75,6 +76,18 @@
 	.round {
 		border-radius: 50%;
 	}
+	.switch-disabled {
+		opacity: 0.6;
+		cursor: not-allowed;
+	}
+	.cover {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		z-index: 2;
+	}
 </style>
 
 <svelte:window on:click={outsideClick} />
@@ -86,10 +99,11 @@
 		on:mouseover={handleMouseover}
 		on:mouseleave={handleMouseleave}
 		class:switch-on={on}
-		class:switch-off={!on}>
+		class:switch-off={!on}
+		class:switch-disabled={disabled}>
 		<div
 			class="thumb round"
-			style="left:{on ? '20px' : '0px'}; background: {active ? (on ? activeOnColor : activeColor ): handleHovering ? (on ? hoverOnColor : hoverColor) : 'none'}"
+			style="left:{on ? '20px' : '0px'}; background: {active ? (on ? activeOnColor : activeColor) : handleHovering ? (on ? hoverOnColor : hoverColor) : 'none'}"
 			on:mouseover={(_) => (handleHovering = true)}
 			on:mouseleave={(_) => (handleHovering = false)}>
 			<Ripple
@@ -106,6 +120,13 @@
 		<div
 			class="track"
 			style="background: {on ? onColorTrack : offColorTrack}" />
-		<input type="checkbox" on:change={handleChange} bind:checked={on} />
+		<input
+			type="checkbox"
+			{disabled}
+			on:change={handleChange}
+			bind:checked={on} />
+		{#if disabled}
+			<div class="cover" />
+		{/if}
 	</div>
 </label>
