@@ -1,4 +1,9 @@
+/* Roberto font */
+@import url('https://fonts.googleapis.com/css?family=Roboto:100,100i,300,300i,400,400i,500,500i,700,700i,900,900i&display=swap&subset=cyrillic,cyrillic-ext,greek,greek-ext,latin-ext,vietnamese');
+
 :root {
+	font-family: 'Roboto', sans-serif;
+
 	/* buttons */
 	--buttons: #303ba6;
 	--primary-buttons-text-color: white;
@@ -16,6 +21,16 @@
 	--inputs-outline: grey;
 	--inputs-outline-hover: var(--inputs-outline);
 
+	/* switch */
+	--switch-on-color: green;
+	--switch-off-color: #ddd;
+	--switch-on-color-track: rgba(16, 122, 4, 0.5);
+	--switch-off-color-track: #aaa;
+	--switch-active-color: rgba(187, 187, 187, 0.253);
+	--switch-on-active-color: rgba(16, 122, 4, 0.2);
+	--switch-hover-color: rgba(0, 0, 0, 0.07);
+	--switch-hover-on-color: rgba(16, 112, 4, 0.07);
+
 	/* IconButtons */
 	--icon-buttons: var(--buttons);
 	--icon-buttons-hover: rgba(0, 0, 0, 0.07);
@@ -28,4 +43,30 @@
 .button-disabled {
 	opacity: 0.4;
 	cursor: not-allowed;
+}
+
+/* icons */
+@font-face {
+	font-family: 'Material Icons';
+	font-style: normal;
+	font-weight: 400;
+	src: url(https://fonts.gstatic.com/s/materialicons/v47/flUhRq6tzZclQEJ-Vdg-IuiaDsNcIhQ8tQ.woff2)
+		format('woff2');
+}
+
+.material-icons {
+	font-family: 'Material Icons';
+	font-weight: normal;
+	font-style: normal;
+	font-size: 24px;
+	line-height: 1;
+	letter-spacing: normal;
+	text-transform: none;
+	display: inline-block;
+	white-space: nowrap;
+	word-wrap: normal;
+	direction: ltr;
+	-webkit-font-feature-settings: 'liga';
+	font-feature-settings: 'liga';
+	-webkit-font-smoothing: antialiased;
 }

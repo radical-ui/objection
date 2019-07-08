@@ -3,6 +3,7 @@
 		Ripple,
 		UIButton,
 		UIInput,
+		Switch,
 		IconButton,
 	} from './components/components.module.js';
 
@@ -153,6 +154,10 @@
 		on:trailingiconclick={log}
 		on:trailingiconhover={log} />
 
+	<h1>Switch</h1>
+	<Switch />
+	<Switch disabled={true} />
+
 	<h1>IconButton</h1>
 	<IconButton />
 	<IconButton icon="favorite" />
@@ -161,4 +166,5 @@
 		icon={{ name: 'launch', color: 'green', href: 'https://svelte.dev', style: 'margin: 5px' }} />
 	<IconButton
 		icon={[{ name: 'favorite', color: 'green' }, { name: 'favorite_border', color: 'black' }]} />
+
 </div>
