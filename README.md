@@ -52,61 +52,18 @@ There is detailed documentation about each of the components [below](#documentat
 
 ### Global Styles
 
-We recommend adding these lines to your global stylesheet. These will be the default styles for the components you import from `svelte-toolbox`.
+We recommend adding the contents of [`public/global.css`](public/global.css) to your global stylesheet. These will be the default styles for the components you import from `svelte-toolbox`.
 
-```css
-:root {
-	/* buttons */
-	--buttons: #303ba6;
-	--primary-buttons-text-color: white;
-	--buttons-hover-color: #303ca649;
-	--primary-buttons-hover-color: var(--buttons);
-	--buttons-ripple-color: #303ca69d;
-	--primary-buttons-ripple-color: rgba(255, 255, 255, 0.5);
+P.S. If you like the styles in [`public/global.css`](public/global.css), and don't want to change them, you could just link to it:
 
-	/* inputs */
-	--inputs: var(--buttons);
-	--inputs-background: #ecebeb;
-	--inputs-background-hover: #ebebeb;
-	--inputs-background-focus: #e7e4e4;
-	--inputs-placeholder: #696969;
-	--inputs-outline: grey;
-	--inputs-outline-hover: var(--inputs-outline);
-
-	/* switch */
-	--switch-on-color: green;
-	--switch-off-color: #ddd;
-	--switch-on-color-track: rgba(16, 122, 4, 0.5);
-	--switch-off-color-track: #aaa;
-	--switch-active-color: rgba(0, 0, 0, 0.01);
-	--switch-hover-color: rgba(0, 0, 0, 0.07);
-	--switch-hover-on-color: rgba(16, 112, 4, 0.07);
-
-	/* IconButtons */
-	--icon-buttons: var(--buttons);
-	--icon-buttons-hover: rgba(0, 0, 0, 0.07);
-	--icon-buttons-active: rgba(0, 0, 0, 0.1);
-	--icon-buttons-ripple: rgba(0, 0, 0, 0.2);
-
-	/* error */
-	--all-errors: #b00020;
-}
-.button-disabled {
-	opacity: 0.4;
-	cursor: not-allowed;
-}
+```html
+<link
+	href="https://unpkg.com/svelte-toolbox/public/global.css"
+	rel="stylesheet"
+/>
+<!-- or, depending on your setup, you might even be able to do this  -->
+<link href="node_modules/svelte-toolbox/public/global.css" rel="stylesheet" />
 ```
-
-### Icons
-
-Svelte Toolbox expects to find a [`icons.woff2`](public/icons.woff2) in the same directory as the hosting file (usually `index.html`).
-
-To get the Material Design Icons to work:
-
--   Download [`icons.woff2`](public/icons.woff2)
--   For most projects place the downloaded file in the same directory as your hosting file, which would be:
-    -   `public/` for a Svelte project
-    -   `static/` for a Sapper project
 
 ### Component Status
 
