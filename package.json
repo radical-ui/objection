@@ -32,8 +32,9 @@
 		"write": "^1.0.3"
 	},
 	"scripts": {
-		"build": "compile:scss wrap:css rollup -c",
+		"build": "run-p compile:scss wrap:css build:raw",
 		"autobuild": "rollup -c -w",
+		"build:raw": "rollup -c",
 		"dev": "run-p start:dev autobuild compile:scss:watch wrap:css:watch",
 		"start": "sirv public",
 		"start:dev": "sirv public --dev",
