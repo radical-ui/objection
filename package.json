@@ -37,7 +37,7 @@
 		"dev": "run-p start:dev autobuild compile:scss:watch wrap:css:watch",
 		"start": "sirv public",
 		"start:dev": "sirv public --dev",
-		"prepublishOnly": "npm run wrap:css && npm run build",
+		"prepublishOnly": "run-p build",
 		"lint": "eslint . && prettier --write \"./**\"",
 		"lint:test": "eslint . && prettier --check \"./**\"",
 		"compile:scss:watch": "sass --watch ./src/styles/mdc.scss ./src/styles/internal/mdc.css --load-path=\"node_modules\"",
