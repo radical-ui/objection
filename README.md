@@ -131,7 +131,7 @@ Some of these components are still unstable. Please see the [Component Status](#
 ## Credits
 
 -   [@YogliB](https://github.com/YogliB) for providing the [svelte-component-template](https://github.com/YogliB/svelte-component-template) used for this project
--   [@TehShrike](https://github.com/TehShrike) for his help and advice.
+-   [@TehShrike](https://github.com/TehShrike) for his help and advice
 
 ## Inspiration
 
