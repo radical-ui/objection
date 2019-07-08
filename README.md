@@ -126,7 +126,7 @@ Some of these components are still unstable. Please see the [Component Status](#
 -   [UIButton](src/components/button/README.md)
 -   [UIInput](src/components/input/README.md)
 -   [IconButton](src/components/icon-button/README.md)
--	[Switch](src/components/switch/README.md)
+-   [Switch](src/components/switch/README.md)
 
 ## Inspiration
 
