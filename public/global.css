@@ -43,10 +43,6 @@
 	/* error */
 	--all-errors: #b00020;
 }
-.button-disabled {
-	opacity: 0.4;
-	cursor: not-allowed;
-}
 
 /* icons */
 @font-face {

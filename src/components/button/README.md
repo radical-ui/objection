@@ -35,3 +35,12 @@ A Material Design style button.
 | :------ | :------------- | :------------------------------------------ |
 | `click` | _`MouseEvent`_ | Fires when the user clicks the button.      |
 | `hover` | _`MouseEvent`_ | Fires when the user hovers over the button. |
+
+# CSS Selectors
+
+| State      | Selector                        |
+| :--------- | :------------------------------ |
+| all states | `.s-toolbox-ui-button`          |
+| disabled   | `.s-toolbox-ui-button-disabled` |
+| hovering   | `.s-toolbox-ui-button-hovering` |
+| other      | `.s-toolbox-ui-button-else`     |
