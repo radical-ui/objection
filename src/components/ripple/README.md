@@ -32,4 +32,4 @@ Causes a ripple animation when the user clicks on it.
 
 # CSS Selector
 
-The ripple can be styled globally with the `.ripple` CSS selector.
+The ripple can be styled globally with the `.s-toolbox-ripple` CSS selector.
