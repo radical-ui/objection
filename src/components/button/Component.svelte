@@ -47,15 +47,19 @@
 		border-radius: 3px;
 		overflow: hidden;
 	}
-	button:not(.button-disabled) {
+	button:not(.s-toolbox-ui-button-disabled) {
 		cursor: pointer;
 	}
 
-	.uppercase {
+	.s-toolbox-uppercase {
 		text-transform: uppercase;
 	}
+	.s-toolbox-ui-button-disabled {
+		opacity: 0.4;
+		cursor: not-allowed;
+	}
 
-	.raised {
+	.s-toolbox-raised {
 		box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14),
 			0 3px 1px -2px rgba(0, 0, 0, 0.2), 0 1px 5px 0 rgba(0, 0, 0, 0.12);
 	}
@@ -66,15 +70,19 @@
 
 <AWrapper {href} {disabled}>
 	<button
+		class="s-toolbox-ui-button"
 		on:click={click}
 		on:mouseover={(e) => {
 			hovering = true;
 			hover();
 		}}
 		on:mouseout={(e) => (hovering = false)}
-		class:raised
-		class:block
-		class:uppercase
+		class:s-toolbox-raised={raised}
+		class:s-toolbox-block={block}
+		class:s-toolbox-uppercase={uppercase}
+		class:s-toolbox-ui-button-disabled={disabled}
+		class:s-toolbox-ui-button-hovering={hovering}
+		class:s-toolbox-ui-button-else={!disabled && !hovering}
 		class:button-disabled={disabled}
 		{disabled}
 		style="{primary ? `background: ${hovering ? primaryHoverColor : color}; color: ${textColor}` : `color: ${color}; background: ${hovering ? hoverColor : 'rgba(0, 0, 0, 0)'}`};

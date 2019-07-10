@@ -4,6 +4,9 @@
 :root {
 	font-family: 'Roboto', sans-serif;
 
+    /* ripple */
+    --ripple-color: rgba(0, 0, 0, 0.3);
+
 	/* buttons */
 	--buttons: #303ba6;
 	--primary-buttons-text-color: white;
@@ -39,10 +42,6 @@
 
 	/* error */
 	--all-errors: #b00020;
-}
-.button-disabled {
-	opacity: 0.4;
-	cursor: not-allowed;
 }
 
 /* icons */

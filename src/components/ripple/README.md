@@ -29,3 +29,7 @@ Causes a ripple animation when the user clicks on it.
 | Name          | `event.detail` | Description                     |
 | :------------ | :------------- | :------------------------------ |
 | `rippleEnded` | _none_         | Fires every time a ripple ends. |
+
+# CSS Selector
+
+The ripple can be styled globally with the `.s-toolbox-ripple` CSS selector.
