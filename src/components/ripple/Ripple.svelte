@@ -2,7 +2,7 @@
 	import Circle from './Circle.svelte';
 	import { createEventDispatcher } from 'svelte';
 
-	export let color = 'rgba(0, 0, 0, 0.3)';
+	export let color = 'var(--ripple-color)';
 	export let spread = 300;
 	export let time = 300;
 	export let hideOverflow = true;

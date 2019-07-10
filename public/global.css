@@ -4,6 +4,9 @@
 :root {
 	font-family: 'Roboto', sans-serif;
 
+    /* ripple */
+    --ripple-color: rgba(0, 0, 0, 0.3);
+
 	/* buttons */
 	--buttons: #303ba6;
 	--primary-buttons-text-color: white;
