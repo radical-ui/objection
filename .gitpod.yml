@@ -1,5 +1,5 @@
 ports:
-- port: 5000
-  onOpen: open-browser
+    - port: 5000
+      onOpen: open-browser
 tasks:
-- command: npm ci && npm run dev
+    - command: npm ci && npm run dev
