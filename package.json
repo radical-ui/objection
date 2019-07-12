@@ -44,7 +44,7 @@
 		"compile:scss": "sass ./src/styles/mdc.scss ./src/styles/internal/mdc.css --load-path=\"node_modules\"",
 		"wrap:css": "node ./src/styles/internal/wrap-css.js",
 		"wrap:css:watch": "node ./src/styles/internal/wrap-css-watch.js",
-        "preversion": "npm login",
+		"preversion": "npm login",
 		"postversion": "git push && git push --tags && rm -rf build/temp && npm publish --dry-run && npm publish"
 	},
 	"keywords": [
