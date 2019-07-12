@@ -4,4 +4,4 @@ node_js:
     - '10'
 script:
     - npm run build
-    - npm run lint:test
+    - npm run format:test
