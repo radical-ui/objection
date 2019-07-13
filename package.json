@@ -50,6 +50,7 @@
 		"postversion": "git push && git push --tags && rm -rf build/temp && npm publish --dry-run && npm publish"
 	},
 	"keywords": [
+		"svelte-components",
 		"svelte",
 		"material",
 		"design",
