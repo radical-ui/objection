@@ -42,7 +42,7 @@
 	let errors = 'var(--all-errors)';
 	let randomId = 'input-component-' + Math.random() * Math.random();
 	let showTextarea = rows > 1 || rows == null;
-	let remSize = parseInt(getComputedStyle(document.documentElement).fontSize);
+	let remSize;
 	let rowSize = remSize * 1.75;
 	let padding = rows == 1 ? 30 : 16;
 	let maxSize = rowSize * rows + padding;
@@ -53,6 +53,8 @@
 	const dispatch = createEventDispatcher();
 
 	onMount(async () => {
+		remSize = parseInt(getComputedStyle(document.documentElement).fontSize);
+
 		if (maxChars != null) inputEl.setAttribute('maxlength', maxChars);
 		textField = new MDCTextField(startUpEl);
 		if (isFocused) textField.focus();
