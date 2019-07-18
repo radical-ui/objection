@@ -57,7 +57,7 @@ npm i --save-dev svelte-toolbox
 
 ### HTML/CSS/VanillaJS
 
-You can use CDN's from `jsDelivr.net`, `unpkg.com`, or `bundle.run`. Or, you can install `svelte-toolbox` into your project via `npm` or `yarn`.
+You can use CDN's from `jsDelivr.net`, `unpkg.com`, or `bundle.run`. You can also install `svelte-toolbox` into your project via `npm` or `yarn`.
 
 In this example, however, we will use the `unpkg` CDN:
 
