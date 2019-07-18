@@ -177,7 +177,9 @@
 </style>
 
 <svelte:head>
-	<style class="MDC-styles"></style>
+	<style class="MDC-styles">
+
+	</style>
 </svelte:head>
 
 <div class="over" class:mdc-custom-inline-block={!block}>
