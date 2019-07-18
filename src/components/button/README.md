@@ -17,7 +17,8 @@ A Material Design style button.
 | Name                | Type      | Default                              | Description                                                                                         |
 | :------------------ | :-------- | :----------------------------------- | :-------------------------------------------------------------------------------------------------- |
 | `raised`            | `boolean` | `false`                              | Specifies if the button is to have a box shadow on it.                                              |
-| `primary`           | `boolean` | `false`                              | If the button should have a solid background color. This color can be styled with the `color` prop. |  |
+| `primary`           | `boolean` | `false`                              | If the button should have a solid background color. This color can be styled with the `color` prop. |
+| `outlined`          | `boolean` | `false`                              | If the outline of the button is solid or not. The color will be the value of the `color` prop.      |
 | `transition`        | `number`  | `200`                                | The number of miliseconds allowed for the hover transition.                                         |
 | `ripple`            | `boolean` | `true`                               | Specifies if the button should have a ripple effect on click.                                       |
 | `block`             | `boolean` | `false`                              | If true, button will `display: block` on it.                                                        |

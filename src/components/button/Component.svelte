@@ -5,6 +5,7 @@
 
 	export let raised = false;
 	export let primary = false;
+	export let outlined = false;
 	export let transition = 200;
 	export let ripple = true;
 	export let block = false;
