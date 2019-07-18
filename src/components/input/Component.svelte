@@ -1,7 +1,7 @@
 <script>
 	import { createEventDispatcher, onMount, tick, afterUpdate } from 'svelte';
 	import { MDCTextField } from '@material/textfield/index';
-	import MDCStyles from '../Style.svelte';
+	import rawStyle from '../../styles/internal/wrapped-styles.js';
 
 	export let value = null;
 	export let placeholder = null;
@@ -71,6 +71,8 @@
 				);
 			}
 		}
+
+		document.querySelector('.MDC-styles').innerHTML = rawStyle;
 	});
 
 	afterUpdate(() => {
@@ -174,7 +176,9 @@
 	}
 </style>
 
-<MDCStyles />
+<svelte:head>
+	<style class="MDC-styles"></style>
+</svelte:head>
 
 <div class="over" class:mdc-custom-inline-block={!block}>
 	<div
