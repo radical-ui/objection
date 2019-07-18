@@ -174,6 +174,10 @@
 	.mdc-custom-no-scroll {
 		overflow: hidden;
 	}
+	input,
+	textarea {
+		margin: 0;
+	}
 </style>
 
 <svelte:head>
