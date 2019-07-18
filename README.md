@@ -30,13 +30,18 @@ You are welcome to add new features or components, but please open an issue to d
 
 ## Usage
 
-```shell
-npm i svelte-toolbox
-```
-
 Not all of these components are stable. Please see the [Component Status](#component-status) section.
 
-There is detailed documentation about each of the components [below](#documentation), but the basic usage looks like this:
+There is detailed documentation about each of the components [below](#documentation), but the basic usage can bee seen below.
+
+### Svelte/Sapper
+
+Installing `svelte-toolbox` as a `devDependency` allows Svelte to compile the svelte-toolbox components right along with the rest of your code.
+
+```shell
+npm i --save-dev svelte-toolbox
+# or yarn
+```
 
 ```html
 <script>
@@ -49,6 +54,39 @@ There is detailed documentation about each of the components [below](#documentat
 	There is a nice ripple effect on this text.
 </Ripple>
 ```
+
+### HTML/CSS/VanillaJS
+
+You can use CDN's from `jsDelivr.net`, `unpkg.com`, or `bundle.run`. Or, you can install `svelte-toolbox` into your project via `npm` or `yarn`.
+
+In this example, however, we will use the `unpkg` CDN:
+
+```html
+<!-- CSS/JS -->
+<script src="https://unpkg.com/svelte-toolbox/dist/index.min.js"></script>
+<link
+	rel="stylesheet"
+	href="https://unpkg.com/svelte-toolbox/public/bundle.css"
+/>
+
+<!-- Default styles -->
+<link
+	rel="stylesheet"
+	href="https://unpkg.com/svelte-toolbox/public/global.css"
+/>
+
+<div id="button"></div>
+
+<script>
+	new Toolbox.UIButton({ target: document.querySelector('#button') });
+</script>
+```
+
+### Demos
+
+-   [Svelte](https://svelte.dev/repl/5cf847108884453cbedd5920e919b630?version=3.6.5)
+-   [Sapper](https://codesandbox.io/s/todo-x9iey)
+-   [HTML/CSS/VanillaJS](https://jsfiddle.net/Vehmloewff/5rfdh0y2/64/)
 
 ### Global Styles
 
