@@ -87,7 +87,7 @@
 		class:button-disabled={disabled}
 		{disabled}
 		style="{primary ? `background: ${hovering ? primaryHoverColor : color}; color: ${textColor}` : `color: ${color}; background: ${hovering ? hoverColor : 'rgba(0, 0, 0, 0)'}`};
-		transition: opacity {transition}ms, background {transition}ms">
+		{outlined ? `border: 2px solid ${color};` : ''} transition: opacity {transition}ms, background {transition}ms;">
 
 		<Ripple
 			disabled={!ripple || disabled}

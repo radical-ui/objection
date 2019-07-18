@@ -73,7 +73,7 @@
 		</span>
 	</UIButton>
 	<br />
-	<UIButton href="https://svelte.dev">
+	<UIButton href="https://svelte.dev" outlined={true}>
 		Should go to
 		<span>https://svelte.dev</span>
 	</UIButton>
