@@ -4,7 +4,7 @@
 	"description": "A UI component library for Svelte implementing Google's Material Design specification",
 	"module": "dist/index.min.mjs",
 	"main": "dist/index.min.js",
-	"version": "0.3.0-alpha.1",
+	"version": "0.3.0",
 	"license": "MIT",
 	"homepage": "https://svelte.dev/repl/5cf847108884453cbedd5920e919b630?version=3.6.5",
 	"repository": {
