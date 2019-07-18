@@ -174,8 +174,9 @@
 	.mdc-custom-no-scroll {
 		overflow: hidden;
 	}
-	input, textarea {
-    	margin: 0;
+	input,
+	textarea {
+		margin: 0;
 	}
 </style>
 
