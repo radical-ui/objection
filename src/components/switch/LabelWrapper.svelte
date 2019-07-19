@@ -17,12 +17,6 @@
 	.switch-text-container {
 		line-height: 48px;
 	}
-	.disabled {
-		opacity: 0.4;
-	}
-	.rounded {
-		border-radius: 3px;
-	}
 
 	.switch-container {
 		max-width: 800px;
