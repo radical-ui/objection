@@ -1,5 +1,6 @@
 <script>
 	import Ripple from '../ripple/Ripple.svelte';
+	import LabelWrapper from './LabelWrapper.svelte';
 	import { createEventDispatcher } from 'svelte';
 
 	export let on = false;
@@ -100,40 +101,42 @@
 <svelte:window on:click={outsideClick} />
 
 <label>
-	<div
-		class="over"
-		on:click={(_) => (innerClicked = true)}
-		on:mouseover={handleMouseover}
-		on:mouseleave={handleMouseleave}
-		class:switch-on={on}
-		class:switch-off={!on}
-		class:switch-disabled={disabled}>
+	<LabelWrapper {label} {left}>
 		<div
-			class="thumb round"
-			style="left:{on ? '20px' : '0px'}; background: {active ? (on ? activeOnColor : activeColor) : handleHovering ? (on ? hoverOnColor : hoverColor) : 'none'}"
-			on:mouseover={(_) => (handleHovering = true)}
-			on:mouseleave={(_) => (handleHovering = false)}>
-			<Ripple
-				disabled={!shouldRipple}
-				color={on ? onColorTrack : offColorTrack}
-				spread={100}
-				time={200}
-				center={true}>
-				<div
-					class="thumb-inner round"
-					style="background: {on ? onColor : offColor}" />
-			</Ripple>
+			class="over"
+			on:click={(_) => (innerClicked = true)}
+			on:mouseover={handleMouseover}
+			on:mouseleave={handleMouseleave}
+			class:switch-on={on}
+			class:switch-off={!on}
+			class:switch-disabled={disabled}>
+			<div
+				class="thumb round"
+				style="left:{on ? '20px' : '0px'}; background: {active ? (on ? activeOnColor : activeColor) : handleHovering ? (on ? hoverOnColor : hoverColor) : 'none'}"
+				on:mouseover={(_) => (handleHovering = true)}
+				on:mouseleave={(_) => (handleHovering = false)}>
+				<Ripple
+					disabled={!shouldRipple}
+					color={on ? onColorTrack : offColorTrack}
+					spread={100}
+					time={200}
+					center={true}>
+					<div
+						class="thumb-inner round"
+						style="background: {on ? onColor : offColor}" />
+				</Ripple>
+			</div>
+			<div
+				class="track"
+				style="background: {on ? onColorTrack : offColorTrack}" />
+			<input
+				type="checkbox"
+				{disabled}
+				on:change={handleChange}
+				bind:checked={on} />
+			{#if disabled}
+				<div class="cover" />
+			{/if}
 		</div>
-		<div
-			class="track"
-			style="background: {on ? onColorTrack : offColorTrack}" />
-		<input
-			type="checkbox"
-			{disabled}
-			on:change={handleChange}
-			bind:checked={on} />
-		{#if disabled}
-			<div class="cover" />
-		{/if}
-	</div>
+	</LabelWrapper>
 </label>
