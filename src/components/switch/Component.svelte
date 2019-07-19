@@ -13,6 +13,8 @@
 	export let hoverOnColor = 'var(--switch-hover-on-color)';
 	export let shouldRipple = true;
 	export let disabled = false;
+	export let label = null;
+	export let left = false;
 
 	let hovering = false;
 	let handleHovering = false;

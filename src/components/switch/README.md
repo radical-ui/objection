@@ -17,19 +17,21 @@ Switch creates an `inline-block` element `48px` in height by `68px` in width.
 
 ## Props
 
-| Name            | Type      | Default                         | Description                                                        |
-| :-------------- | :-------- | :------------------------------ | :----------------------------------------------------------------- |
-| `on`            | `boolean` | `false`                         | If the switch is on or off                                         |
-| `onColor`       | `string`  | `var(--switch-on-color)`        | The color of the switch thumb when the switch is on.               |
-| `offColor`      | `string`  | `var(--switch-off-color)`       | Same as `onColor` except when the switch is off.                   |
-| `onColorTrack`  | `string`  | `var(--switch-on-color-track)`  | Same as `offColorTrack` except when the switch is off.             |
-| `offColorTrack` | `string`  | `var(--switch-off-color-track)` | The color of the track when switch is off.                         |
-| `activeColor`   | `string`  | `var(--switch-active-color)`    | The color of the thumb container when the switch is active.        |
-| `activeOnColor` | `string`  | `var(--switch-on-active-color)` | The color of the thumb container when the switch is active and on. |
-| `hoverColor`    | `string`  | `var(--switch-hover-color)`     | The color of the thumb container on hover.                         |
-| `hoverOnColor`  | `string`  | `var(--switch-hover-on-color)`  | The color of the thumb container on hover when the switch is on.   |
-| `shouldRipple`  | `boolean` | `true`                          | If the Switch should display a ripple effect on click.             |
-| `disabled`      | `boolean` | `false`                         | As can be guessed, this prop disables the switch.                  |
+| Name            | Type      | Default                         | Description                                                                                                                 |
+| :-------------- | :-------- | :------------------------------ | :-------------------------------------------------------------------------------------------------------------------------- |
+| `on`            | `boolean` | `false`                         | If the switch is on or off                                                                                                  |
+| `onColor`       | `string`  | `var(--switch-on-color)`        | The color of the switch thumb when the switch is on.                                                                        |
+| `offColor`      | `string`  | `var(--switch-off-color)`       | Same as `onColor` except when the switch is off.                                                                            |
+| `onColorTrack`  | `string`  | `var(--switch-on-color-track)`  | Same as `offColorTrack` except when the switch is off.                                                                      |
+| `offColorTrack` | `string`  | `var(--switch-off-color-track)` | The color of the track when switch is off.                                                                                  |
+| `activeColor`   | `string`  | `var(--switch-active-color)`    | The color of the thumb container when the switch is active.                                                                 |
+| `activeOnColor` | `string`  | `var(--switch-on-active-color)` | The color of the thumb container when the switch is active and on.                                                          |
+| `hoverColor`    | `string`  | `var(--switch-hover-color)`     | The color of the thumb container on hover.                                                                                  |
+| `hoverOnColor`  | `string`  | `var(--switch-hover-on-color)`  | The color of the thumb container on hover when the switch is on.                                                            |
+| `shouldRipple`  | `boolean` | `true`                          | If the Switch should display a ripple effect on click.                                                                      |
+| `disabled`      | `boolean` | `false`                         | As can be guessed, this prop disables the switch.                                                                           |
+| `label`         | `string`  | `null`                          | The switch label. If not `null`, Switch will become a block element with the switch on one side and the label on the other. |
+| `left`          | `boolean` | `false`                         | If `true` the switch label will be on the left side. Otherwise it will be on the right.                                     |
 
 ## Events
 
