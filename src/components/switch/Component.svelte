@@ -41,7 +41,13 @@
 </script>
 
 <style>
-	label {
+	label.block {
+		--height: 48px;
+		display: block;
+		min-width: 68px;
+		min-height: var(--height);
+	}
+	label.norm {
 		--height: 48px;
 		display: inline-block;
 		width: 68px;
@@ -100,7 +106,7 @@
 
 <svelte:window on:click={outsideClick} />
 
-<label>
+<label class:block={label} class:norm={!label}>
 	<LabelWrapper {label} {left}>
 		<div
 			class="over"

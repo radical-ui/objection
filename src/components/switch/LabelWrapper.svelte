@@ -19,11 +19,8 @@
 	}
 
 	.switch-container {
-		max-width: 800px;
-		margin: auto;
 		padding: 5px 20px;
-		background-color: rgba(0, 0, 0, 0.1);
-		border-bottom: 0.1px solid rgba(0, 0, 0, 0.2);
+		user-select: none;
 	}
 </style>
 

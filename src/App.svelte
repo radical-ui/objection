@@ -9,6 +9,7 @@
 
 	let value = 'John Smith';
 	let trailingIconHovering;
+	let switchWithLabelOn = false;
 
 	function log(e) {
 		console.log(e);
@@ -157,6 +158,9 @@
 	<h1>Switch</h1>
 	<Switch />
 	<Switch disabled={true} />
+	<Switch
+		label="Please turn this {!switchWithLabelOn}"
+		bind:on={switchWithLabelOn} />
 
 	<h1>IconButton</h1>
 	<IconButton />
