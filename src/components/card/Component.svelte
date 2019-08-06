@@ -1,10 +1,27 @@
 <script>
 	import Ripple from '../ripple/Ripple.svelte';
 	import UIButton from '../button/Component.svelte';
+	import { createEventDispatcher } from 'svelte';
 
 	export let href = null;
 	export let ripple = href ? true : false;
 	export let elevation = 2;
+	export let hovering = false;
+
+	const dispatch = createEventDispatcher();
+
+	function handleClick(e) {
+		dispatch('click', e);
+	}
+
+	function handleMouseover(e) {
+		dispatch('hover', e);
+		hovering = true;
+	}
+
+	function handleMouseout(e) {
+		hovering = false;
+	}
 </script>
 
 <style>
@@ -38,7 +55,10 @@
 	class="card s-toolbox-card"
 	class:sh1={elevation == 1}
 	class:sh2={elevation == 2}
-	class:sh3={elevation == 3}>
+	class:sh3={elevation == 3}
+	on:click={handleClick}
+	on:mouseover={handleMouseover}
+	on:mouseout={handleMouseout}>
 	<Ripple disabled={!ripple} card>
 		<slot>
 			<Ripple card>
