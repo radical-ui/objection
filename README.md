@@ -112,7 +112,7 @@ P.S. If you like the styles in [`public/global.css`](public/global.css), and don
 | [UIInput](src/components/input/README.md)          | **Mostly Stable**, there is some improvment under the hood to be done. This _might_ effect the public API. |
 | [IconButton](src/components/icon-button/README.md) | **Stable**. Although new features are expected, no breaking changes are.                                   |
 | [Switch](src/components/switch/README.md)          | **Stable**. Although new features are expected, no breaking changes are.                                   |
-| [Card](src/components/card/README.md)              | **Unstable**. This component is not yet finished.  Please see [this project](https://github.com/svelte-toolbox/svelte-toolbox/projects/2) |
+| [Card](src/components/card/README.md)              | **Unstable**. This component is not yet finished.  Please see [this project](https://github.com/svelte-toolbox/svelte-toolbox/projects/2). |
 
 ### Documentation
 
