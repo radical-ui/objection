@@ -9,6 +9,7 @@
 	export let disabled = false;
 	export let block = false;
 	export let center = false;
+	export let card = false;
 
 	const dispatch = createEventDispatcher();
 
@@ -51,13 +52,17 @@
 	.block {
 		display: block;
 	}
+	.card {
+		width: 300px;
+	}
 </style>
 
 <div
 	on:click={startRipple}
 	bind:this={container}
 	class:hideOverflow
-	class:block>
+	class:block={block || card}
+	class:card>
 	{#each ripples as { x, y, top, left, id }, index (id)}
 		<Circle
 			{x}

@@ -39,9 +39,9 @@
 	class:sh1={elevation == 1}
 	class:sh2={elevation == 2}
 	class:sh3={elevation == 3}>
-	<Ripple disabled={!ripple} block>
+	<Ripple disabled={!ripple} card>
 		<slot>
-			<Ripple block>
+			<Ripple card>
 				<div class="padding">
 					<h3>Some Title</h3>
 				</div>

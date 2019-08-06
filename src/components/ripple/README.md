@@ -23,6 +23,7 @@ Causes a ripple animation when the user clicks on it.
 | `block`        | `boolean` | `false`              | If true, ripple container will have `display: block` on it.                  |
 | `disabled`     | `boolean` | `false`              | This prop, as can be guessed, disables the ripple.                           |
 | `center`       | `boolean` | `false`              | If `true` the ripple will come from the center of the container.             |
+| `card`         | `boolean` | `false`              | Set this to `true` if you are going to be using it inside a card.            |
 
 # Events
 

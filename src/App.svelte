@@ -189,12 +189,12 @@
 		</div>
 	</Card>
 	<Card elevation={3}>
-		<Ripple block>
+		<Ripple card>
 			<h3>John Doe</h3>
 			<p>What was the name of that book you mentioned?</p>
 		</Ripple>
 	</Card>
 	<Card>
-		<Ripple block>Hello, World!</Ripple>
+		<Ripple card>Hello, World!</Ripple>
 	</Card>
 </div>
