@@ -5,6 +5,7 @@
 		UIInput,
 		Switch,
 		IconButton,
+		Card,
 	} from './components/components.module.js';
 
 	let value = 'John Smith';
@@ -167,4 +168,26 @@
 	<IconButton
 		icon={[{ name: 'favorite', color: 'green' }, { name: 'favorite_border', color: 'black' }]} />
 
+	<h1>Card</h1>
+	<Card elevation={1}/>
+	<Card >
+		<div style="padding: 16px; overflow: auto; user-select: none;">
+			<div style="text-align: center; font-size: 20px; line-height: 30px;">
+				<span style="font-size: 30px">"</span>
+				<i style="user-select: all">Whatever captivates your thoughts will ultimatly take you captive.</i>
+				<span style="font-size: 30px">"</span>
+			</div>
+			<br />
+			<span style="float: right">- <span style="user-select: all">Gabe Cleator</span></span>
+		</div>
+	</Card>
+	<Card elevation={3}>
+		<Ripple block>
+			<h3>John Doe</h3>
+			<p>What was the name of that book you mentioned?</p>
+		</Ripple>
+	</Card>
+	<Card>
+		<Ripple block>Hello, World!</Ripple>
+	</Card>
 </div>

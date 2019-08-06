@@ -35,7 +35,7 @@
 	"scripts": {
 		"build": "npm run compile:scss && npm run wrap:css && rollup -c",
 		"autobuild": "rollup -c -w",
-		"dev": "npm run compile:scss && npm run wrap:css && run-p start:dev autobuild compile:scss:watch wrap:css:watch",
+		"dev": "npm run compile:scss && npm run wrap:css && run-p start:dev autobuild",
 		"start": "sirv public",
 		"start:dev": "sirv public --dev",
 		"prepublishOnly": "run-p build",
