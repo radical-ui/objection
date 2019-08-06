@@ -7,6 +7,7 @@
 	export let ripple = href ? true : false;
 	export let elevation = 2;
 	export let hovering = false;
+	export let outlined = false;
 
 	const dispatch = createEventDispatcher();
 
@@ -49,6 +50,10 @@
 	.actions {
 		padding: 4px;
 	}
+	.outlined {
+		box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+		border: 1px solid #999;
+	}
 </style>
 
 <div
@@ -56,6 +61,7 @@
 	class:sh1={elevation == 1}
 	class:sh2={elevation == 2}
 	class:sh3={elevation == 3}
+	class:outlined
 	on:click={handleClick}
 	on:mouseover={handleMouseover}
 	on:mouseout={handleMouseout}>
