@@ -35,7 +35,7 @@
 </style>
 
 <div
-	class="card"
+	class="card s-toolbox-card"
 	class:sh1={elevation == 1}
 	class:sh2={elevation == 2}
 	class:sh3={elevation == 3}>
