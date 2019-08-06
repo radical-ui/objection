@@ -169,16 +169,23 @@
 		icon={[{ name: 'favorite', color: 'green' }, { name: 'favorite_border', color: 'black' }]} />
 
 	<h1>Card</h1>
-	<Card elevation={1}/>
-	<Card >
+	<Card elevation={1} />
+	<Card>
 		<div style="padding: 16px; overflow: auto; user-select: none;">
-			<div style="text-align: center; font-size: 20px; line-height: 30px;">
+			<div
+				style="text-align: center; font-size: 20px; line-height: 30px;">
 				<span style="font-size: 30px">"</span>
-				<i style="user-select: all">Whatever captivates your thoughts will ultimatly take you captive.</i>
+				<i style="user-select: all">
+					Whatever captivates your thoughts will ultimatly take you
+					captive.
+				</i>
 				<span style="font-size: 30px">"</span>
 			</div>
 			<br />
-			<span style="float: right">- <span style="user-select: all">Gabe Cleator</span></span>
+			<span style="float: right">
+				-
+				<span style="user-select: all">Gabe Cleator</span>
+			</span>
 		</div>
 	</Card>
 	<Card elevation={3}>

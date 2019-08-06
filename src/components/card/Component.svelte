@@ -21,10 +21,10 @@
 		box-shadow: 0 4px 8px 2px rgba(0, 0, 0, 0.2);
 	}
 	.sh2 {
-		box-shadow: 0 8px 16px 4px rgba(0,0,0,0.2);
+		box-shadow: 0 8px 16px 4px rgba(0, 0, 0, 0.2);
 	}
 	.sh3 {
-		box-shadow: 0 15px 23px 8px rgba(0,0,0,0.2);
+		box-shadow: 0 15px 23px 8px rgba(0, 0, 0, 0.2);
 	}
 	.padding {
 		padding: 0 16px;
@@ -34,11 +34,17 @@
 	}
 </style>
 
-<div class="card" class:sh1={elevation == 1} class:sh2={elevation == 2} class:sh3={elevation == 3}>
+<div
+	class="card"
+	class:sh1={elevation == 1}
+	class:sh2={elevation == 2}
+	class:sh3={elevation == 3}>
 	<Ripple disabled={!ripple} block>
 		<slot>
 			<Ripple block>
-				<div class="padding"><h3>Some Title</h3></div>
+				<div class="padding">
+					<h3>Some Title</h3>
+				</div>
 				<img src="https://placekitten.com/300/200" alt="Kitten" />
 				<div class="padding">
 					<p>I like this card lot. How about you?</p>
