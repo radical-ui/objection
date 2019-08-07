@@ -22,7 +22,7 @@ A simple Material Design style card.
 | `elevation`             | `number`  | `2`                   | A value between 1 & 3 specifing how much of a shadow the card will have.                                                                                                                    |
 | `hovering`              | `boolean` | _ReadOnly_            | Wether the user is hovering over the card or not.                                                                                                                                           |
 | `animateElevationSpeed` | `number`  | `500`                 | The number of ms it should take to transition between the levels of elevation.                                                                                                              |
-| `outlined`  | `boolean` | `false`               | If the button should be outlined. If `true` there will be no shadow, no matter what the value of `elevation` is.                                                                                  |
+| `outlined`              | `boolean` | `false`               | If the button should be outlined. If `true` there will be no shadow, no matter what the value of `elevation` is.                                                                            |
 
 # Events
 
