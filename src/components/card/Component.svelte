@@ -72,8 +72,12 @@
 	.sleek-left {
 		border-radius: 0 25px 0 25px;
 	}
-	.standing { border-radius: 18px 18px 0 0 }
-	.hanging { border-radius: 0 0 18px 18px }
+	.standing {
+		border-radius: 18px 18px 0 0;
+	}
+	.hanging {
+		border-radius: 0 0 18px 18px;
+	}
 </style>
 
 <div
