@@ -60,10 +60,18 @@
 		box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
 		border: 1px solid rgba(0, 0, 0, 0);
 	}
-	.rounded { border-radius: 4px }
-	.extra-rounded { border-radius: 10px }
-	.sleek-right { border-radius: 10px 1px 10px 1px }
-	.sleek-left { border-radius: 1px 10px 1px 10px }
+	.rounded {
+		border-radius: 4px;
+	}
+	.extra-rounded {
+		border-radius: 10px;
+	}
+	.sleek-right {
+		border-radius: 10px 1px 10px 1px;
+	}
+	.sleek-left {
+		border-radius: 1px 10px 1px 10px;
+	}
 </style>
 
 <div
