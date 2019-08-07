@@ -6,6 +6,7 @@
 		Switch,
 		IconButton,
 		Card,
+		Checkbox,
 	} from './components/components.module.js';
 
 	let value = 'John Smith';
@@ -218,4 +219,7 @@
 		<h1>Hello</h1>
 		<p>How are you doing?</p>
 	</Card>
+
+	<h1>Checkbox</h1>
+	<Checkbox />
 </div>
