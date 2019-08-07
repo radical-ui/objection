@@ -201,4 +201,21 @@
 		<Ripple card>Hello, World!</Ripple>
 	</Card>
 	<Card outlined />
+	<Card corners="square" />
+	<Card corners="sleek-right">
+		<h1>Hello</h1>
+		<p>How are you doing?</p>
+	</Card>
+	<Card corners="sleek-left">
+		<h1>Hello</h1>
+		<p>How are you doing?</p>
+	</Card>
+	<Card corners="standing">
+		<h1>Hello</h1>
+		<p>How are you doing?</p>
+	</Card>
+	<Card corners="hanging">
+		<h1>Hello</h1>
+		<p>How are you doing?</p>
+	</Card>
 </div>
