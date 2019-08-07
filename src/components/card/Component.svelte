@@ -9,6 +9,10 @@
 	export let hovering = false;
 	export let animateElevationSpeed = 500;
 	export let outlined = false;
+	export let backgroundColor = `var(--card-background-color)`;
+	export let backgroundColorHover = `var(--card-background-color-hover)`;
+	export let outlineColor = `var(--card-outline-color)`;
+	export let outlineColorHover = `var(--card-outline-color-hover)`;
 
 	const dispatch = createEventDispatcher();
 
@@ -54,7 +58,7 @@
 	}
 	.outlined {
 		box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
-		border: 1px solid #999;
+		border: 1px solid rgba(0, 0, 0, 0);
 	}
 </style>
 
@@ -67,7 +71,9 @@
 	on:click={handleClick}
 	on:mouseover={handleMouseover}
 	on:mouseout={handleMouseout}
-	style="transition: box-shadow {animateElevationSpeed}ms">
+	style="background: {hovering ? backgroundColorHover : backgroundColor};
+	border-color: {hovering ? outlineColorHover : outlineColor}; transition:
+	box-shadow {animateElevationSpeed}ms, background 300ms;">
 	<Ripple disabled={!ripple} card>
 		<slot>
 			<Ripple card>
