@@ -40,6 +40,12 @@
 	--icon-buttons-active: rgba(0, 0, 0, 0.1);
 	--icon-buttons-ripple: rgba(0, 0, 0, 0.2);
 
+	/* Card */
+	--card-background-color: rgba(0, 0, 0, 0);
+	--card-background-color-hover: rgba(0, 0, 0, .1);
+	--card-outline-color: #999;
+	--card-outline-color-hover: #777;
+
 	/* error */
 	--all-errors: #b00020;
 }
