@@ -27,6 +27,7 @@ A simple Material Design style card.
 | `backgroundColorHover`  | `string`  | `var(--card-background-color-hover)` | The background color of the card on hover.                                                                                                                                                  |
 | `outlineColor`          | `string`  | `var(--card-outline-color)`          | The color of the card's outline.<br /><br />_Note: The outline will only show if `outlined = true`._                                                                                        |
 | `outlineColorHover`     | `string`  | `var(--card-outline-color-hover)`    | The color of the card's outline on hover.                                                                                                                                                   |
+| `corners`               | `string`  | `rounded`                            | What the corners should look like. Valid values are `square`, `rounded`, `extra-rounded`, `sleek-right` and `sleek-left`.                                                                   |
 
 # Events
 
