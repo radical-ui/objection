@@ -10,6 +10,7 @@
 
 	let value = 'John Smith';
 	let trailingIconHovering;
+	let hoveringOverCard;
 
 	function log(e) {
 		console.log(e);
@@ -169,7 +170,9 @@
 		icon={[{ name: 'favorite', color: 'green' }, { name: 'favorite_border', color: 'black' }]} />
 
 	<h1>Card</h1>
-	<Card elevation={1} />
+	<Card
+		elevation={hoveringOverCard ? 3 : 1}
+		bind:hovering={hoveringOverCard} />
 	<Card>
 		<div style="padding: 16px; overflow: auto; user-select: none;">
 			<div
