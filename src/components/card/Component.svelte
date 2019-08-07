@@ -5,7 +5,7 @@
 
 	export let href = null;
 	export let ripple = href ? true : false;
-	export let elevation = 2;
+	export let elevation = 2; // 1, 2, 3
 	export let hovering = false;
 	export let animateElevationSpeed = 500;
 	export let outlined = false;
@@ -13,6 +13,7 @@
 	export let backgroundColorHover = `var(--card-background-color-hover)`;
 	export let outlineColor = `var(--card-outline-color)`;
 	export let outlineColorHover = `var(--card-outline-color-hover)`;
+	export let corners = `rounded`; // `square`, `rounded`, `extra-rounded`, `sleek-right`, `sleek-left`
 
 	const dispatch = createEventDispatcher();
 
@@ -32,7 +33,6 @@
 
 <style>
 	.card {
-		border-radius: 4px;
 		overflow: hidden;
 		width: 300px;
 		display: inline-block;
@@ -60,10 +60,14 @@
 		box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
 		border: 1px solid rgba(0, 0, 0, 0);
 	}
+	.rounded { border-radius: 4px }
+	.extra-rounded { border-radius: 10px }
+	.sleek-right { border-radius: 10px 1px 10px 1px }
+	.sleek-left { border-radius: 1px 10px 1px 10px }
 </style>
 
 <div
-	class="card s-toolbox-card"
+	class="card s-toolbox-card {corners}"
 	class:sh1={elevation == 1}
 	class:sh2={elevation == 2}
 	class:sh3={elevation == 3}
