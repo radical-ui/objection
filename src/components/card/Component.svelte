@@ -13,7 +13,7 @@
 	export let backgroundColorHover = `var(--card-background-color-hover)`;
 	export let outlineColor = `var(--card-outline-color)`;
 	export let outlineColorHover = `var(--card-outline-color-hover)`;
-	export let corners = `rounded`; // `square`, `rounded`, `extra-rounded`, `sleek-right`, `sleek-left`
+	export let corners = `rounded`; // `square`, `rounded`, `extra-rounded`, `sleek-right`, `sleek-left`, `standing`, `hanging`
 
 	const dispatch = createEventDispatcher();
 
@@ -67,11 +67,13 @@
 		border-radius: 10px;
 	}
 	.sleek-right {
-		border-radius: 10px 1px 10px 1px;
+		border-radius: 25px 0 25px 0;
 	}
 	.sleek-left {
-		border-radius: 1px 10px 1px 10px;
+		border-radius: 0 25px 0 25px;
 	}
+	.standing { border-radius: 18px 18px 0 0 }
+	.hanging { border-radius: 0 0 18px 18px }
 </style>
 
 <div
