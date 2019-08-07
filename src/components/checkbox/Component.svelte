@@ -32,15 +32,13 @@
 </style>
 
 <div class="over">
-	<input type="checkbox" bind:checked on:input={handleInput}/>
+	<input type="checkbox" bind:checked on:input={handleInput} />
 
 	{#if checked}
 		<i class="material-icons checkbox">check_box</i>
+	{:else if partial}
+		<i class="material-icons checkbox">indeterminate_check_box</i>
 	{:else}
-		{#if partial}
-			<i class="material-icons checkbox">indeterminate_check_box</i>
-		{:else}
-			<i class="material-icons checkbox">check_box_outline_blank</i>
-		{/if}
+		<i class="material-icons checkbox">check_box_outline_blank</i>
 	{/if}
 </div>
