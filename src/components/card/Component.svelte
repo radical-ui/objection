@@ -7,6 +7,7 @@
 	export let ripple = href ? true : false;
 	export let elevation = 2;
 	export let hovering = false;
+	export let animateElevationSpeed = 500;
 
 	const dispatch = createEventDispatcher();
 
@@ -34,6 +35,7 @@
 		box-sizing: border-box;
 		margin: 4px;
 	}
+
 	.sh1 {
 		box-shadow: 0 4px 8px 2px rgba(0, 0, 0, 0.2);
 	}
@@ -58,7 +60,8 @@
 	class:sh3={elevation == 3}
 	on:click={handleClick}
 	on:mouseover={handleMouseover}
-	on:mouseout={handleMouseout}>
+	on:mouseout={handleMouseout}
+	style="transition: box-shadow {animateElevationSpeed}ms">
 	<Ripple disabled={!ripple} card>
 		<slot>
 			<Ripple card>
