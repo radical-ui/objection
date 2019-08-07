@@ -197,4 +197,5 @@
 	<Card>
 		<Ripple card>Hello, World!</Ripple>
 	</Card>
+	<Card outlined />
 </div>
