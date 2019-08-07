@@ -85,7 +85,7 @@ In this example, however, we will use the `unpkg` CDN:
 ### Demos
 
 -   [Svelte](https://svelte.dev/repl/5cf847108884453cbedd5920e919b630?version=3.6.5)
--   [Sapper](https://codesandbox.io/s/todo-x9iey)
+-   [Sapper](https://codesandbox.io/s/github/svelte-toolbox/sapper-example)
 -   [HTML/CSS/VanillaJS](https://jsfiddle.net/Vehmloewff/5rfdh0y2/64/)
 
 ### Global Styles
