@@ -20,13 +20,13 @@ A checkbox component following Material Design's guidlines.
 
 # Events
 
-| Name    | `event.detail` | Description                               |
-| :------ | :------------- | :---------------------------------------- |
-| `click` | _`MouseEvent`_ | Fires when the user clicks the card.      |
-| `hover` | _`MouseEvent`_ | Fires when the user hovers over the card. |
+| Name    | `event.detail` | Description                                   |
+| :------ | :------------- | :-------------------------------------------- |
+| `click` | _`MouseEvent`_ | Fires when the user clicks the checkbox.      |
+| `hover` | _`MouseEvent`_ | Fires when the user hovers over the checkbox. |
 
 # CSS Selectors
 
-| State      | Selector          |
-| :--------- | :---------------- |
-| all states | `.s-toolbox-card` |
+| State      | Selector              |
+| :--------- | :-------------------- |
+| all states | `.s-toolbox-checkbox` |
