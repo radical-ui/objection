@@ -1,10 +1,23 @@
 <script>
-	export let hovering = false;
+	import { createEventDispatcher } from 'svelte';
+
 	export let checked = false;
 	export let partial = false;
+	export let hovering = false;
 
-	function handleInput(e) {
+	const dispatch = createEventDispatcher();
+
+	function handleInput() {
 		partial = false;
+	}
+
+	function handleMouseover(e) {
+		dispatch('hover', e);
+		hovering = true;
+	}
+
+	function handleMouseout() {
+		hovering = false;
 	}
 </script>
 
@@ -31,7 +44,10 @@
 	}
 </style>
 
-<div class="over">
+<div
+	class="over s-toolbox-checkbox"
+	on:mouseover={handleMouseover}
+	on:mouseout={handleMouseout}>
 	<input type="checkbox" bind:checked on:input={handleInput} />
 
 	{#if checked}
