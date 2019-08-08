@@ -4,6 +4,8 @@
 	export let checked = false;
 	export let partial = false;
 	export let hovering = false;
+	export let focused = false;
+	export let disabled = false;
 
 	const dispatch = createEventDispatcher();
 
@@ -46,6 +48,10 @@
 
 <div
 	class="over s-toolbox-checkbox"
+	class:s-toolbox-checkbox-other={!disabled && !hovering && !focused}
+	class:s-toolbox-checkbox-disabled={disabled}
+	class:s-toolbox-checkbox-hover={hovering}
+	class:s-toolbox-checkbox-focus={focused}
 	on:mouseover={handleMouseover}
 	on:mouseout={handleMouseout}>
 	<input type="checkbox" bind:checked on:input={handleInput} />

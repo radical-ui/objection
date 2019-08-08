@@ -17,6 +17,7 @@ A checkbox component following Material Design's guidlines.
 | `checked`  | `boolean` | `false`    | If the checkbox is checked or not.                                                                                  |
 | `partial`  | `boolean` | `false`    | If `true` Checkbox will display a partialy checked box. Setting partial to `true` will also set checked to `false`. |
 | `hovering` | `boolean` | _ReadOnly_ | Will be `true` if the checkbox is being hovered upon.                                                               |
+| `focused`  | `boolean` | _ReadOnly_ | Will be `true` if the checkbox is in focus.                                                                         |
 
 # Events
 
@@ -27,6 +28,10 @@ A checkbox component following Material Design's guidlines.
 
 # CSS Selectors
 
-| State      | Selector              |
-| :--------- | :-------------------- |
-| all states | `.s-toolbox-checkbox` |
+| State      | Selector                       |
+| :--------- | :----------------------------- |
+| Disabled   | `.s-toolbox-checkbox-disabled` |
+| Hover      | `.s-toolbox-checkbox-hover`    |
+| Focus      | `.s-toolbox-checkbox-focus`    |
+| Other      | `.s-toolbox-checkbox-other`    |
+| all states | `.s-toolbox-checkbox`          |
