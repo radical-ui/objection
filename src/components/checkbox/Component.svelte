@@ -7,14 +7,14 @@
 	export let hovering = false;
 	export let focused = false;
 	export let disabled = false;
-	export let color = `rgb(99, 0, 239)`;
-	export let colorOff = `#555`;
-	export let hoverColor = `rgba(99, 0, 239, 0.1)`;
-	export let hoverColorOff = `rgba(85, 85, 85, 0.1)`;
-	export let focusColor = `rgba(99, 0, 239, 0.2)`;
-	export let focusColorOff = `rgba(85, 85, 85, 0.2)`;
-	export let rippleColor = `rgba(99, 0, 239, 0.3)`;
-	export let rippleColorOff = `rgba(85, 85, 85, 0.3)`;
+	export let color = `var(--checkbox-color)`;
+	export let colorOff = `var(--checkbox-color-off)`;
+	export let hoverColor = `var(--checkbox-hover-color)`;
+	export let hoverColorOff = `var(--checkbox-hover-color-off)`;
+	export let focusColor = `var(--checkbox-focus-color)`;
+	export let focusColorOff = `var(--checkbox-focus-color-off)`;
+	export let rippleColor = `var(--checkbox-ripple-color)`;
+	export let rippleColorOff = `var(--checkbox-ripple-color-off)`;
 
 	let insideClicked = false;
 
