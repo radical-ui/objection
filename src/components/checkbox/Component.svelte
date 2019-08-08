@@ -1,13 +1,27 @@
 <script>
 	import { createEventDispatcher } from 'svelte';
+	import Ripple from '../ripple/Ripple.svelte';
 
 	export let checked = false;
 	export let partial = false;
 	export let hovering = false;
 	export let focused = false;
 	export let disabled = false;
+	export let color = `rgb(99, 0, 239)`;
+	export let colorOff = `#555`;
+	export let hoverColor = `rgba(99, 0, 239, 0.1)`;
+	export let hoverColorOff = `rgba(85, 85, 85, 0.1)`;
+	export let focusColor = `rgba(99, 0, 239, 0.2)`;
+	export let focusColorOff = `rgba(85, 85, 85, 0.2)`;
+	export let rippleColor = `rgba(99, 0, 239, 0.3)`;
+	export let rippleColorOff = `rgba(85, 85, 85, 0.3)`;
 
 	const dispatch = createEventDispatcher();
+
+	let style;
+	$: style = `background: ${
+		focused ? checked ? focusColor : focusColorOff : hovering ?  checked ? hoverColor : hoverColorOff : 'none'
+	}`;
 
 	function handleInput() {
 		partial = false;
@@ -24,43 +38,55 @@
 </script>
 
 <style>
-	.over {
-		width: 40px;
-		height: 40px;
-		position: relative;
+	.round {
 		border-radius: 50%;
 		overflow: hidden;
+		width: 40px;
+		height: 40px;
+		display: inline-block;
+	}
+	.over {
 		text-align: center;
+		transition: background 0.3s;
+		cursor: pointer;
+		display: block;
 	}
 	input {
-		position: absolute;
-		top: -10px;
-		right: -10px;
-		width: 60px;
-		height: 60px;
-		opacity: 0;
-		margin: 0;
+		display: none;
 	}
 	.checkbox {
 		line-height: 40px;
 	}
 </style>
 
-<div
-	class="over s-toolbox-checkbox"
-	class:s-toolbox-checkbox-other={!disabled && !hovering && !focused}
-	class:s-toolbox-checkbox-disabled={disabled}
-	class:s-toolbox-checkbox-hover={hovering}
-	class:s-toolbox-checkbox-focus={focused}
-	on:mouseover={handleMouseover}
-	on:mouseout={handleMouseout}>
-	<input type="checkbox" bind:checked on:input={handleInput} />
+<label>
+	<div class="round">
+		<div
+			class="over s-toolbox-checkbox"
+			class:s-toolbox-checkbox-other={!disabled && !hovering && !focused}
+			class:s-toolbox-checkbox-disabled={disabled}
+			class:s-toolbox-checkbox-hover={hovering}
+			class:s-toolbox-checkbox-focus={focused}
+			on:mouseover={handleMouseover}
+			on:mouseout={handleMouseout}
+			{style}>
+			<input type="checkbox" bind:checked on:input={handleInput} />
 
-	{#if checked}
-		<i class="material-icons checkbox">check_box</i>
-	{:else if partial}
-		<i class="material-icons checkbox">indeterminate_check_box</i>
-	{:else}
-		<i class="material-icons checkbox">check_box_outline_blank</i>
-	{/if}
-</div>
+			<Ripple center width="40px" color={checked ? rippleColor : rippleColorOff}>
+				{#if checked}
+					<i class="material-icons checkbox" style="color: {color}">
+						check_box
+					</i>
+				{:else if partial}
+					<i class="material-icons checkbox" style="color: {color}">
+						indeterminate_check_box
+					</i>
+				{:else}
+					<i class="material-icons checkbox" style="color: {colorOff}">
+						check_box_outline_blank
+					</i>
+				{/if}
+			</Ripple>
+		</div>
+	</div>
+</label>
