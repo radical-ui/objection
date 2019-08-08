@@ -1,5 +1,5 @@
 <script>
-	import { createEventDispatcher } from 'svelte';
+	import { createEventDispatcher, afterUpdate } from 'svelte';
 	import Ripple from '../ripple/Ripple.svelte';
 
 	export let checked = false;
@@ -55,6 +55,10 @@
 	function handleMouseout() {
 		hovering = false;
 	}
+
+	afterUpdate(() => {
+		if (partial && checked) checked = false;
+	});
 </script>
 
 <style>
@@ -79,7 +83,7 @@
 	}
 </style>
 
-<svelte:window on:click={largeClick}/>
+<svelte:window on:click={largeClick} />
 
 <label>
 	<div class="round">

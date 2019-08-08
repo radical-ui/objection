@@ -12,6 +12,7 @@
 	let value = 'John Smith';
 	let trailingIconHovering;
 	let hoveringOverCard;
+	let checkboxPartial;
 
 	function log(e) {
 		console.log(e);
@@ -221,5 +222,6 @@
 	</Card>
 
 	<h1>Checkbox</h1>
-	<Checkbox />
+	<Checkbox bind:partial={checkboxPartial} />
+	<UIButton on:click={() => (checkboxPartial = true)}>Partialize</UIButton>
 </div>
