@@ -16,15 +16,35 @@
 	export let rippleColor = `rgba(99, 0, 239, 0.3)`;
 	export let rippleColorOff = `rgba(85, 85, 85, 0.3)`;
 
+	let insideClicked = false;
+
 	const dispatch = createEventDispatcher();
 
 	let style;
 	$: style = `background: ${
-		focused ? checked ? focusColor : focusColorOff : hovering ?  checked ? hoverColor : hoverColorOff : 'none'
+		focused
+			? checked
+				? focusColor
+				: focusColorOff
+			: hovering
+			? checked
+				? hoverColor
+				: hoverColorOff
+			: 'none'
 	}`;
 
 	function handleInput() {
 		partial = false;
+	}
+
+	function handleClick() {
+		focused = true;
+		insideClicked = true;
+	}
+
+	function largeClick() {
+		if (!insideClicked) focused = false;
+		else insideClicked = false;
 	}
 
 	function handleMouseover(e) {
@@ -59,6 +79,8 @@
 	}
 </style>
 
+<svelte:window on:click={largeClick}/>
+
 <label>
 	<div class="round">
 		<div
@@ -69,10 +91,14 @@
 			class:s-toolbox-checkbox-focus={focused}
 			on:mouseover={handleMouseover}
 			on:mouseout={handleMouseout}
+			on:click={handleClick}
 			{style}>
 			<input type="checkbox" bind:checked on:input={handleInput} />
 
-			<Ripple center width="40px" color={checked ? rippleColor : rippleColorOff}>
+			<Ripple
+				center
+				width="40px"
+				color={checked ? rippleColor : rippleColorOff}>
 				{#if checked}
 					<i class="material-icons checkbox" style="color: {color}">
 						check_box
@@ -82,7 +108,9 @@
 						indeterminate_check_box
 					</i>
 				{:else}
-					<i class="material-icons checkbox" style="color: {colorOff}">
+					<i
+						class="material-icons checkbox"
+						style="color: {colorOff}">
 						check_box_outline_blank
 					</i>
 				{/if}
