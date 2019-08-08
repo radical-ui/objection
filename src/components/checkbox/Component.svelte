@@ -44,7 +44,10 @@
 	}
 </style>
 
-<div class="over s-toolbox-checkbox" on:mouseover={handleMouseover} on:mouseout={handleMouseout}>
+<div
+	class="over s-toolbox-checkbox"
+	on:mouseover={handleMouseover}
+	on:mouseout={handleMouseout}>
 	<input type="checkbox" bind:checked on:input={handleInput} />
 
 	{#if checked}
