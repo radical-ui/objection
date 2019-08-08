@@ -19,6 +19,7 @@ A checkbox component following Material Design's guidlines.
 | `hovering`       | `boolean` | _ReadOnly_                         | Will be `true` if the checkbox is being hovered upon.                                                               |
 | `focused`        | `boolean` | _ReadOnly_                         | Will be `true` if the checkbox is in focus.                                                                         |
 | `disabled`       | `boolean` | `false`                            | As can be guessed, this prop disables the checkbox.                                                                 |
+| `shouldRipple`   | `boolean` | `true`                             | If the ripple on the checkbox should be disabled or not.                                                            |
 | `color`          | `string`  | `var(--checkbox-color)`            | The color of the checkbox when it is on or when `parital == true`.                                                  |
 | `colorOff`       | `string`  | `var(--checkbox-color-off)`        | The color of the checkbox when it is off.                                                                           |
 | `hoverColor`     | `string`  | `var(--checkbox-hover-color)`      | The color of the checkbox background when hovered upon when it is on or when `parital == true`.                     |

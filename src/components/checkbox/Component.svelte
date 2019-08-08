@@ -7,6 +7,7 @@
 	export let hovering = false;
 	export let focused = false;
 	export let disabled = false;
+	export let shouldRipple = true;
 	export let color = `var(--checkbox-color)`;
 	export let colorOff = `var(--checkbox-color-off)`;
 	export let hoverColor = `var(--checkbox-hover-color)`;
@@ -100,6 +101,7 @@
 			<input type="checkbox" bind:checked on:input={handleInput} />
 
 			<Ripple
+				disabled={!shouldRipple}
 				center
 				width="40px"
 				color={checked ? rippleColor : rippleColorOff}>
