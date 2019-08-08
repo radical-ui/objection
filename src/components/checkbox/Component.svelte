@@ -1,7 +1,7 @@
 <script>
-	export let hovering = false;
 	export let checked = false;
 	export let partial = false;
+	export let hovering = false;
 
 	function handleInput(e) {
 		partial = false;
