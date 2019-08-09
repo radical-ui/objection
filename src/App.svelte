@@ -224,4 +224,10 @@
 	<h1>Checkbox</h1>
 	<Checkbox bind:partial={checkboxPartial} />
 	<UIButton on:click={() => (checkboxPartial = true)}>Partialize</UIButton>
+
+	<br />
+	<br />
+
+	<Checkbox showLabel label="I agree" />
+	<Checkbox showLabel>I agree</Checkbox>
 </div>

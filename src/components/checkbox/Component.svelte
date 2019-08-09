@@ -1,6 +1,7 @@
 <script>
 	import { createEventDispatcher, afterUpdate } from 'svelte';
 	import Ripple from '../ripple/Ripple.svelte';
+	import LabelWrapper from './LabelWrapper.svelte';
 
 	export let checked = false;
 	export let partial = false;
@@ -16,6 +17,8 @@
 	export let focusColorOff = `var(--checkbox-focus-color-off)`;
 	export let rippleColor = `var(--checkbox-ripple-color)`;
 	export let rippleColorOff = `var(--checkbox-ripple-color-off)`;
+	export let showLabel = false;
+	export let label = null;
 
 	let insideClicked = false;
 
@@ -46,6 +49,13 @@
 	function largeClick() {
 		if (!insideClicked) focused = false;
 		else insideClicked = false;
+	}
+
+	function labelClicked() {
+		if (!insideClicked) {
+			checked = !checked;
+			partial = false;
+		}
 	}
 
 	function handleMouseover(e) {
@@ -86,41 +96,50 @@
 
 <svelte:window on:click={largeClick} />
 
-<label>
-	<div class="round">
-		<div
-			class="over s-toolbox-checkbox"
-			class:s-toolbox-checkbox-other={!disabled && !hovering && !focused}
-			class:s-toolbox-checkbox-disabled={disabled}
-			class:s-toolbox-checkbox-hover={hovering}
-			class:s-toolbox-checkbox-focus={focused}
-			on:mouseover={handleMouseover}
-			on:mouseout={handleMouseout}
-			on:click={handleClick}
-			{style}>
-			<input type="checkbox" bind:checked on:input={handleInput} />
+<LabelWrapper {showLabel} {label} on:click={labelClicked}>
+	<div class="round" slot="primary">
+		<label>
+			<div
+				class="over s-toolbox-checkbox"
+				class:s-toolbox-checkbox-other={!disabled && !hovering && !focused}
+				class:s-toolbox-checkbox-disabled={disabled}
+				class:s-toolbox-checkbox-hover={hovering}
+				class:s-toolbox-checkbox-focus={focused}
+				on:mouseover={handleMouseover}
+				on:mouseout={handleMouseout}
+				on:click={handleClick}
+				{style}>
+				<input type="checkbox" bind:checked on:input={handleInput} />
 
-			<Ripple
-				disabled={!shouldRipple}
-				center
-				width="40px"
-				color={checked ? rippleColor : rippleColorOff}>
-				{#if checked}
-					<i class="material-icons checkbox" style="color: {color}">
-						check_box
-					</i>
-				{:else if partial}
-					<i class="material-icons checkbox" style="color: {color}">
-						indeterminate_check_box
-					</i>
-				{:else}
-					<i
-						class="material-icons checkbox"
-						style="color: {colorOff}">
-						check_box_outline_blank
-					</i>
-				{/if}
-			</Ripple>
-		</div>
+				<Ripple
+					disabled={!shouldRipple}
+					center
+					width="40px"
+					color={checked ? rippleColor : rippleColorOff}>
+					{#if checked}
+						<i
+							class="material-icons checkbox"
+							style="color: {color}">
+							check_box
+						</i>
+					{:else if partial}
+						<i
+							class="material-icons checkbox"
+							style="color: {color}">
+							indeterminate_check_box
+						</i>
+					{:else}
+						<i
+							class="material-icons checkbox"
+							style="color: {colorOff}">
+							check_box_outline_blank
+						</i>
+					{/if}
+				</Ripple>
+			</div>
+		</label>
 	</div>
-</label>
+	<div slot="label">
+		<slot />
+	</div>
+</LabelWrapper>
