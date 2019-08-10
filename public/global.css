@@ -4,8 +4,8 @@
 :root {
 	font-family: 'Roboto', sans-serif;
 
-    /* ripple */
-    --ripple-color: rgba(0, 0, 0, 0.3);
+	/* ripple */
+	--ripple-color: rgba(0, 0, 0, 0.3);
 
 	/* buttons */
 	--buttons: #303ba6;
@@ -41,7 +41,7 @@
 	--icon-buttons-ripple: rgba(0, 0, 0, 0.2);
 
 	/* Card */
-	--card-background-color: rgba(0, 0, 0, .05);
+	--card-background-color: rgba(0, 0, 0, 0.05);
 	--card-background-color-hover: rgba(0, 0, 0, 0);
 	--card-outline-color: #777;
 	--card-outline-color-hover: #999;

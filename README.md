@@ -1,3 +1,5 @@
+##### [Chat on Discord](https://discord.gg/bWZnuvd) • [Documentation](#documentation) • [Changelog](./CHANGELOG.md) • [Component Status](#component-status)
+
 # Svelte Toolbox ([demo](https://svelte.dev/repl/5cf847108884453cbedd5920e919b630?version=3.6.5))
 
 A UI component library for Svelte implementing Google's Material Design specification.
@@ -127,6 +129,12 @@ Some of these components are still unstable. Please see the [Component Status](#
 -   [Card](src/components/card/README.md)
 -   [Checkbox](src/components/checkbox/README.md)
 
+## Need help? Have a question?
+
+Then you have come to the right place.
+
+[Open an Issue](https://github.com/svelte-toolbox/svelte-toolbox/issues/new) or join the question friendly [Discord Server](https://discord.gg/bWZnuvdhttps://discord.gg/bWZnuvd).
+
 ## Credits
 
 -   [@YogliB](https://github.com/YogliB) for providing the [svelte-component-template](https://github.com/YogliB/svelte-component-template) used for this project
@@ -134,7 +142,7 @@ Some of these components are still unstable. Please see the [Component Status](#
 
 ## Inspiration
 
-As I was working on an app using [Sapper](http://sapper.dev), I was made made aware of the fact that if there was a UI component library out there for [Svelte](http://svelte.dev), it would make developing a Svelte app so much easier!
+As I was working on an app using [Sapper](http://sapper.dev), I was made aware of the fact that if there was a UI component library out there for [Svelte](http://svelte.dev), it would make developing a Svelte app so much easier!
 
 I am a big fan of the Google Material Design patterns, and because I really like [React Toolbox](https://github.com/react-toolbox/react-toolbox), I decided to make something like it for Svelte.
 

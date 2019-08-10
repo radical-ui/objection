@@ -1,5 +1,9 @@
 LICENSE
-public/**
+public/favicon.ico
+public/bundle.css.map
+public/bundle.js.map
+public/bundle.css
+public/bundle.js
 node_modules/**
 .gitattributes
 .gitignore
