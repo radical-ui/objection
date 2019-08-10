@@ -229,5 +229,10 @@
 	<br />
 
 	<Checkbox showLabel label="I agree" />
-	<Checkbox showLabel>I agree</Checkbox>
+	<Checkbox showLabel>
+		I agree to the terms:
+		<p>
+			Lorem ipsum dolor sit amet, consectetur adipiscing elit. In ac maximus elit, ac tempor neque. Proin nisl ligula, ultricies ut ligula nec, gravida vulputate elit. Ut in dolor sodales erat molestie auctor quis sit amet neque. Phasellus ligula metus, molestie a ornare non, condimentum at leo. Curabitur maximus ex libero, in pharetra mauris tempus ac. Nam tincidunt congue volutpat. Pellentesque et efficitur augue. Nulla facilisi. Donec euismod a lacus non lobortis. Duis at felis facilisis, efficitur metus nec, elementum nibh. Maecenas sit amet dolor volutpat, egestas justo non, tincidunt arcu.
+		</p>
+	</Checkbox>
 </div>

@@ -11,11 +11,10 @@
 	.over {
 		position: relative;
 	}
-	.primary {
-
-	}
 	.label {
 		line-height: 40px;
+		width: calc(100% - 50px);
+		float: right;
 	}
 	.primary, .label {
 		display: inline-block;
