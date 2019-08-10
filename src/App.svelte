@@ -202,7 +202,7 @@
 	<Card>
 		<Ripple card>Hello, World!</Ripple>
 	</Card>
-	<Card outlined />
+	<Card outlined href="https://svelte.dev/" />
 	<Card corners="square" />
 	<Card corners="sleek-right">
 		<h1>Hello</h1>

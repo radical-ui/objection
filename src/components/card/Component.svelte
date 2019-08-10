@@ -17,8 +17,11 @@
 
 	const dispatch = createEventDispatcher();
 
+	let link;
+
 	function handleClick(e) {
 		dispatch('click', e);
+		link.click();
 	}
 
 	function handleMouseover(e) {
@@ -78,6 +81,9 @@
 	.hanging {
 		border-radius: 0 0 18px 18px;
 	}
+	a {
+		display: none;
+	}
 </style>
 
 <div
@@ -112,3 +118,4 @@
 		</slot>
 	</Ripple>
 </div>
+<a {href} bind:this={link}>[link]</a>
