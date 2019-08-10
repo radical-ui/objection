@@ -22,7 +22,8 @@ If the `icon` is a string, or an object of type [`IconObject`](#IconObject), Ico
 | `activeColor` | `string`                                  | `var(--icon-buttons-active)` | This is the color of the IconButton background after it has been clicked.                          |
 | `hoverColor`  | `string`                                  | `var(--icon-buttons-hover)`  | The color of the IconButton background on hover.                                                   |
 | `rippleColor` | `string`                                  | `var(--icon-buttons-ripple)` | The color of the ripple that occurs on click.                                                      |
-<!--|           | `transition`                              | `string`                     | `null`                                                                                             | The transition to apply when the icon changes. Only valid if `icon` is an Array. Valid values are `scale`, `fade`, `swipe`, or `zoom`. |
+| <!--          |                                           | `transition`                 | `string`                                                                                           | `null` | The transition to apply when the icon changes. Only valid if `icon` is an Array. Valid values are `scale`, `fade`, `swipe`, or `zoom`. |
+
 I will have a hard time doing transitions until https://github.com/sveltejs/svelte/issues/545 is resolved, or something like it is implemented.
 -->
 
