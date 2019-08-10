@@ -16,7 +16,8 @@
 		width: calc(100% - 50px);
 		float: right;
 	}
-	.primary, .label {
+	.primary,
+	.label {
 		display: inline-block;
 		vertical-align: top;
 	}
@@ -27,7 +28,7 @@
 		<div class="primary">
 			<slot name="primary" />
 		</div>
-		
+
 		<div class="label">
 			{#if label}
 				{label}
