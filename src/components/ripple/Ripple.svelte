@@ -10,6 +10,7 @@
 	export let block = false;
 	export let center = false;
 	export let card = false;
+	export let width = 'unset';
 
 	const dispatch = createEventDispatcher();
 
@@ -62,7 +63,8 @@
 	bind:this={container}
 	class:hideOverflow
 	class:block={block || card}
-	class:card>
+	class:card
+	style={width != null ? `width: ${width}` : ''}>
 	{#each ripples as { x, y, top, left, id }, index (id)}
 		<Circle
 			{x}
