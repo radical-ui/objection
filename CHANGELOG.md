@@ -1,3 +1,7 @@
+## v0.6.1
+
+-	Bug fixes
+
 ## v0.6.0
 
 -   The `Card` component is now stable and ready for production use.
