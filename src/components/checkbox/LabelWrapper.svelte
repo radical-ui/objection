@@ -24,17 +24,19 @@
 </style>
 
 {#if showLabel}
-	<div class="over" on:click={() => dispatch('click')}>
+	<div class="over">
 		<div class="primary">
 			<slot name="primary" />
 		</div>
 
 		<div class="label">
-			{#if label}
-				{label}
-			{:else}
-				<slot name="label" />
-			{/if}
+			<span on:click={() => dispatch('click')}>
+				{#if label}
+					{label}
+				{:else}
+					<slot name="label" />
+				{/if}
+			</span>
 		</div>
 	</div>
 {:else}
