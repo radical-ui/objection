@@ -46,12 +46,8 @@
 	function mouseleave(e) {
 		hovering = false;
 	}
-	function focus() {
-
-	}
-	function blur() {
-
-	}
+	function focus() {}
+	function blur() {}
 </script>
 
 <style>
@@ -75,13 +71,13 @@
 		on:mouseleave={mouseleave}>
 
 		{#if outlined}
-			<InputOutline/>
+			<InputOutline />
 		{:else}
-			<InputLine/>
+			<InputLine />
 		{/if}
 
 	</div>
-	{#if helper && isFocused || helper && persistHelper}
+	{#if (helper && isFocused) || (helper && persistHelper)}
 		<HelperText {helper} />
 	{/if}
 </div>
