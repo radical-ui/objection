@@ -69,7 +69,7 @@
 	}
 	.up {
 		position: relative;
-		top: .8px;
+		top: 0.8px;
 	}
 </style>
 
