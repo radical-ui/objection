@@ -2,6 +2,7 @@
 	import { createEventDispatcher } from 'svelte';
 	import HelperText from './HelperText.svelte';
 	import InputLine from './InputLine.svelte';
+	import InputOutline from './InputOutline.svelte';
 
 	export let value = null;
 	export let placeholder = null;
@@ -54,18 +55,17 @@
 </script>
 
 <style>
-
+	.over {
+		width: 250px;
+		display: inline-block;
+	}
+	.over.block {
+		display: block;
+	}
 </style>
 
-<svelte:head>
-	<style class="MDC-styles">
-
-	</style>
-</svelte:head>
-
-<div class="over" class:mdc-custom-inline-block={!block}>
+<div class="over" class:block>
 	<div
-		class=""
 		class:input-disabled={disabled}
 		class:input-focused={isFocused}
 		class:input-error={error}
@@ -74,7 +74,11 @@
 		on:mouseover={mouseover}
 		on:mouseleave={mouseleave}>
 
-		
+		{#if outlined}
+			<InputOutline/>
+		{:else}
+			<InputLine/>
+		{/if}
 
 	</div>
 	{#if helper && isFocused || helper && persistHelper}
