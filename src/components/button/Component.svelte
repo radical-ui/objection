@@ -67,6 +67,10 @@
 	.block {
 		display: block;
 	}
+	.up {
+		position: relative;
+		top: 0.8px;
+	}
 </style>
 
 <AWrapper {href} {disabled}>
@@ -96,7 +100,9 @@
 			time={600}
 			color={primary ? primaryRippleColor : rippleColor}>
 			<div style="padding: 0 12px;">
-				<slot>Some text</slot>
+				<span class="up">
+					<slot>Some text</slot>
+				</span>
 			</div>
 		</Ripple>
 	</button>
