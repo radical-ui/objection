@@ -1,0 +1,1 @@
+<input {type} on:focus={focus} on:blur={blur}/>
