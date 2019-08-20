@@ -70,11 +70,13 @@
 		on:mouseover={mouseover}
 		on:mouseleave={mouseleave}>
 
-		{#if outlined}
-			<InputOutline />
-		{:else}
-			<InputLine />
-		{/if}
+		<label>
+			{#if outlined}
+				<InputOutline />
+			{:else}
+				<InputLine />
+			{/if}
+		</label>
 
 	</div>
 	{#if (helper && isFocused) || (helper && persistHelper)}

@@ -1,4 +1,5 @@
 <script>
+	import Input from './Input.svelte';
 	export let value;
 
 	function focus() {}
@@ -6,9 +7,11 @@
 </script>
 
 <style>
-
+	.over {
+		padding: 10px;
+	}
 </style>
 
 <div class="over">
-	<input type="text" bind:value on:focus={focus} on:blur={blur} />
+	<Input {value} />
 </div>
