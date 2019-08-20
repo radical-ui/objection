@@ -1,6 +1,6 @@
 ## v0.6.1
 
--	Bug fixes
+-   Bug fixes
 
 ## v0.6.0
 
