@@ -30,7 +30,7 @@
 		"sass": "^1.22.3",
 		"sirv-cli": "~0.4.4",
 		"svelte": "^3.5.4",
-		"write": "^1.0.3"
+		"write": "^2.0.0"
 	},
 	"scripts": {
 		"build": "npm run compile:scss && npm run wrap:css && rollup -c",
