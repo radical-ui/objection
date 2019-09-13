@@ -86,6 +86,6 @@
 		]
 	},
 	"dependencies": {
-		"@material/textfield": "~3.1.0"
+		"@material/textfield": "~3.2.0"
 	}
 }
