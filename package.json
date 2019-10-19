@@ -1,91 +1,42 @@
 {
 	"name": "svelte-toolbox",
-	"svelte": "src/components/components.module.js",
+	"version": "1.0.0",
 	"description": "A UI component library for Svelte implementing Google's Material Design specification",
-	"module": "dist/index.min.mjs",
-	"main": "dist/index.min.js",
-	"version": "0.6.1",
-	"license": "MIT",
-	"homepage": "https://svelte.dev/repl/5cf847108884453cbedd5920e919b630?version=3.6.5",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/svelte-toolbox/svelte-toolbox"
-	},
-	"devDependencies": {
-		"eslint": "~6.5.0",
-		"eslint-config-prettier": "~6.4.0",
-		"eslint-plugin-svelte3": "^2.7.1",
-		"husky": "~3.0.0",
-		"lint-staged": "~9.4.0",
-		"node-sass": "^4.12.0",
-		"npm-run-all": "~4.1.5",
-		"prettier": "^1.18.2",
-		"prettier-plugin-svelte": "^0.7.0",
-		"rollup": "~1.24.0",
-		"rollup-plugin-commonjs": "^10.0.1",
-		"rollup-plugin-livereload": "~1.0.1",
-		"rollup-plugin-node-resolve": "^5.0.4",
-		"rollup-plugin-svelte": "~5.1.0",
-		"rollup-plugin-terser": "~5.1.1",
-		"sass": "^1.22.3",
-		"sirv-cli": "~0.4.4",
-		"svelte": "^3.5.4",
-		"write": "^2.0.0"
-	},
+	"main": "index.js",
 	"scripts": {
-		"build": "npm run compile:scss && npm run wrap:css && rollup -c",
-		"autobuild": "rollup -c -w",
-		"dev": "npm run compile:scss && npm run wrap:css && run-p start:dev autobuild",
-		"start": "sirv public",
-		"start:dev": "sirv public --dev",
-		"prepublishOnly": "run-p build",
+		"dev": "node dev.js",
+		"build": "node build.js",
 		"format": "prettier --write \"./**\"",
 		"lint": "eslint . && npm run format",
 		"lint:test": "eslint . && npm run format:test",
 		"format:test": "prettier --check \"./**\"",
-		"compile:scss:watch": "sass --watch ./src/styles/mdc.scss ./src/styles/internal/mdc.css --load-path=\"node_modules\"",
-		"compile:scss": "sass ./src/styles/mdc.scss ./src/styles/internal/mdc.css --load-path=\"node_modules\"",
-		"wrap:css": "node ./src/styles/internal/wrap-css.js",
-		"wrap:css:watch": "node ./src/styles/internal/wrap-css-watch.js",
-		"preversion": "npm login",
-		"postversion": "git push && git push --tags && rm -rf build/temp && npm publish --dry-run && npm publish"
+		"postversion": "git push && git push --tags && rm -rf build/temp && npm publish"
 	},
-	"keywords": [
-		"svelte-components",
-		"svelte",
-		"material",
-		"design",
-		"ui",
-		"kit",
-		"component",
-		"library",
-		"ui component library"
-	],
+	"keywords": [],
+	"author": "",
+	"license": "MIT",
+	"devDependencies": {
+		"eslint": "^6.4.0",
+		"eslint-config-prettier": "^6.3.0",
+		"jest": "^24.9.0",
+		"prettier": "^1.18.2",
+		"prettier-plugin-svelte": "^0.7.0",
+		"rollup": "^1.25.0",
+		"rollup-plugin-commonjs": "^10.1.0",
+		"rollup-plugin-livereload": "^1.0.4",
+		"rollup-plugin-node-resolve": "^5.2.0",
+		"rollup-plugin-serve": "^1.0.1",
+		"rollup-plugin-svelte": "^5.1.0",
+		"rollup-plugin-terser": "^5.1.2",
+		"svelte": "^3.12.1",
+		"write": "^2.0.0"
+	},
 	"files": [
-		"src/components",
-		"src/styles/internal/wrapped-styles.js",
-		"src/store.js",
-		"dist/index.min.mjs",
-		"dist/index.min.js",
-		"public/bundle.css",
-		"public/global.css"
+		"line-ripple",
+		"index.js"
 	],
-	"husky": {
-		"hooks": {
-			"pre-commit": "lint-staged"
-		}
-	},
-	"lint-staged": {
-		"*.{js, svelte}": [
-			"eslint --fix",
-			"git add"
-		],
-		"*.{css, html, js, json}": [
-			"prettier --write",
-			"git add"
-		]
-	},
-	"dependencies": {
-		"@material/textfield": "~3.2.0"
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Vehmloewff/todo"
 	}
 }

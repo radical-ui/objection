@@ -1,8 +1,2 @@
-.DS_Store
-dist
 node_modules
-npm-debug.log
-public/bundle.*
-src/styles/internal/mdc.css
-src/styles/internal/mdc.css.map
-src/styles/internal/wrapped-styles.js
+*/dist/**

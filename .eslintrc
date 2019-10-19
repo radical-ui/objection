@@ -1,13 +1,14 @@
 {
 	"env": {
-		"browser": true,
-		"es6": true
+		"node": true
 	},
 	"extends": ["eslint:recommended", "prettier"],
 	"parserOptions": {
 		"ecmaVersion": 2019,
 		"sourceType": "module"
 	},
-	"plugins": ["svelte3"],
+	"globals": {
+		"Promise": "readable"
+	},
 	"rules": {}
 }

@@ -1,4 +1,2 @@
-dist/
-public/
-src/styles/internal
-rollup.config.js
+node_modules/
+*/dist/**
