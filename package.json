@@ -12,7 +12,7 @@
 		"url": "https://github.com/svelte-toolbox/svelte-toolbox"
 	},
 	"devDependencies": {
-		"eslint": "~6.7.2",
+		"eslint": "~6.8.0",
 		"eslint-config-prettier": "~6.9.0",
 		"eslint-plugin-svelte3": "^2.7.1",
 		"husky": "~4.0.10",
