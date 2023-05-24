@@ -1,3 +1,5 @@
+> No longer maintained
+
 ##### [Chat on Discord](https://discord.gg/bWZnuvd) • [Documentation](#documentation) • [Changelog](./CHANGELOG.md) • [Component Status](#component-status)
 
 # Svelte Toolbox ([demo](https://svelte.dev/repl/5cf847108884453cbedd5920e919b630?version=3.6.5))
