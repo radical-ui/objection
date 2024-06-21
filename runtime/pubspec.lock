@@ -131,13 +131,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.12.0"
-  object:
-    dependency: "direct main"
-    description:
-      path: "../object"
-      relative: true
-    source: path
-    version: "1.0.0"
   path:
     dependency: transitive
     description:

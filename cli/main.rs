@@ -1,12 +1,5 @@
 use clap::{Parser, Subcommand, ValueEnum};
-
-#[derive(Debug, ValueEnum, Clone, Default)]
-enum Runtime {
-	#[default]
-	Preact,
-	Flutter,
-	SwiftUi,
-}
+use tokio::runtime::Builder;
 
 #[derive(Debug, ValueEnum, Clone, Default)]
 enum Platform {
@@ -31,8 +24,8 @@ enum Engine {
 #[command(version, about, long_about = None)]
 struct Command {
 	/// The runtime to use. For more information, run `quack explain runtime`. Defaults to `preact`.
-	#[arg(long)]
-	runtime: Option<Runtime>,
+	#[arg(long, default_value_t = String::from("runtime"))]
+	runtime: String,
 
 	/// The platform to build for. For more information, run `quack explain platform`. Defaults to `web`.
 	#[arg(long)]
@@ -81,8 +74,8 @@ enum Operation {
 		reload: bool,
 	},
 	/// Build the configured runtime (see --runtime) for the configured platform (see --platform), which, when run, will access the
-	/// engine at the configured engine url. Each platform and runtime will be nested inside the folder. For example, if you set this to
-	/// "out", a build with "--runtime=preact --platform=web" would be written to `out/web_preact`
+	/// engine at the configured engine url (see --engine-url). Each platform and runtime will be nested inside the folder.
+	// For example, if you set this to "out", a build with "--runtime=preact --platform=web" would be written to `out/web_preact`
 	Build {
 		#[arg(long, default_value_t = String::from("target"))]
 		out_dir: String,
@@ -97,9 +90,14 @@ enum ExplanationConcept {
 }
 
 fn main() {
+	Builder::new_current_thread().enable_all().build().unwrap().block_on(main_async());
+}
+
+async fn main_async() {
 	let args = Command::parse();
 
-	dbg!(args);
+	dbg!(&args);
+	// doc(&args.runtime).await;
 
 	println!("Hello, world!");
 }

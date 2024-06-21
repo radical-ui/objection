@@ -1,5 +1,7 @@
 import 'package:flutter/cupertino.dart';
 
+enum Example { Foo, bar }
+
 class ObjectTitle {
   final String text;
   final bool is_editable;

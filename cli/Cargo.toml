@@ -1,0 +1,12 @@
+[package]
+name = "quack"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "quack"
+path = "main.rs"
+
+[dependencies]
+clap = { version = "4.5.7", features = ["derive"] }
+tokio = { version = "1.38.0", features = ["full"] }
