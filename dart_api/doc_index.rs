@@ -1,3 +1,4 @@
+use dom::Dom;
 use error_stack::ResultExt;
 use log::warn;
 use reqwest::Url;
@@ -6,7 +7,6 @@ use std::collections::HashMap;
 
 use crate::{
 	fetch::{fetch, search_fetch},
-	html::HtmlPage,
 	slice_on_last_dot, Error, Result,
 };
 
@@ -83,9 +83,11 @@ impl DocIndex {
 
 				let constructor = DocItemClassConstructor {
 					name: constructor_name,
-					page: HtmlPage::from_url(self.docs_root.join(href).change_context(Error::HighlyOdd)?)
-						.await
-						.change_context(Error::InvalidDartDocOuput)?,
+					page: Dom::from_string(
+						fetch(self.docs_root.join(href).change_context(Error::HighlyOdd)?)
+							.await?
+							.ok_or(Error::InvalidDartDocOuput)?,
+					),
 				};
 
 				if let Some(root) = roots.get_mut(qualified_name) {
@@ -114,9 +116,10 @@ impl DocIndex {
 
 			// Checks if this node is an enum
 			if kind == 5 {
-				let page = HtmlPage::from_url(self.docs_root.join(href).change_context(Error::HighlyOdd)?)
-					.await
-					.change_context(Error::InvalidDartDocOuput)?;
+				let html = fetch(self.docs_root.join(href).change_context(Error::HighlyOdd)?)
+					.await?
+					.ok_or(Error::InvalidDartDocOuput)?;
+				let page = Dom::from_string(html);
 
 				if let Some(root) = roots.get_mut(qualified_name) {
 					match root.kind {
@@ -150,12 +153,12 @@ pub struct DocItem<'a> {
 
 pub enum DocItemKind<'a> {
 	Class { constructors: Vec<DocItemClassConstructor<'a>> },
-	Enum { page: HtmlPage },
+	Enum { page: Dom },
 }
 
 pub struct DocItemClassConstructor<'a> {
 	name: &'a str,
-	page: HtmlPage,
+	page: Dom,
 }
 
 fn parse_doc_index(text: String) -> Result<Vec<Value>> {

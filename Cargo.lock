@@ -207,11 +207,9 @@ checksum = "06ea2b9bc92be3c2baa9334a323ebca2d6f074ff852cd1d7b11064035cd3868f"
 name = "dart_api"
 version = "0.1.0"
 dependencies = [
+ "dom",
  "error-stack",
- "html5ever 0.27.0",
  "log",
- "markup5ever_arcdom",
- "markup5ever_rcdom",
  "rand",
  "reqwest",
  "serde",

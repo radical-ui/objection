@@ -8,13 +8,11 @@ path = "mod.rs"
 
 [dependencies]
 error-stack = "0.4.1"
-html5ever = "0.27.0"
 log = "0.4.21"
-markup5ever_arcdom = "0.1.2"
-markup5ever_rcdom = "0.3.0"
 rand = "0.8.5"
 reqwest = "0.12.5"
 serde = "1.0.203"
 serde_json = "1.0.117"
 thiserror = "1.0.61"
 tokio = { version = "1.38.0", features = ["full"] }
+dom = { path = "../dom" }
