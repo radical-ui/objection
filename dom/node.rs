@@ -1,4 +1,6 @@
-use std::{fmt::Write, rc::Rc};
+use markup5ever_rcdom::{Node as RawNode, NodeData};
+use reqwest::header::CONTENT_DISPOSITION;
+use std::{borrow::Borrow, fmt::Write, rc::Rc};
 
 use crate::hierarchy::NodeHierarchyComponent;
 
@@ -22,5 +24,26 @@ impl Node {
 		}
 
 		string
+	}
+
+	pub fn get_text(&self) -> String {
+		let mut string = String::new();
+
+		push_text_content(&self.bare, &mut string);
+
+		string
+	}
+}
+
+fn push_text_content(raw_node: &RawNode, text: &mut String) {
+	for child in raw_node.children.borrow().iter() {
+		match &child.data {
+			NodeData::Text { contents } => {
+				text.push_str(&contents.borrow().to_string());
+			}
+			_ => (),
+		}
+
+		push_text_content(child, text)
 	}
 }

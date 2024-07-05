@@ -2,9 +2,11 @@ mod dart_doc;
 mod doc_index;
 mod error;
 mod fetch;
+mod item;
 mod package;
 
 pub use error::*;
+pub use item::*;
 pub use package::*;
 
 /// Slice a name into a base and last component

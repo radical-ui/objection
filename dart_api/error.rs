@@ -18,6 +18,8 @@ pub enum Error {
 	FailedToFetch,
 	#[error("Resource not found")]
 	ResourceNotFound,
+	#[error("Url doesn't seem to be that of a valid item")]
+	UnknownItemUrl,
 }
 
 pub type Result<T> = error_stack::Result<T, Error>;

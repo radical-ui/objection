@@ -45,9 +45,13 @@ pub async fn search_fetch(mut url: Url, name: &str) -> Result<Option<(Url, Strin
 	}
 
 	segments.pop();
-	url.set_path(&segments.join("/"));
 
-	Ok(match fetch(url.clone()).await? {
+	let mut path = segments.join("/");
+	path.push('/');
+
+	url.set_path(&path);
+
+	Ok(match fetch(url.join(name).change_context(Error::HighlyOdd)?).await? {
 		Some(text) => Some((url, text)),
 		None => Box::pin(search_fetch(url, name)).await?,
 	})

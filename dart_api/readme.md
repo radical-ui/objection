@@ -13,29 +13,36 @@ let mut package = Package::parse_from_directory("a_directory_with_dart_code");
 package.get_roots(); // &[Item { ... }, Item { ... }]
 
 // Release all roots except the first. All unnecessary dependencies will be dropped.
-package.reduce_roots(package.get_roots().get(0).unwrap()); 
+package.reduce_roots(package.get_roots().get(0).unwrap());
 
 // Get all the classes graph. The current roots and all their dependencies
 for item in package.items() {
-  class.get_name(); // Something like "Foo"
-  class.get_path(); // Something like "package.some_file.Foo"
-  class.get_comment(); // The doc comment (if any) that was placed on this class
+  class.name; // Something like "Foo"
+  class.path; // Something like "package.some_file.Foo"
+  class.comment; // The doc comment (if any) that was placed on this class
 
   match item {
     Item::Class(class) => {
-      for property in class.get_properties() {
-        property.get_name(); // Something like "name"
-        property.is_named(); // If flase, this argument is positional
-        property.get_comment(); // The doc comment (if any) that was placed on this property
-        property.get_type(); // Item { .. } 
+      class.name; // something like "Column"
+    
+      for constructor in class.get_constructors() {
+        constructor.name; // Generally the same name as the class
+        
+        for property in constructor.get_properties() {
+          property.name; // Something like "name"
+          property.is_named; // If flase, this argument is positional
+          property.comment; // The doc comment (if any) that was placed on this property
+          property.type_; // Type { .. } 
+        }
       }
     }
     Item::Enum(enum_) => {
       for variant in enum_.get_variants() {
-        variant.get_name();
-        variant.get_comment();
+        variant.name;
+        variant.comment;
       }
     }
+  }
 }
 ```
 
