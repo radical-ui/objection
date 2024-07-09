@@ -1,6 +1,6 @@
 use dom::{Dom, Selector};
 use error_stack::ResultExt;
-use log::warn;
+use log::{error, warn};
 use reqwest::Url;
 use serde_json::{from_str, Value};
 use std::collections::HashMap;
@@ -13,6 +13,7 @@ use crate::{
 pub struct Graph {
 	items: HashMap<String, Item>,
 	qualified_names_by_url: HashMap<Url, String>,
+	unvisited_items: HashMap<String, ()>,
 }
 
 impl Graph {
@@ -22,6 +23,7 @@ impl Graph {
 		let mut graph = Graph {
 			items: HashMap::new(),
 			qualified_names_by_url: HashMap::new(),
+			unvisited_items: HashMap::new(),
 		};
 		let package_name = get_name(docs_root.clone()).await?;
 		let raw_items = parse_doc_index(
@@ -58,6 +60,7 @@ impl Graph {
 		};
 
 		self.items.insert(qualified_name.clone(), item);
+		self.unvisited_items.insert(qualified_name.clone(), ());
 
 		if let Some(doc_url) = doc_url {
 			self.qualified_names_by_url.insert(doc_url, qualified_name);
@@ -84,6 +87,8 @@ impl Graph {
 			}
 		}
 
+		self.unvisited_items.remove(qualified_name);
+
 		item
 	}
 
@@ -99,6 +104,37 @@ impl Graph {
 				Some(name) => name,
 				None => Err(Error::UnknownItemUrl)?,
 			})
+		}
+	}
+
+	/// Get the next qualified name that has not been marked as visited. Before returning, this function will mark the name it is about to return as visited.
+	pub fn next_unvisited_qualified_name_mut(&mut self) -> Option<String> {
+		let qualified_name = self.unvisited_items.keys().next()?.clone();
+		self.unvisited_items.remove(&qualified_name);
+
+		Some(qualified_name)
+	}
+
+	/// Get the next item that has not been marked as visited. Before returning, this function will mark the item it is about to return as visited.
+	pub fn next_unvisited_mut(&mut self) -> Option<&mut Item> {
+		let qualified_name = self.next_unvisited_qualified_name_mut()?;
+
+		match self.items.get_mut(&qualified_name) {
+			Some(item) => Some(item),
+			None => {
+				error!("internal unvisted items is not correct. A qualified name was found that didn't point to an item");
+
+				None
+			}
+		}
+	}
+
+	/// Reset the interal record of what has been visited, marking everything as unvisited.
+	pub fn reset_unvisited_record(&mut self) {
+		self.unvisited_items.clear();
+
+		for qualified_name in self.items.keys().cloned() {
+			self.unvisited_items.insert(qualified_name, ());
 		}
 	}
 }
