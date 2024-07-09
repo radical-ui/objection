@@ -1,0 +1,12 @@
+[package]
+name = "svelte_toolbox_derive_action_key"
+edition = "2021"
+
+[lib]
+proc_macro = true
+path = "mod.rs"
+
+[dependencies]
+syn = { version = "2", features = ["full"] }
+quote = "1"
+proc-macro2 = "1"

@@ -1,0 +1,5 @@
+{
+	"imports": {
+		"runtime": "./runtime/mod.ts"
+	}
+}
