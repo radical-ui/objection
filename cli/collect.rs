@@ -1,12 +1,11 @@
 use anyhow::{anyhow, Context, Error, Result};
-use colored::Colorize;
 use deno_doc::{interface::InterfaceDef, js_doc::JsDocTag, ts_type::TsTypeDef, DocNodeKind, DocParser, DocParserOptions, Location};
 use deno_graph::{BuildOptions, CapturingModuleAnalyzer, GraphKind, ModuleGraph};
 use log::{debug, warn};
 use std::collections::{HashMap, HashSet};
 use url::Url;
 
-use crate::module_loader::load_modules;
+use crate::{contextual_format, module_loader::load_modules};
 
 #[derive(Debug)]
 pub enum Kind {
@@ -14,7 +13,6 @@ pub enum Kind {
 	String,
 	Number,
 	Bool,
-	Component,
 	Ref { name: String },
 	List { of: Box<Kind> },
 	Tuple { items: Vec<Kind> },
@@ -46,16 +44,17 @@ pub struct Property {
 
 #[derive(Debug)]
 pub struct ComponentInfo {
-	kind_name: String,
-	render_name: String,
+	pub kind_name: String,
+	pub render_name: String,
 }
 
 #[derive(Debug, Default)]
 pub struct Collection {
-	conversions: HashMap<String, InternalKindDefinition>,
-	failed_conversions: HashMap<String, Error>,
+	kinds: HashMap<String, InternalKindDefinition>,
+	erroring_kinds: HashMap<String, Error>,
 	components: Vec<ComponentInfo>,
-	function_names: Vec<String>,
+	functions: HashSet<String>,
+	erroring_functions: HashMap<String, Error>,
 }
 
 impl Collection {
@@ -92,7 +91,9 @@ impl Collection {
 			let name = node.name.clone();
 
 			match node.kind {
-				DocNodeKind::Function => self.function_names.push(name),
+				DocNodeKind::Function => {
+					self.functions.insert(name);
+				}
 				DocNodeKind::Class => local_warn("Classes are not a support type of export and will be ignored (at {})", &node.location),
 				DocNodeKind::Enum => local_warn(
 					"Enums are not a supported type of export and will be ignored. Use a keyed or string literal union instead (at {})",
@@ -113,7 +114,7 @@ impl Collection {
 
 					match conversion {
 						Ok(Conversion { kind, dependencies }) => {
-							self.conversions.insert(
+							self.kinds.insert(
 								name,
 								InternalKindDefinition {
 									comment: node.js_doc.doc.clone(),
@@ -123,7 +124,7 @@ impl Collection {
 							);
 						}
 						Err(error) => {
-							self.failed_conversions.insert(
+							self.erroring_kinds.insert(
 								name,
 								error.context(local_message(&format!("Failed to convert interface `{}`", &node.name), &node.location)),
 							);
@@ -138,7 +139,7 @@ impl Collection {
 						.ok_or(anyhow!("Bad deno_doc output: expected type alias def for node of kind type alias."))?;
 
 					if !type_alias.type_params.is_empty() {
-						self.failed_conversions
+						self.erroring_kinds
 							.insert(name, local_error("Type parameters are not supported.", &node.location));
 					} else {
 						let conversion = convert_ts_type(&type_alias.ts_type, &node.location);
@@ -147,7 +148,7 @@ impl Collection {
 
 						match conversion {
 							Ok(Conversion { kind, dependencies }) => {
-								self.conversions.insert(
+								self.kinds.insert(
 									name,
 									InternalKindDefinition {
 										comment: node.js_doc.doc.clone(),
@@ -157,7 +158,7 @@ impl Collection {
 								);
 							}
 							Err(error) => {
-								self.failed_conversions
+								self.erroring_kinds
 									.insert(name, error.context(local_message("Failed to convert type alias.", &node.location)));
 							}
 						};
@@ -165,7 +166,7 @@ impl Collection {
 				}
 				DocNodeKind::Variable => local_warn(
 					"Exported variables are not supported and will be ignored. If you want to export a component render \
-						function, `export function` instead (at {})",
+					function, `export function` instead",
 					&node.location,
 				),
 			}
@@ -180,6 +181,31 @@ impl Collection {
 
 		self.prune_names(unreachable_names.iter().map(|item| item.as_str()));
 		self.meet_all_dependencies();
+
+		if !self.functions.contains("start") {
+			self.erroring_functions.insert(
+				"start".to_string(),
+				anyhow!(
+					"{}",
+					&contextual_format("Missing function `start`", "All renderers must export a `start` function.")
+				),
+			);
+		}
+
+		for component in &self.components {
+			if !self.functions.contains(&component.render_name) {
+				self.erroring_functions.insert(
+					component.render_name.clone(),
+					anyhow!(
+						"{}",
+						contextual_format(
+							&format!("Missing function `{}`", &component.render_name),
+							&format!("Specified as the renderer for `{}`, but it was not exported", &component.kind_name)
+						)
+					),
+				);
+			}
+		}
 	}
 
 	pub fn get_component_info(&self) -> &[ComponentInfo] {
@@ -187,9 +213,9 @@ impl Collection {
 	}
 
 	pub fn get_all_names(&self) -> Vec<&str> {
-		let mut keys = self.conversions.keys().map(|s| s.as_str()).collect::<Vec<_>>();
+		let mut keys = self.kinds.keys().map(|s| s.as_str()).collect::<Vec<_>>();
 
-		for item in self.failed_conversions.keys() {
+		for item in self.erroring_kinds.keys() {
 			keys.push(item.as_str());
 		}
 
@@ -210,7 +236,7 @@ impl Collection {
 
 		for name in names {
 			marked_nodes.remove(name);
-			remove_dependencies(name, &self.conversions, &mut marked_nodes);
+			remove_dependencies(name, &self.kinds, &mut marked_nodes);
 		}
 
 		marked_nodes.drain().collect()
@@ -218,17 +244,17 @@ impl Collection {
 
 	pub fn prune_names<'a>(&mut self, names: impl IntoIterator<Item = &'a str>) {
 		for name in names {
-			self.conversions.remove(name);
-			self.failed_conversions.remove(name);
+			self.kinds.remove(name);
+			self.erroring_kinds.remove(name);
 		}
 	}
 
 	pub fn meet_all_dependencies(&mut self) {
 		let mut missing = HashMap::<String, Vec<String>>::new();
 
-		for (name, InternalKindDefinition { dependencies, .. }) in &self.conversions {
+		for (name, InternalKindDefinition { dependencies, .. }) in &self.kinds {
 			for dependency in dependencies {
-				if self.conversions.contains_key(dependency) || self.failed_conversions.contains_key(dependency) {
+				if self.kinds.contains_key(dependency) || self.erroring_kinds.contains_key(dependency) {
 					continue;
 				}
 
@@ -241,22 +267,34 @@ impl Collection {
 		}
 
 		for (name, dependents) in missing {
-			self.failed_conversions.insert(
+			self.erroring_kinds.insert(
 				name.clone(),
 				anyhow!(
-					"Couldn't find an exported item for `{name}`, referenced by {}",
-					dependents.iter().map(|d| format!("`{d}`")).collect::<Vec<_>>().join(", ")
+					"{}",
+					contextual_format(
+						"Missing type `{name}`",
+						&format!(
+							"Expected because it was referenced by {}",
+							dependents.iter().map(|d| format!("`{d}`")).collect::<Vec<_>>().join(", ")
+						)
+					),
 				),
 			);
 		}
 	}
 
 	pub fn get_errors(&self) -> Vec<&Error> {
-		self.failed_conversions.values().collect()
+		let mut kind_errors = self.erroring_kinds.values().collect::<Vec<_>>();
+
+		for error in self.erroring_functions.values() {
+			kind_errors.push(error);
+		}
+
+		kind_errors
 	}
 
 	pub fn get_kinds(&self) -> Vec<KindDefinition> {
-		self.conversions
+		self.kinds
 			.iter()
 			.map(|(name, def)| KindDefinition {
 				name,
@@ -274,7 +312,7 @@ impl Collection {
 				let context = words.pop();
 
 				if label == "@component" {
-					let render_name = context.map(|inner| inner.to_string()).unwrap_or(format!("Render{node_name}"));
+					let render_name = context.map(|inner| inner.to_string()).unwrap_or(format!("{node_name}Render"));
 
 					self.components.push(ComponentInfo {
 						kind_name: node_name.to_string(),
@@ -374,13 +412,6 @@ fn convert_ts_type(ts_type: &TsTypeDef, location: &Location) -> Result<Conversio
 	}
 
 	if let Some(type_ref) = &ts_type.type_ref {
-		if type_ref.type_name == "Component" {
-			return Ok(Conversion {
-				kind: Kind::Component,
-				dependencies: Vec::new(),
-			});
-		}
-
 		if type_ref.type_params.is_some() {
 			local_warn("Type ref was supplied parameters, but this is not supported", location)
 		}
@@ -540,7 +571,7 @@ fn local_err<T>(message: &str, location: &Location) -> Result<T> {
 }
 
 fn local_message(message: &str, location: &Location) -> String {
-	let file = format!("at {}:{}:{}", location.filename, location.line, location.col);
+	let file = format!("{}:{}:{}", location.filename, location.line, location.col);
 
-	format!("{message}\n    {}", file.dimmed())
+	contextual_format(message, &file)
 }

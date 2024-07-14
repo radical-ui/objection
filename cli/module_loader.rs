@@ -1,27 +1,12 @@
 use anyhow::{anyhow, Context, Error, Result};
 use deno_graph::source::{MemoryLoader, Source};
-use rand::random;
 use serde_json::{from_slice, Value};
-use std::{
-	env::{self, temp_dir},
-	fmt::Write,
-	path::Path,
-	process::Stdio,
-};
-use tokio::{
-	fs::{read_to_string, write},
-	process::Command,
-};
+use std::{env, process::Stdio};
+use tokio::{fs::read_to_string, process::Command};
 use url::Url;
 
 pub async fn load_modules(entry_url: &Url) -> Result<MemoryLoader> {
-	// let index_file_path = temp_dir().join(random::<u64>().to_string());
-	// let mut index_file_contents = String::new();
 	let mut memory_loader = MemoryLoader::default();
-
-	// write(&index_file_path, index_file_contents)
-	// 	.await
-	// 	.with_context(|| format!("failed to write to {index_file_path:?}"))?;
 
 	let json_graph = get_json_graph(entry_url.as_str()).await?;
 	let json_modules = json_graph

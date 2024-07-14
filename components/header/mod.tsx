@@ -16,7 +16,7 @@ const getTextSize = (size: HeaderSize) => {
 	if (size === 'Small') return 'lg'
 }
 
-export function SimpleLayoutRender(props: Header) {
+export function HeaderRender(props: Header) {
 	return (
 		<div class='flex-1 flex flex-col gap-5'>
 			<div class='flex gap-5 items-center'>

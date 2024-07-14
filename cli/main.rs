@@ -1,7 +1,7 @@
 mod collect;
 mod module_loader;
 
-use anyhow::{Context, Result};
+use anyhow::{bail, Context, Result};
 use clap::{Parser, Subcommand, ValueEnum};
 use collect::Collection;
 use colored::{Color, Colorize};
@@ -118,14 +118,29 @@ async fn main_async() -> Result<()> {
 	let args = Command::parse();
 	let base_url = Url::from_directory_path(current_dir().context("Failed to get the current working directory")?).unwrap();
 	let runtime_url = base_url.join(&args.runtime).context("Failed to resolve runtime")?;
-
 	let mut collection = Collection::default();
+
 	collection.collect(&runtime_url).await?;
 	collection.check_components();
 
-	for error in collection.get_errors() {
+	let errors = collection.get_errors();
+	let error_count = errors.len();
+
+	for error in errors {
 		error!("{:?}", error);
 	}
 
+	if error_count > 0 {
+		bail!(
+			"could not mount runtime due to {} previous error{}",
+			error_count,
+			if error_count == 0 { "" } else { "s" }
+		);
+	}
+
 	Ok(())
+}
+
+fn contextual_format(main: &str, context: &str) -> String {
+	format!("{}\n  {} {}\n", main.bold(), "-->".bold().blue(), context)
 }
