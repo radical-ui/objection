@@ -1,5 +1,5 @@
 [workspace]
-members = ["derive_action_key", "expose_dev"]
+members = ["derive_action_key", "expose_dev", "cli"]
 resolver = "2"
 
 [package]

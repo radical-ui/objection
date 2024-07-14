@@ -1,0 +1,20 @@
+[package]
+name = "objection_cli"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "objection"
+path = "main.rs"
+
+[dependencies]
+anyhow = { version = "1.0.86", features = ["backtrace"] }
+clap = { version = "4", features = ["derive"] }
+deno_doc = { git = "ssh://git@github.com/radical-ui/deno_doc", rev = "4e99ed" }
+deno_graph = "0.80"
+log = "0.4"
+rand = "0.8"
+serde = "1"
+serde_json = "1"
+tokio = { version = "1", features = ["full"] }
+url = "2"

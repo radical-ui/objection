@@ -2,15 +2,8 @@
 // deno-lint-ignore-file
 
 /**
- * @minItems 4
- * @maxItems 4
+ * @component_index
  */
-export type TupleOf_WindowAnd_UpdateActionAnd_ActionAnd_TextInputUpdate = [
-	Window,
-	UpdateAction,
-	Action,
-	TextInputUpdate,
-]
 export type Component =
 	| {
 		def: ActionBlocker
@@ -174,11 +167,9 @@ export type FlexKind = 'Row' | 'Column'
 /**
  * A "nothing" component. Renders nothing.
  *
- * **Example**
- *
- * ```rust Fragment ```
+ * @component
  */
-export type Fragment = null
+export interface Fragment {}
 export type HeaderSize = 'Large' | 'Medium' | 'Small'
 export type ImageFit = 'Contain' | 'Cover' | 'Fill' | 'None' | 'ScaleDown'
 export type ImagePosition =
@@ -241,7 +232,7 @@ export type InputValidity = 'Valid' | 'Invalid'
 
 export interface Window {
 	root_component: Component
-	theme?: Theme | null
+	theme?: Theme
 	title: string
 }
 /**
@@ -252,10 +243,12 @@ export interface Window {
  * ```rust #[derive(Debug, HasActionKey, Serialize, Deserialize)] pub enum Event { Foo }
  *
  * ActionBlocker::new().body(Button::new("Disabled").action(Event::Foo)) ```
+ *
+ * @component
  */
 export interface ActionBlocker {
 	block: boolean
-	body?: Component | null
+	body?: Component
 }
 /**
  * A container that prefixes all actions triggered within with `scope`
@@ -265,9 +258,11 @@ export interface ActionBlocker {
  * ```rust #[derive(HasActionKey, Serialize, Deserialize)] enum Event { Foo, Bar, }
  *
  * ActionScope::new(Event::Foo).payload(serde_json::json!({ "here": true })).body(Button::new("Click me").action(Event::Bar)) ```
+ *
+ * @component
  */
 export interface ActionScope {
-	body?: Component | null
+	body?: Component
 	payload?: unknown
 	scope: ActionKey
 }
@@ -279,11 +274,13 @@ export interface ActionScope {
  * ```rust #[derive(HasActionKey, Serialize, Deserialize)] enum Event { Foo, Bar, Bin, }
  *
  * Breadcrumbs::new() .crumb(Event::Foo, "Hi") .crumb(Event::Bar, "Bye") .crumb(Event::Bin, "Bock") .current("This") .body("Some Body") ```
+ *
+ * @component
  */
 export interface Breadcrumbs {
-	body?: Component | null
+	body?: Component
 	crumbs: [ActionKey, string][]
-	current?: string | null
+	current?: string
 }
 /**
  * A button that has a label and an action.
@@ -293,16 +290,18 @@ export interface Breadcrumbs {
  * ```rust #[derive(HasActionKey, Serialize, Deserialize)] enum Event { Foo, Bar, }
  *
  * Flex::new(FlexKind::Column) .gap(10) .align(FlexAlign::Center) .justify(FlexJustify::Center) .auto_item( Flex::new(FlexKind::Row) .gap(10) .align(FlexAlign::Center) .auto_item( Button::new("Small Button") .action(Event::Foo) .size(ButtonSize::Small) ) .auto_item( Button::new("Medium Button") .action(Event::Foo) ) .auto_item( Button::new("Large Button") .action(Event::Bar) .size(ButtonSize::Large) ) ) .auto_item( Flex::new(FlexKind::Row) .gap(10) .auto_item( Button::new("Fore Button") .action(Event::Foo) .color(Color::Fore(5)) ) .auto_item( Button::new("Success Button") .action(Event::Foo) .color(Color::Success(100)) ) .auto_item( Button::new("Danger Button") .action(Event::Foo) .color(Color::Danger(100)) ) ) .auto_item( Flex::new(FlexKind::Row) .gap(10) .auto_item( Button::new("Leading Icon") .action(Event::Foo) .leading_icon("mdi-ab-testing") ) .auto_item( Button::new("Trailing Icon") .action(Event::Foo) .trailing_icon("mdi-ab-testing") ) .auto_item( Button::new("Both") .action(Event::Bar) .trailing_icon("mdi-ab-testing") .leading_icon("mdi-ab-testing") .outline() ) ) ```
+ *
+ * @component
  */
 export interface Button {
-	action?: ActionKey | null
+	action?: ActionKey
 	color: Color
 	full: boolean
 	label: string
-	leading_icon?: IconName | null
+	leading_icon?: IconName
 	outline: boolean
 	size: ButtonSize
-	trailing_icon?: IconName | null
+	trailing_icon?: IconName
 }
 /**
  * A card that can optionally be colored.
@@ -312,9 +311,11 @@ export interface Button {
  * ```rust Padding::all(10).body(Card::new().body(Label::new("Hey! I am a card!"))) ```
  *
  * ```rust Padding::all(10).body(Card::new().body(Label::new("Hey! I am a red card!")).color(ColorType::Danger)) ```
+ *
+ * @component
  */
 export interface Card {
-	body?: Component | null
+	body?: Component
 	color: ColorType
 }
 /**
@@ -323,9 +324,11 @@ export interface Card {
  * **Example**
  *
  * ```rust Center::new().body(Label::new("Hello, World!")) ```
+ *
+ * @component
  */
 export interface Center {
-	body?: Component | null
+	body?: Component
 }
 /**
  * TODO
@@ -335,10 +338,12 @@ export interface Center {
  * ```rust CenterLayout::new("Normal Center Layout").subtitle("Some Subtitle").body(Button::new("Hello there!").full()) ```
  *
  * ```rust CenterLayout::new("Thin Center Layout").subtitle("Some Subtitle").thin().body(Button::new("Hello there!").full()) ```
+ *
+ * @component
  */
 export interface CenterLayout {
-	body?: Component | null
-	subtitle?: string | null
+	body?: Component
+	subtitle?: string
 	thin: boolean
 	title: string
 }
@@ -352,9 +357,11 @@ export interface CenterLayout {
  * ```rust #[derive(HasActionKey, Serialize, Deserialize)] enum Action { Foo }
  *
  * Flex::new(FlexKind::Column) .auto_item(CheckboxInput::new("Allow tracking").initial_value(true).action(Action::Foo)) .auto_item(CheckboxInput::new("Allow tracking (disabled)").initial_value(false)) ```
+ *
+ * @component
  */
 export interface CheckboxInput {
-	action?: ActionKey | null
+	action?: ActionKey
 	initial_value: boolean
 	label: string
 }
@@ -364,6 +371,8 @@ export interface CheckboxInput {
  * **Example**
  *
  * ```rust CircleProgress::new() .value(0.5) .label("Hello") ```
+ *
+ * @component
  */
 export interface CircleProgress {
 	label: Label
@@ -378,13 +387,15 @@ export interface CircleProgress {
  * ```rust #[derive(Serialize, Deserialize, HasActionKey)] enum Event { Foo }
  *
  * Flex::new(FlexKind::Column) .gap(5) .justify(FlexJustify::Center) .align(FlexAlign::Center) .auto_item(Label::new("Some Label")) .auto_item(Label::new("Italic").italic()) .auto_item(Label::new("Bold").bold()) .auto_item(Label::new("Another Color").color(Color::Primary(100))) .auto_item(Label::new("This one is editable").edit_action(Event::Foo).color(Color::Primary(100))) .auto_item( Flex::new(FlexKind::Row) .auto_item(Label::new("And so is this").edit_action(Event::Foo)) .auto_item(Label::new("And this too (with a placeholder)").edit_action(Event::Foo).placeholder("This is the placeholder!!!! It is pretty long.")) ) ```
+ *
+ * @component
  */
 export interface Label {
 	color: Color
-	edit_action?: ActionKey | null
+	edit_action?: ActionKey
 	is_bold: boolean
 	is_italic: boolean
-	placeholder?: string | null
+	placeholder?: string
 	text: string
 }
 /**
@@ -393,11 +404,16 @@ export interface Label {
  * **Example**
  *
  * ```rust Flex::new(FlexKind::Column) .gap(10) .auto_item("Slight") .auto_item(Divider::new().distinction(DividerDistinction::Slight)) .auto_item("Medium") .auto_item(Divider::new().distinction(DividerDistinction::Medium)) .auto_item("Profound") .auto_item(Divider::new().distinction(DividerDistinction::Profound)) ```
+ *
+ * @component
  */
 export interface Divider {
 	direction: DividerDirection
 	distinction: DividerDistinction
 }
+/**
+ * @component
+ */
 export interface Flex {
 	align: FlexAlign
 	gap: number
@@ -417,16 +433,18 @@ export interface FlexItem {
  * ```rust #[derive(HasActionKey, Serialize, Deserialize)] pub enum Event { Foo, Bar, }
  *
  * Flex::new(FlexKind::Column) .gap(30) .auto_item( Header::new("With Action Items") .subtitle("A subtitle here") .size(HeaderSize::Large) .action_item(Event::Foo, "mdi-pencil", "Do Foo") .action_item(Event::Bar, "mdi-ab-testing", "A very long comment that will take up some notable space") ) .auto_item( Header::new("With Action Items") .subtitle("A subtitle here") .size(HeaderSize::Medium) .action_item(Event::Foo, "mdi-pencil", "Do Foo") .action_item(Event::Bar, "mdi-ab-testing", "Do Bar") ) .auto_item( Header::new("With Action Items") .subtitle("A subtitle here") .title_edit_action(Event::Foo) .subtitle_edit_action(Event::Bar) .subtitle_placeholder("No description") .size(HeaderSize::Small) .action_item(Event::Foo, "mdi-pencil", "Do Foo") .action_item(Event::Bar, "mdi-ab-testing", "Do Bar") ) ```
+ *
+ * @component
  */
 export interface Header {
 	action_items: HeaderActionItem[]
 	size: HeaderSize
-	subtitle?: string | null
-	subtitle_edit_action?: ActionKey | null
-	subtitle_placeholder?: string | null
+	subtitle?: string
+	subtitle_edit_action?: ActionKey
+	subtitle_placeholder?: string
 	title: string
-	title_edit_action?: ActionKey | null
-	title_placeholder?: string | null
+	title_edit_action?: ActionKey
+	title_placeholder?: string
 }
 export interface HeaderActionItem {
 	action: ActionKey
@@ -439,12 +457,14 @@ export interface HeaderActionItem {
  * **Example**
  *
  * ```rust Flex::new(FlexKind::Row) .gap(30) .justify(FlexJustify::Center) .align(FlexAlign::Center) .auto_item( Icon::new("mdi-ab-testing", 30).color(Color::Primary(100))) .auto_item( Icon::new("mdi-account-arrow-left", 30).color(Color::Success(100))) .auto_item( Icon::new("mdi-access-point", 30).color(Color::Danger(50))) ```
+ *
+ * @component
  */
 export interface Icon {
 	color: Color
 	name: IconName
 	size: number
-	title?: string | null
+	title?: string
 }
 /**
  * TODO
@@ -454,13 +474,15 @@ export interface Icon {
  * ```rust #[derive(HasActionKey, Serialize, Deserialize)] enum Event { Foo }
  *
  * Flex::new(FlexKind::Row) .gap(20) .auto_item( IconButton::new("mdi-ab-testing") .color(Color::Primary(100)) .title("A description of what this does and it is a rather long description") .size(40) .action(Event::Foo) ) .auto_item(IconButton::new("mdi-ab-testing")) .auto_item( IconButton::new("mdi-ab-testing") .color(Color::Primary(100)) .action(Event::Foo) ) ```
+ *
+ * @component
  */
 export interface IconButton {
-	action?: ActionKey | null
+	action?: ActionKey
 	color: Color
 	name: IconName
 	size: number
-	title?: string | null
+	title?: string
 }
 /**
  * TODO
@@ -468,25 +490,29 @@ export interface IconButton {
  * **Example**
  *
  * ```rust Image::new("https://images.unsplash.com/photo-1711436470690-cf49602d1cf1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D") .width(300) .height(300) .fit(ImageFit::Cover) .decorate() ```
+ *
+ * @component
  */
 export interface Image {
 	decorate: boolean
 	fit: ImageFit
-	height?: number | null
+	height?: number
 	position: ImagePosition
 	url: string
-	width?: number | null
+	width?: number
 }
 /**
  * A modal that appears over all existing content, using the context from where it is placed.
+ *
+ * @component
  */
 export interface Modal {
-	body?: Component | null
-	cancel_action?: ActionKey | null
-	cancel_action_label?: string | null
-	description?: string | null
-	finish_action?: ActionKey | null
-	finish_action_label?: string | null
+	body?: Component
+	cancel_action?: ActionKey
+	cancel_action_label?: string
+	description?: string
+	finish_action?: ActionKey
+	finish_action_label?: string
 	size: ModalSize
 	title: string
 }
@@ -500,6 +526,8 @@ export interface Modal {
  * **Not Indented Example**
  *
  * ```rust NestedFlow::new() .header("Created Alone") .content("Options", Label::new("Hi there!")) .content("Evil Plans", Label::new("Bad bad here")) .content("Good Plans", Label::new("Good good here!")) ```
+ *
+ * @component
  */
 export interface NestedFlow {
 	indent: boolean
@@ -511,9 +539,11 @@ export interface NestedFlow {
  * **Example**
  *
  * ```rust Padding::all(30).body(Card::new().body(Label::new("See, it is padded!"))) ```
+ *
+ * @component
  */
 export interface Padding {
-	body?: Component | null
+	body?: Component
 	bottom: number
 	left: number
 	right: number
@@ -521,6 +551,8 @@ export interface Padding {
 }
 /**
  * A ui-decorated box for displaying content
+ *
+ * @component
  */
 export interface PreviewBox {
 	child: Component
@@ -534,14 +566,16 @@ export interface PreviewBox {
  * ```rust #[derive(HasActionKey, Serialize, Deserialize)] enum Event { Batter, }
  *
  * Flex::new(FlexKind::Column) .gap(30) .auto_item( RadioInput::new() .action(Event::Batter) .item(0, "Red") .item(1, "Green") ) .auto_item( RadioInput::new() .action(Event::Batter) .item(0, "Hi") .described_item(1, "Bye", Label::new("This is greeting that people say when they are bidding farewell to a friend")) .described_item(2, "Adieu", Label::new("The french form of \"Bye\"")) ) .auto_item( RadioInput::new() .item(0, "all are disabled here") .described_item(1, "Bye", Label::new("This is greeting that people say when they are bidding farewell to a friend")) .described_item(2, "Adieu", Label::new("The french form of \"Bye\"")) ) ```
+ *
+ * @component
  */
 export interface RadioInput {
-	action?: ActionKey | null
-	initial_value?: number | null
+	action?: ActionKey
+	initial_value?: number
 	items: RadioItem[]
 }
 export interface RadioItem {
-	description?: Component | null
+	description?: Component
 	id: number
 	title: string
 }
@@ -551,9 +585,11 @@ export interface RadioItem {
  * **Example**
  *
  * ```rust ScrollableBox::new().body(Padding::all(20).body("Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC, making it over 2000 years old. Richard McClintock, a Latin professor at Hampden-Sydney College in Virginia, looked up one of the more obscure Latin words, consectetur, from a Lorem Ipsum passage, and going through the cites of the word in classical literature, discovered the undoubtable source. Lorem Ipsum comes from sections 1.10.32 and 1.10.33 of \"de Finibus Bonorum et Malorum\" (The Extremes of Good and Evil) by Cicero, written in 45 BC. This book is a treatise on the theory of ethics, very popular during the Renaissance. The first line of Lorem Ipsum, \"Lorem ipsum dolor sit amet..\", comes from a line in section 1.10.32. But I must explain to you how all this mistaken idea of denouncing pleasure and praising pain was born and I will give you a complete account of the system, and expound the actual teachings of the great explorer of the truth, the master-builder of human happiness. No one rejects, dislikes, or avoids pleasure itself, because it is pleasure, but because those who do not know how to pursue pleasure rationally encounter consequences that are extremely painful. Nor again is there anyone who loves or pursues or desires to obtain pain of itself, because it is pain, but because occasionally circumstances occur in which toil and pain can procure him some great pleasure. To take a trivial example, which of us ever undertakes laborious physical exercise, except to obtain some advantage from it? But who has any right to find fault with a man who chooses to enjoy a pleasure that has no annoying consequences, or one who avoids a pain that produces no resultant pleasure? On the other hand, we denounce with righteous indignation and dislike men who are so beguiled and demoralized by the charms of pleasure of the moment, so blinded by desire, that they cannot foresee the pain and trouble that are bound to ensue; and equal blame belongs to those who fail in their duty through weakness of will, which is the same as saying through shrinking from toil and pain. These cases are perfectly simple and easy to distinguish. In a free hour, when our power of choice is untrammelled and when nothing prevents our being able to do what we like best, every pleasure is to be welcomed and every pain avoided. But in certain circumstances and owing to the claims of duty or the obligations of business it will frequently occur that pleasures have to be repudiated and annoyances accepted. The wise man therefore always holds in these matters to this principle of selection: he rejects pleasures to secure other greater pleasures, or else he endures pains to avoid worse pains.")) ```
+ *
+ * @component
  */
 export interface ScrollableBox {
-	body?: Component | null
+	body?: Component
 }
 /**
  * A sidebar application layout.
@@ -565,20 +601,22 @@ export interface ScrollableBox {
  * ```rust #[derive(HasActionKey, Serialize, Deserialize)] enum Action { Foo, Bar, }
  *
  * SidebarLayout::new("Abc Corp") .title_action(Action::Foo) .logo(Image::new("https://github.githubassets.com/assets/3m-0151c2fda0ce.svg").width(30).height(30)) .action_item(SidebarItem::new("Tasks").icon("mdi-ab-testing").action(Action::Foo)) .action_item(SidebarItem::new("Activities").icon("mdi-ab-testing").action(Action::Bar)) .group( SidebarGroup::new("Main") .item(SidebarItem::new("Tasks").icon("mdi-ab-testing").action(Action::Foo)) .item(SidebarItem::new("Activities").icon("mdi-ab-testing").action(Action::Bar)) ) .group( SidebarGroup::new("Records") .item(SidebarItem::new("Tasks").icon("mdi-ab-testing").action(Action::Foo)) .item(SidebarItem::new("Activities").icon("mdi-ab-testing").action(Action::Bar)) ) .initial_action(Action::Foo) .footer(Center::new().body("Za feetsies")) ```
+ *
+ * @component
  */
 export interface SidebarLayout {
 	action_items: SidebarItem[]
-	body?: Component | null
-	footer?: Component | null
+	body?: Component
+	footer?: Component
 	groups: SidebarGroup[]
-	initial_action?: ActionKey | null
-	logo?: Image | null
+	initial_action?: ActionKey
+	logo?: Image
 	title: string
-	title_action?: ActionKey | null
+	title_action?: ActionKey
 }
 export interface SidebarItem {
-	action?: ActionKey | null
-	icon?: IconName | null
+	action?: ActionKey
+	icon?: IconName
 	title: string
 }
 export interface SidebarGroup {
@@ -593,6 +631,8 @@ export interface SidebarGroup {
  * ```rust #[derive(HasActionKey, Serialize, Deserialize)] enum Event { Foo }
  *
  * Padding::all(10) .body( Flex::new(FlexKind::Column) .gap(10) .auto_item( Skeleton::new( Event::Foo, Card::new().body( Flex::new(FlexKind::Column) .gap(10) .auto_item( RadioInput::new() .item(0, "Hi") .described_item(1, "Bye", Label::new("This is greeting that people say when they are bidding farewell to a friend")) .described_item(2, "Adieu", Label::new("The french form of \"Bye\"")) ) .auto_item( Image::new("https://images.unsplash.com/photo-1716369415085-4a6876f91840?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHwyfHx8ZW58MHx8fHx8") .width(300) .height(200) .fit(ImageFit::Cover) .decorate() ) ) ) ) .auto_item(Button::new("Load").action(Event::Foo)) ) ```
+ *
+ * @component
  */
 export interface Skeleton {
 	body: Component
@@ -604,6 +644,8 @@ export interface Skeleton {
  * **Example**
  *
  * ```rust Table::new() .column("Id") .expanded_column("Name") .column("") .rows(Vec::from([ Vec::<Component>::from([ Label::new("82").into(), Label::new("Jason").into(), Button::new("View").size(ButtonSize::Small).into() ]), Vec::<Component>::from([ Label::new("84").into(), Label::new("James").into(), Button::new("View").size(ButtonSize::Small).into() ]), Vec::<Component>::from([ Label::new("103").into(), Label::new("Jeehoshofat Bartholemew, Duke of Northumberland, King of \"The Rose Garden\", the sixteenth").into(), Button::new("View").size(ButtonSize::Small).into() ]), ])) ```
+ *
+ * @component
  */
 export interface Table {
 	columns: TableColumn[]
@@ -627,26 +669,28 @@ export interface TableColumn {
  * ```rust #[derive(HasActionKey, Serialize, Deserialize)] enum Event { InputChanged, InputBlurred, OptionSelected, Submit }
  *
  * Padding::all(30).body( Flex::new(FlexKind::Column) .gap(20) .auto_item(TextInput::new("Username").change_action(Event::InputChanged).submit_action(Event::Submit)) .auto_item(TextInput::new("Password").role(TextInputRole::Password).blur_action(Event::InputBlurred).submit_action(Event::Submit)) .auto_item(TextInput::new("With Initial Value").initial_value("Hello there!").blur_action(Event::InputBlurred).submit_action(Event::Submit)) .auto_item(TextInput::new("Email (disabled)").submit_action(Event::Submit).role(TextInputRole::Email).leading_icon("mdi-ab-testing")) .auto_item( TextInput::new("Dropdown with client filtering") .role(TextInputRole::Email) .blur_action(Event::InputBlurred) .submit_action(Event::Submit) .initial_dropdown_options(Vec::from([ DropdownOption::new(Uuid::new_v4(), "Option 1"), DropdownOption::new(Uuid::new_v4(), "Option 2"), DropdownOption::new(Uuid::new_v4(), "Option 3"), DropdownOption::new(Uuid::new_v4(), "Option 4"), DropdownOption::new(Uuid::new_v4(), "Option 5"), ])) ) .auto_item( TextInput::new("Dropdown with server filtering") .role(TextInputRole::Email) .change_action(Event::InputChanged) .submit_action(Event::Submit) .initial_dropdown_options(Vec::from([ DropdownOption::new(Uuid::new_v4(), "Option 1"), DropdownOption::new(Uuid::new_v4(), "Option 2"), DropdownOption::new(Uuid::new_v4(), "Option 3").is_disabled(), DropdownOption::new(Uuid::new_v4(), "Option 4"), DropdownOption::new(Uuid::new_v4(), "Option 5"), ])) ) .auto_item( TextInput::new("Dropdown without free text and client filtering") .role(TextInputRole::Email) .option_selected_action(Event::OptionSelected) .submit_action(Event::Submit) .initial_dropdown_options(Vec::from([ DropdownOption::new(Uuid::new_v4(), "Option 1"), DropdownOption::new(Uuid::new_v4(), "Option 2"), DropdownOption::new(Uuid::new_v4(), "Option 3"), DropdownOption::new(Uuid::new_v4(), "Option 4"), DropdownOption::new(Uuid::new_v4(), "Option 5"), ])) ) .auto_item( TextInput::new("Dropdown without free text and client filtering and multiple") .role(TextInputRole::Email) .option_selected_action(Event::OptionSelected) .submit_action(Event::Submit) .multiple() .initial_dropdown_options(Vec::from([ DropdownOption::new(Uuid::new_v4(), "Option 1"), DropdownOption::new(Uuid::new_v4(), "Option 2"), DropdownOption::new(Uuid::new_v4(), "Option 3"), DropdownOption::new(Uuid::new_v4(), "Option 4"), DropdownOption::new(Uuid::new_v4(), "Option 5"), ])) ) ) ```
+ *
+ * @component
  */
 export interface TextInput {
-	blur_action?: ActionKey | null
-	change_action?: ActionKey | null
-	initial_dropdown_options?: DropdownOption[] | null
-	initial_selected_options?: string[] | null
-	initial_value?: string | null
+	blur_action?: ActionKey
+	change_action?: ActionKey
+	initial_dropdown_options?: DropdownOption[]
+	initial_selected_options?: string[]
+	initial_value?: string
 	label: string
-	leading_icon?: IconName | null
+	leading_icon?: IconName
 	multiple: boolean
-	option_selected_action?: ActionKey | null
+	option_selected_action?: ActionKey
 	role: TextInputRole
-	submit_action?: ActionKey | null
-	trailing_icon?: IconName | null
-	update_hook?: TextInputHook | null
+	submit_action?: ActionKey
+	trailing_icon?: IconName
+	update_hook?: TextInputHook
 }
 export interface DropdownOption {
-	description?: string | null
+	description?: string
 	id: string
-	informative?: string | null
+	informative?: string
 	is_disabled: boolean
 	title: string
 }
@@ -654,15 +698,17 @@ export interface DropdownOption {
  * A boundary that allows it's children to be updated without beaming down a new window.
  *
  * You can optionally set a child to be displayed until an update is sent. Once an update has been sent has been sent, the original child will never be rendered. ```
+ *
+ * @component
  */
 export interface UpdateBoundary {
-	child?: Component | null
+	child?: Component
 	id: number
 }
 export interface Theme {
 	dark_palette: ColorPalette
-	default_font?: string | null
-	fancy_font?: string | null
+	default_font?: string
+	fancy_font?: string
 	light_palette: ColorPalette
 	round_base: boolean
 	selection_mode: SelectionMode
