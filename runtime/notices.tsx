@@ -1,4 +1,5 @@
-import { Notice, React } from 'runtime'
+import { React } from './deps.ts'
+import { Notice } from './types.ts'
 
 interface Context {
 	stashedNotices: Notice[]

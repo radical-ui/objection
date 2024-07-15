@@ -1,13 +1,12 @@
 import { ProvideDispatch } from './action.tsx'
 import { RawDispatchFn } from './action.tsx'
-import { ComponentRender } from '../components/mod.tsx'
 import { frontier, React } from './deps.ts'
 import { ProvideNotices } from './notices.tsx'
-import { ColorDefinition, ColorPalette, Component, Window } from './types.ts'
+import { ColorDefinition, ColorPalette, Notice, Window } from './types.ts'
 import { ProvideUpdateManager, UpdateManager } from './component_update.tsx'
-import { Notice } from 'runtime'
 import { RootNotice } from './root_notice.tsx'
-import { ModalProvider } from '../components/modal/mod.tsx'
+import { Component, ComponentRender } from './component.tsx'
+import { ModalProvider } from './modal.tsx'
 
 export class WindowRenderer {
 	#internalUpdate: ((root: Component) => void) | null = null

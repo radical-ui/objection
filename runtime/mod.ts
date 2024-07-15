@@ -1,37 +1,33 @@
-import { Component, UpdateAction } from './types.ts'
+import { Component } from './component.tsx'
+import { React } from './deps.ts'
+import { UpdateAction } from './types.ts'
 import { WindowRenderer } from './window_renderer.tsx'
 
-// TODO these should be integrated into the actual components
-export * from './types.ts'
-
-export * from './action_blocker/mod.tsx'
-export * from './action_scope/mod.tsx'
-export * from './breadcrumbs/mod.tsx'
-export * from './button/mod.tsx'
-export * from './card/mod.tsx'
-export * from './center/mod.tsx'
-export * from './center_layout/mod.tsx'
-export * from './checkbox_input/mod.tsx'
-export * from './circle_progress/mod.tsx'
-export * from './divider/mod.tsx'
-export * from './flex/mod.tsx'
-export * from './fragment/mod.tsx'
-export * from './header/mod.tsx'
-export * from './icon/mod.tsx'
-export * from './icon_button/mod.tsx'
-export * from './image/mod.tsx'
-export * from './label/mod.tsx'
-export * from './modal/mod.tsx'
-export * from './nested_flow/mod.tsx'
-export * from './padding/mod.tsx'
-export * from './preview_box/mod.tsx'
-export * from './radio_input/mod.tsx'
-export * from './scrollable_box/mod.tsx'
-export * from './sidebar_layout/mod.tsx'
-export * from './skeleton/mod.tsx'
-export * from './table/mod.tsx'
-export * from './text_input/mod.tsx'
-export * from './update_boundary/mod.tsx'
+export * from './action.tsx'
+export * from './component.tsx'
+export * from './breadcrumbs.tsx'
+export * from './button.tsx'
+export * from './card.tsx'
+export * from './center.tsx'
+export * from './checkbox_input.tsx'
+export * from './circle_progress.tsx'
+export * from './divider.tsx'
+export * from './flex.tsx'
+export * from './header.tsx'
+export * from './icon.tsx'
+export * from './image.tsx'
+export * from './label.tsx'
+export * from './modal.tsx'
+export * from './nested_flow.tsx'
+export * from './padding.tsx'
+export * from './preview_box.tsx'
+export * from './radio_input.tsx'
+export * from './scrollable_box.tsx'
+export * from './sidebar_layout.tsx'
+export * from './skeleton.tsx'
+export * from './table.tsx'
+export * from './text_input.tsx'
+export * from './update_boundary.tsx'
 
 export function start(syncUrl: string, initialComponent: Component, componentRenderer: React.FC<Component>) {
 	const sessionId = crypto.randomUUID()
@@ -58,4 +54,15 @@ export function start(syncUrl: string, initialComponent: Component, componentRen
 		})
 
 	renderer.render(initialComponent)
+}
+
+/**
+ * A "nothing" component. Renders nothing.
+ * @component
+ */
+// deno-lint-ignore no-empty-interface
+export interface Fragment {}
+
+export function FragmentRender() {
+	return React.createElement(React.Fragment, {})
 }

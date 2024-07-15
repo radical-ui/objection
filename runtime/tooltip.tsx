@@ -1,5 +1,5 @@
 import { React } from './deps.ts'
-import { GlobalCss } from 'runtime'
+import { GlobalCss } from './utils.ts'
 
 const css = new GlobalCss(`
 	@keyframes tooltip-fade-in {

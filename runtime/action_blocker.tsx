@@ -129,32 +129,3 @@ export function ActionBlockerRender(props: ActionBlocker) {
 		</ProvideDisabledContext>
 	)
 }
-
-/**
- * A container that prefixes all actions triggered within with `scope`
- *
- * **Example**
- *
- * ```rust #[derive(HasActionKey, Serialize, Deserialize)] enum Event { Foo, Bar, }
- *
- * ActionScope::new(Event::Foo).payload(serde_json::json!({ "here": true })).body(Button::new("Click me").action(Event::Bar)) ```
- *
- * @component
- */
-export interface ActionScope {
-	body?: Component
-	payload?: unknown
-	scope: ActionKey
-}
-
-export function ActionScopeRender(props: ActionScope) {
-	const parentScope = useActionScope()
-
-	return (
-		<div class='w-full h-full'>
-			<ProvideScope scope={[{ key: props.scope, payload: props.payload ?? null }, ...parentScope]}>
-				{props.body ? <ComponentRender {...props.body} /> : <></>}
-			</ProvideScope>
-		</div>
-	)
-}

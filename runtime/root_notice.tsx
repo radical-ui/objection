@@ -1,7 +1,7 @@
-import { IconRender } from '../components/icon/mod.tsx'
 import { React } from './deps.ts'
-import { Notice } from 'runtime'
+import { IconRender } from './icon.tsx'
 import { useNotices } from './notices.tsx'
+import { Notice } from './types.ts'
 
 interface NoticeRenderProps {
 	notice: Notice
