@@ -1,5 +1,5 @@
 import { Component, React } from '../runtime/mod.ts'
-import { ActionBlockRender } from './action_blocker/mod.tsx'
+import { ActionBlockerRender } from './action_blocker/mod.tsx'
 import { ActionScopeRender } from './action_scope/mod.tsx'
 import { BreadcrumbsRender } from './breadcrumbs/mod.tsx'
 import { ButtonRender } from './button/mod.tsx'
@@ -11,7 +11,7 @@ import { CircleProgressRender } from './circle_progress/mod.tsx'
 import { DividerRender } from './divider/mod.tsx'
 import { FlexRender } from './flex/mod.tsx'
 import { FragmentRender } from './fragment/mod.tsx'
-import { SimpleLayoutRender } from './header/mod.tsx'
+import { HeaderRender } from './header/mod.tsx'
 import { IconRender } from './icon/mod.tsx'
 import { IconButtonRender } from './icon_button/mod.tsx'
 import { ImageRender } from './image/mod.tsx'
@@ -29,7 +29,7 @@ import { TextInputRender } from './text_input/mod.tsx'
 import { UpdateBoundaryRender } from './update_boundary/mod.tsx'
 
 export function ComponentRender(component: Component) {
-	if (component.type === 'ActionBlocker') return <ActionBlockRender {...component.def} />
+	if (component.type === 'ActionBlocker') return <ActionBlockerRender {...component.def} />
 	if (component.type === 'ActionScope') return <ActionScopeRender {...component.def} />
 	if (component.type === 'Breadcrumbs') return <BreadcrumbsRender {...component.def} />
 	if (component.type === 'Button') return <ButtonRender {...component.def} />
@@ -41,7 +41,7 @@ export function ComponentRender(component: Component) {
 	if (component.type === 'Divider') return <DividerRender {...component.def} />
 	if (component.type === 'Flex') return <FlexRender {...component.def} />
 	if (component.type === 'Fragment') return <FragmentRender />
-	if (component.type === 'Header') return <SimpleLayoutRender {...component.def} />
+	if (component.type === 'Header') return <HeaderRender {...component.def} />
 	if (component.type === 'Icon') return <IconRender {...component.def} />
 	if (component.type === 'IconButton') return <IconButtonRender {...component.def} />
 	if (component.type === 'Image') return <ImageRender {...component.def} />

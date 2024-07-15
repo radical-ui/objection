@@ -1,6 +1,6 @@
 use anyhow::{anyhow, Context, Error, Result};
 use deno_doc::{interface::InterfaceDef, js_doc::JsDocTag, ts_type::TsTypeDef, DocNodeKind, DocParser, DocParserOptions, Location};
-use deno_graph::{BuildOptions, CapturingModuleAnalyzer, GraphKind, ModuleGraph};
+use deno_graph::{source::MemoryLoader, BuildOptions, CapturingModuleAnalyzer, GraphKind, ModuleGraph};
 use log::{debug, warn};
 use std::collections::{HashMap, HashSet};
 use url::Url;
@@ -58,15 +58,14 @@ pub struct Collection {
 }
 
 impl Collection {
-	pub async fn collect(&mut self, runtime_url: &Url) -> Result<()> {
-		let loader = load_modules(runtime_url).await?;
+	pub async fn collect(&mut self, runtime_url: &Url, memory_loader: &MemoryLoader) -> Result<()> {
 		let analyzer = CapturingModuleAnalyzer::default();
 		let mut graph = ModuleGraph::new(GraphKind::TypesOnly);
 
 		let diagnostics = graph
 			.build(
 				Vec::from([runtime_url.clone()]),
-				&loader,
+				memory_loader,
 				BuildOptions {
 					module_analyzer: &analyzer,
 					..Default::default()

@@ -1,12 +1,16 @@
+mod bundle;
 mod collect;
 mod module_loader;
 
 use anyhow::{bail, Context, Result};
+use bundle::Bundler;
 use clap::{Parser, Subcommand, ValueEnum};
 use collect::Collection;
 use colored::{Color, Colorize};
+use deno_graph::source::MemoryLoader;
 use env_logger::Env;
 use log::{error, Level, LevelFilter};
+use module_loader::load_modules;
 use std::{env::current_dir, io::Write, path::PathBuf};
 use tokio::runtime::Builder;
 use url::Url;
@@ -118,9 +122,13 @@ async fn main_async() -> Result<()> {
 	let args = Command::parse();
 	let base_url = Url::from_directory_path(current_dir().context("Failed to get the current working directory")?).unwrap();
 	let runtime_url = base_url.join(&args.runtime).context("Failed to resolve runtime")?;
+	let mut memory_loader = MemoryLoader::default();
+	let mut bundler = Bundler::default();
 	let mut collection = Collection::default();
 
-	collection.collect(&runtime_url).await?;
+	load_modules(&runtime_url, &mut memory_loader, &mut bundler).await?;
+
+	collection.collect(&runtime_url, &memory_loader).await?;
 	collection.check_components();
 
 	let errors = collection.get_errors();
