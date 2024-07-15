@@ -18,6 +18,5 @@
 			"dom"
 		]
 	},
-	"importMap": "./import_map.json",
 	"lock": false
 }

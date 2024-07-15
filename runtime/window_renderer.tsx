@@ -123,17 +123,3 @@ export class WindowRenderer {
 		)
 	}
 }
-
-export function getRootUi(id = 'root-ui'): Window {
-	const element = document.getElementById(id)
-	if (!element) throw new Error(`Expected to find a #${id} element`)
-	if (element.tagName !== 'SCRIPT') throw new Error(`Expected #${id} to be a script element`)
-	if (element.getAttribute('type') !== 'application/json') throw new Error(`Expected #${id} to have the type 'application/json'`)
-	if (!element.textContent) throw new Error(`Expected to find some text content in #${id}`)
-
-	try {
-		return JSON.parse(element.textContent)
-	} catch (error) {
-		throw new Error(`Failed to parse JSON for root ui. ${error.message}\n\tJSON: ${element.textContent}`)
-	}
-}
