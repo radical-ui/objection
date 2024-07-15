@@ -1,12 +1,7 @@
 use anyhow::Result;
 use serde::Serialize;
 use serde_json::to_string;
-use std::{
-	collections::HashMap,
-	env,
-	path::{Path, PathBuf},
-	process::Stdio,
-};
+use std::{collections::HashMap, env, path::PathBuf, process::Stdio};
 use tokio::{io::AsyncWriteExt, process::Command};
 use url::Url;
 
@@ -25,6 +20,10 @@ impl Bundler {
 	pub fn register_dependency(&mut self, host: &Url, dependency: impl Into<String>, specifier: impl Into<Url>) {
 		if let Some(dependencies) = self.manifest.resolutions.get_mut(host) {
 			dependencies.insert(dependency.into(), specifier.into());
+		} else {
+			self.manifest
+				.resolutions
+				.insert(host.to_owned(), HashMap::from([(dependency.into(), specifier.into())]));
 		}
 	}
 
@@ -32,12 +31,13 @@ impl Bundler {
 		self.manifest.source_files.insert(source.into(), file.into());
 	}
 
-	pub async fn bundle(&self, entry_code: &str) -> Result<String> {
+	pub async fn bundle(self, entry_code: impl Into<String>) -> Result<String> {
 		let mut command = Command::new("deno");
 
 		command
 			.arg("run")
-			.arg("bundle/main.rs")
+			.arg("--allow-read")
+			.arg("bundle/main.ts")
 			.stdin(Stdio::piped())
 			.stdout(Stdio::piped())
 			.stderr(Stdio::inherit())
@@ -45,10 +45,10 @@ impl Bundler {
 			.env("PATH", env::var("PATH").unwrap());
 
 		let mut process = command.spawn()?;
-		let json = to_string(&(entry_code, &self.manifest))?;
+		let json = to_string(&(entry_code.into(), self.manifest))?;
 
 		let mut stdin = process.stdin.take().unwrap();
-		stdin.write_all(json.as_bytes());
+		stdin.write_all(json.as_bytes()).await?;
 		drop(stdin);
 
 		let output = process.wait_with_output().await?;

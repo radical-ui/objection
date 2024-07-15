@@ -1,7 +1,7 @@
 use anyhow::{anyhow, Context, Error, Result};
 use deno_graph::source::{MemoryLoader, Source};
 use serde_json::{from_slice, Value};
-use std::{borrow::Borrow, env, path::PathBuf, process::Stdio, str::FromStr};
+use std::{env, path::PathBuf, process::Stdio, str::FromStr};
 use tokio::{fs::read_to_string, process::Command};
 use url::Url;
 

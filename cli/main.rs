@@ -1,5 +1,6 @@
 mod bundle;
 mod collect;
+mod gen_js_entry;
 mod module_loader;
 
 use anyhow::{bail, Context, Result};
@@ -9,10 +10,11 @@ use collect::Collection;
 use colored::{Color, Colorize};
 use deno_graph::source::MemoryLoader;
 use env_logger::Env;
+use gen_js_entry::gen_js_entry;
 use log::{error, Level, LevelFilter};
 use module_loader::load_modules;
 use std::{env::current_dir, io::Write, path::PathBuf};
-use tokio::runtime::Builder;
+use tokio::{fs::write, runtime::Builder};
 use url::Url;
 
 #[derive(Debug, ValueEnum, Clone, Default)]
@@ -121,7 +123,7 @@ fn main() {
 async fn main_async() -> Result<()> {
 	let args = Command::parse();
 	let base_url = Url::from_directory_path(current_dir().context("Failed to get the current working directory")?).unwrap();
-	let runtime_url = base_url.join(&args.runtime).context("Failed to resolve runtime")?;
+	let runtime_url = base_url.join(&args.runtime).context("Failed to resolve runtime entry")?;
 	let mut memory_loader = MemoryLoader::default();
 	let mut bundler = Bundler::default();
 	let mut collection = Collection::default();
@@ -145,6 +147,9 @@ async fn main_async() -> Result<()> {
 			if error_count == 0 { "" } else { "s" }
 		);
 	}
+
+	let response = bundler.bundle(gen_js_entry(&runtime_url, &args.engine_url, &collection)?).await?;
+	write("bundle.js", response).await?;
 
 	Ok(())
 }
