@@ -2024,17 +2024,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "svelte_toolbox_expose_dev"
-version = "0.0.0"
-dependencies = [
- "schemars",
- "serde",
- "serde_json",
- "svelte_toolbox",
- "uuid",
-]
-
-[[package]]
 name = "swc_atoms"
 version = "0.6.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
