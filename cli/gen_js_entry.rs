@@ -31,7 +31,8 @@ pub fn gen_js_entry(runtime_url: &Url, engine_url: &Url, collection: &Collection
 	write!(js, "const initialElement = document.getElementById('initial-state')\n")?;
 	write!(js, "const initial = JSON.parse(initialElement.textContent)\n")?;
 
-	write!(js, "start(new Url('{engine_url}'), initial, )")?;
+	write!(js, "start(new Url('{engine_url}'), initial, renderComponent)")?;
 
+	println!("{}", &js);
 	Ok(js)
 }
