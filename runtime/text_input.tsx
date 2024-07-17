@@ -1,7 +1,7 @@
-import { EventKey, useDisabledContext, useDispatcher } from './event.tsx'
+import { useDispatcher } from './event.tsx'
 import { Color } from './types.ts'
 import { useUpdates } from './component_update.tsx'
-import { React } from './deps.ts'
+import { EventKey, React } from './deps.ts'
 import { IconName, IconRender } from './icon.tsx'
 import { getColor, isOk, makeDebounce } from './utils.ts'
 import { FlatLoader } from './flat_loader.tsx'
@@ -72,17 +72,17 @@ export type TextInputHook = number
  * @component
  */
 export interface TextInput {
-	blur_event?: EventKey
-	change_event?: EventKey
+	blur_event?: EventKey<string>
+	change_event?: EventKey<string>
 	initial_dropdown_options?: DropdownOption[]
 	initial_selected_options?: string[]
 	initial_value?: string
 	label: string
 	leading_icon?: IconName
 	multiple: boolean
-	option_selected_event?: EventKey
+	option_selected_event?: EventKey<string[]>
 	role: TextInputRole
-	submit_event?: EventKey
+	submit_event?: EventKey<null>
 	trailing_icon?: IconName
 	update_hook?: TextInputHook
 }
@@ -102,13 +102,13 @@ export function TextInputRender(props: TextInput) {
 		}))
 		: []
 
-	const hasActionStopper = useDisabledContext()
-	const { isLoading: changeIsLoading, dispatch: dispatchChange } = useDispatcher(props.change_event ?? null)
-	const { isLoading: blurIsLoading, dispatch: dispatchBlur } = useDispatcher(props.blur_event ?? null)
-	const { isLoading: dropdownSelectionIsLoading, dispatch: dispatchDropdownSelection } = useDispatcher(
-		props.option_selected_event ?? null,
-	)
-	const { isLoading: submitIsLoading, dispatch: dispatchSubmit } = useDispatcher(props.submit_event ?? null)
+	const { isLoading: changeIsLoading, dispatch: dispatchChange, isDisabled: changeIsDisabled } = useDispatcher(props.change_event ?? null)
+	const { isLoading: blurIsLoading, dispatch: dispatchBlur, isDisabled: blurIsDisabled } = useDispatcher(props.blur_event ?? null)
+	const { isLoading: dropdownSelectionIsLoading, dispatch: dispatchDropdownSelection, isDisabled: dropdownSelectionIsDisabled } =
+		useDispatcher(
+			props.option_selected_event ?? null,
+		)
+	const { isLoading: submitIsLoading, dispatch: dispatchSubmit, isDisabled: submitIsDisabled } = useDispatcher(props.submit_event ?? null)
 	const update = useUpdates<TextInputUpdate>(props.update_hook ?? null)
 	const [text, setText] = React.useState(props.initial_value ?? '')
 	const [conceal, setConceal] = React.useState(props.role === 'Password')
@@ -129,8 +129,8 @@ export function TextInputRender(props: TextInput) {
 		if (update.type === 'SetDropdownOptions') setDropdownOptions(update.content.options)
 	}, [update])
 
-	const hasNoNotableActions = !props.option_selected_event && !props.blur_event && !props.change_event
-	const isDisabled = hasNoNotableActions || submitIsLoading || hasActionStopper
+	const isDisabled = submitIsLoading || changeIsDisabled || blurIsDisabled || dropdownSelectionIsDisabled ||
+		submitIsDisabled
 
 	// if the server doesn't listen for dropdown selection events, the text field is considered free.
 	const isFreeText = !props.option_selected_event

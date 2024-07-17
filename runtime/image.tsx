@@ -53,7 +53,7 @@ export function ImageRender(props: Image) {
 					<SkeletonBlock
 						height={isOk(props.height) ? props.height + extraSkeletonSize : null}
 						width={isOk(props.width) ? props.width + extraSkeletonSize : null}
-						rounding={props.decorate ? 'slight' : 'non'}
+						rounding={props.decorate ? 'slight' : 'none'}
 					/>
 				)
 				: (

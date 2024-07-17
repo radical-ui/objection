@@ -1,8 +1,9 @@
-import { EventKey, useDispatcher } from './event.tsx'
+import { useDispatcher } from './event.tsx'
 import { Component, ComponentRender } from './component.tsx'
-import { React } from './deps.ts'
+import { EventKey, React } from './deps.ts'
 import { IconName, IconRender } from './icon.tsx'
 import { Image, ImageRender } from './image.tsx'
+import { getEventId } from '../runtime_lib/mod.ts'
 
 /**
  * A sidebar application layout.
@@ -22,13 +23,13 @@ export interface SidebarLayout {
 	body?: Component
 	footer?: Component
 	groups: SidebarGroup[]
-	initial_event?: EventKey
+	initial_event?: EventKey<null>
 	logo?: Image
 	title: string
-	title_event?: EventKey
+	title_event?: EventKey<null>
 }
 export interface SidebarItem {
-	event?: EventKey
+	event?: EventKey<null>
 	icon?: IconName
 	title: string
 }
@@ -38,9 +39,9 @@ export interface SidebarGroup {
 }
 
 export function SidebarLayoutRender(props: SidebarLayout) {
-	const [selectedKey, setSelectedKey] = React.useState(props.initial_event ?? null)
+	const [selectedKey, setSelectedKey] = React.useState(props.initial_event ? getEventId(props.initial_event) : null)
 
-	const setItem = (key: string) => setSelectedKey(key)
+	const setItem = (key: EventKey<null>) => setSelectedKey(getEventId(key))
 
 	return (
 		<div class='h-full flex'>
@@ -67,7 +68,7 @@ export function SidebarLayoutRender(props: SidebarLayout) {
 
 										setItem(item.event)
 									}}
-									isSelected={selectedKey ? selectedKey === item.event : false}
+									isSelected={item.event ? selectedKey === getEventId(item.event) : false}
 									{...item}
 								/>
 							))}
@@ -88,7 +89,7 @@ export function SidebarLayoutRender(props: SidebarLayout) {
 
 														setItem(item.event)
 													}}
-													isSelected={selectedKey ? selectedKey === item.event : false}
+													isSelected={item.event ? selectedKey === getEventId(item.event) : false}
 													{...item}
 												/>
 											)

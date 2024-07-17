@@ -1,6 +1,6 @@
-import { EventKey, useDispatcher } from './event.tsx'
+import { useDispatcher } from './event.tsx'
 import { Component, ComponentRender } from './component.tsx'
-import { React } from './deps.ts'
+import { EventKey, React } from './deps.ts'
 import { IconRender } from './icon.tsx'
 import { LabelRender } from './label.tsx'
 
@@ -16,7 +16,7 @@ import { LabelRender } from './label.tsx'
  * @component
  */
 export interface RadioInput {
-	event?: EventKey
+	event?: EventKey<number>
 	initial_value?: number
 	items: RadioItem[]
 }

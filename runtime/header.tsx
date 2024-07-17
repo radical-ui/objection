@@ -1,7 +1,6 @@
-import { React } from './deps.ts'
+import { EventKey, React } from './deps.ts'
 import { IconButtonRender, IconName } from './icon.tsx'
 import { LabelRender } from './label.tsx'
-import { EventKey } from './event.tsx'
 
 const getIconSize = (size: HeaderSize) => {
 	if (size === 'Large') return 25
@@ -20,7 +19,7 @@ const getTextSize = (size: HeaderSize) => {
 export type HeaderSize = 'Large' | 'Medium' | 'Small'
 
 export interface HeaderActionItem {
-	event: EventKey
+	event: EventKey<null>
 	icon: IconName
 	label: string
 }
@@ -40,10 +39,10 @@ export interface Header {
 	event_items: HeaderActionItem[]
 	size: HeaderSize
 	subtitle?: string
-	subtitle_edit_event?: EventKey
+	subtitle_edit_event?: EventKey<string>
 	subtitle_placeholder?: string
 	title: string
-	title_edit_event?: EventKey
+	title_edit_event?: EventKey<string>
 	title_placeholder?: string
 }
 

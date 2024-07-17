@@ -1,5 +1,5 @@
-import { EventKey, useDispatcher } from './event.tsx'
-import { React } from './deps.ts'
+import { useDispatcher } from './event.tsx'
+import { EventKey, React } from './deps.ts'
 import { IconRender } from './icon.tsx'
 
 /**
@@ -16,7 +16,7 @@ import { IconRender } from './icon.tsx'
  * @component
  */
 export interface CheckboxInput {
-	event?: EventKey
+	event?: EventKey<boolean>
 	initial_value: boolean
 	label: string
 }

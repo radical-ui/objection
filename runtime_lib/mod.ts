@@ -3,14 +3,22 @@
  *
  * @feature_event_key
  */
-export type EventKey<T> = { path: string[]; debugSymbol?: string }
+export type EventKey<T> = { event_path: string[]; debugSymbol?: string }
+
+/**
+ * An event that could be triggered, but that is not linked to any payload. This should only be used in cases where the event is not
+ * actually triggered, but there is some reason to keep a reference to it.
+ *
+ * @feature_any_event
+ */
+export type AnyEvent = { event_path: string[]; debugSymbol?: string }
 
 /**
  * An action that could be triggered, where `T` is the data that the action will contain
  *
  * @feature_action_key
  */
-export type ActionKey<T> = { path: string[]; debugSymbol?: string }
+export type ActionKey<T> = { action_path: string[]; debugSymbol?: string }
 
 const actionListeners = new Map<string, (d: unknown) => void>()
 let sessionId: string | null = null
@@ -41,7 +49,7 @@ export async function sendEvent<T>(key: EventKey<T>, data: T) {
 	const actions = await response.json() as { key: ActionKey<unknown>; data: unknown }[]
 
 	for (const action of actions) {
-		const listener = actionListeners.get(getJoinedKey(action.key))
+		const listener = actionListeners.get(getActionId(action.key))
 		if (!listener) throw new Error(`No action listener was specified for action: ${JSON.stringify(action, null, '\t')}`)
 
 		listener(action.data)
@@ -49,7 +57,7 @@ export async function sendEvent<T>(key: EventKey<T>, data: T) {
 }
 
 export function registerActionListener<T>(key: ActionKey<T>, listener: (data: T) => void) {
-	const joinedKey = getJoinedKey(key)
+	const joinedKey = getActionId(key)
 
 	// @ts-ignore at our best, we have to home that something isn't seriously borked up and trust that the key will always match the data
 	actionListeners.set(joinedKey, listener)
@@ -59,6 +67,14 @@ export function registerActionListener<T>(key: ActionKey<T>, listener: (data: T)
 	}
 }
 
-function getJoinedKey(actionKey: ActionKey<unknown>) {
-	return actionKey.path.map((item) => item.replaceAll(':', '\\:')).join('::')
+export function getActionId(actionKey: ActionKey<unknown>) {
+	return safeJoin(actionKey.action_path)
+}
+
+export function getEventId(eventKey: EventKey<unknown>) {
+	return safeJoin(eventKey.event_path)
+}
+
+function safeJoin(path: string[]) {
+	return path.map((item) => item.replaceAll(':', '\\:')).join('::')
 }

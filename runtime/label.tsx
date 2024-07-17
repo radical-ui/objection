@@ -1,6 +1,6 @@
 import { Color } from './types.ts'
-import { React } from './deps.ts'
-import { EventKey, useDispatcher } from './event.tsx'
+import { EventKey, React } from './deps.ts'
+import { useDispatcher } from './event.tsx'
 import { SkeletonBlock, useSkeletonDetection } from './skeleton.tsx'
 import { getColor } from './utils.ts'
 import { FlatLoader } from './flat_loader.tsx'
@@ -18,7 +18,7 @@ import { FlatLoader } from './flat_loader.tsx'
  */
 export interface Label {
 	color: Color
-	edit_event?: EventKey
+	edit_event?: EventKey<string>
 	is_bold: boolean
 	is_italic: boolean
 	placeholder?: string

@@ -1,6 +1,6 @@
-import { EventKey, useDispatcher } from './event.tsx'
+import { useDispatcher } from './event.tsx'
 import { Component, ComponentRender } from './component.tsx'
-import { React } from './deps.ts'
+import { AnyEvent, React } from './deps.ts'
 
 const SkeletonContext = React.createContext(false)
 
@@ -17,7 +17,7 @@ const SkeletonContext = React.createContext(false)
  */
 export interface Skeleton {
 	body: Component
-	linked_event: EventKey
+	linked_event: AnyEvent
 }
 
 export function SkeletonRender(props: Skeleton) {
@@ -34,7 +34,7 @@ export function useSkeletonDetection() {
 	return React.useContext(SkeletonContext)
 }
 
-export type SkeletonRounding = 'slight' | 'full' | 'non'
+export type SkeletonRounding = 'slight' | 'full' | 'none'
 
 export interface SkeletonBlockProps {
 	width: number | null

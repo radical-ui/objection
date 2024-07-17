@@ -1,7 +1,7 @@
-import { EventKey, useDispatcher } from './event.tsx'
+import { useDispatcher } from './event.tsx'
 import { ButtonRender } from './button.tsx'
 import { Component, ComponentRender } from './component.tsx'
-import { React } from './deps.ts'
+import { EventKey, React } from './deps.ts'
 import { IconButtonRender } from './icon.tsx'
 import { GlobalCss } from './utils.ts'
 
@@ -39,10 +39,10 @@ export type ModalSize = 'Small' | 'Medium' | 'Large'
  */
 export interface Modal {
 	body?: Component
-	cancel_event?: EventKey
+	cancel_event?: EventKey<null>
 	cancel_event_label?: string
 	description?: string
-	finish_event?: EventKey
+	finish_event?: EventKey<null>
 	finish_event_label?: string
 	size: ModalSize
 	title: string

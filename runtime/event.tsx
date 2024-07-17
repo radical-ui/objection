@@ -1,90 +1,55 @@
 import { Component, ComponentRender } from './component.tsx'
-import { React } from './deps.ts'
+import { EventKey, getEventId, React, sendEvent } from './deps.ts'
 import { ManyMap } from './utils.ts'
 
-export type EventKey = string
-
-export interface Event {
-	key: EventKey
-	payload?: unknown
-}
-
-export type RawDispatchFn = (eventTree: Event[]) => Promise<void>
-export type DispatchFn = (payload: unknown) => Promise<void>
+export type DispatchFn<T> = (payload: T) => Promise<void>
 
 const dispatchStartListeners = new ManyMap<string, VoidFunction>()
 const dispatchFinishListeners = new ManyMap<string, VoidFunction>()
 
-const DispatchContext = React.createContext<RawDispatchFn>(() => {
-	console.warn('Expected an event dispatcher to be set')
-
-	return Promise.resolve()
-})
-
-const ScopeContext = React.createContext<Event[]>([])
 const DisabledContext = React.createContext(false)
-
-export interface ProvideDispatchProps {
-	dispatch: RawDispatchFn
-	children: React.ReactNode
-}
-
-export function ProvideDispatch(props: ProvideDispatchProps) {
-	return <DispatchContext.Provider value={props.dispatch}>{props.children}</DispatchContext.Provider>
-}
-
-export interface ProvideScopeProps {
-	scope: Event[]
-	children: React.ReactNode
-}
-
-export function ProvideScope(props: ProvideScopeProps) {
-	return <ScopeContext.Provider value={props.scope}>{props.children}</ScopeContext.Provider>
-}
 
 export interface ProvideDisabledContextProps {
 	isDisabled: boolean
 	children: React.ReactNode
 }
 
-export function ProvideDisabledContext(props: ProvideDisabledContextProps) {
-	return <DisabledContext.Provider value={props.isDisabled}>{props.children}</DisabledContext.Provider>
-}
-
-export function useRawDispatch() {
-	return React.useContext(DispatchContext)
-}
-
-export function useEventScope() {
-	return React.useContext(ScopeContext)
-}
-
-export function useDisabledContext() {
-	return React.useContext(DisabledContext)
-}
-
-export interface UseDispatcherResult {
+export interface UseDispatcherResult<T> {
 	isLoading: boolean
 	isDisabled: boolean
-	dispatch: DispatchFn
+	dispatch: DispatchFn<T>
 }
 
-export function useDispatcher(id: string | null): UseDispatcherResult {
-	const rawDispatch = useRawDispatch()
-	const scope = useEventScope()
-	const isDisabled = useDisabledContext()
+export function useDispatcher<T>(key: EventKey<T> | null): UseDispatcherResult<T> {
+	const isDisabled = React.useContext(DisabledContext)
 
-	const fullId = id === null ? null : `${scope.map((event) => event.key).join(',')},${id}`
+	const id = key === null ? null : getEventId(key)
+
+	// NOTE from Elijah: I'm not a genius, but I think that this is borked. Don't know why it was working before.
+	//
+	// TODO(Elijah) fix this whole mess
+	// Reasoning: nobody is ever going to fire two actions on the same `useDispatch` result at the same time, so why are counting?
+	// I'm supposing this count was meant to be global, because it updates as the globals change. In that case, it should start off with
+	// the current global value, not 0. It would be off it this component was mounted while an action was ongoing.
+	//
+	// Second thoughts: I suppose this never happened before due the the syncronous nature of http events/actions in the past, but this edge case
+	// would be triggered a lot more with the onset of websocket connections and events/actions that are asyncronous and long-running.
+	//
+	// TODO food for thought. How is the server going to handle async events actions while preventing data races? Not a mutex please! Can you think
+	// of anything better though??
+	//    AMEND possible solution: there are generally two possible responses to events, those that can be responded to quickly (eg. username update), and long-running tasks
+	//    (eg. do some super complex caluclation or data aggregation). The former will require full user context, meaning that they will need to be run
+	//    syncronously. The latter can be spawned off on their own task and run with entirely owned data. These long t
 	const [ongoingActionsCount, setOngoingActionsCount] = React.useState(0)
 
 	React.useEffect(() => {
-		if (fullId === null) return
+		if (id === null) return
 
-		const unsubscribeStart = dispatchStartListeners.add(fullId, () => {
+		const unsubscribeStart = dispatchStartListeners.add(id, () => {
 			setOngoingActionsCount((count) => count + 1)
 		})
 
-		const unsubscribeFinish = dispatchFinishListeners.add(fullId, () => {
+		const unsubscribeFinish = dispatchFinishListeners.add(id, () => {
 			setOngoingActionsCount((count) => count - 1)
 		})
 
@@ -95,13 +60,13 @@ export function useDispatcher(id: string | null): UseDispatcherResult {
 	}, [id])
 
 	const isLoading = ongoingActionsCount > 0
-	const dispatch = React.useMemo(() => async (payload: unknown) => {
-		if (fullId === null) return
+	const dispatch = React.useMemo(() => async (payload: T) => {
+		if (key === null || id === null) return
 
-		for (const listener of dispatchStartListeners.get(fullId)) listener()
-		await rawDispatch([{ key: id!, payload }, ...scope])
-		for (const listener of dispatchFinishListeners.get(fullId)) listener()
-	}, [id, scope])
+		for (const listener of dispatchStartListeners.get(id)) listener()
+		await sendEvent(key, payload)
+		for (const listener of dispatchFinishListeners.get(id)) listener()
+	}, [id])
 
 	return { isLoading, dispatch, isDisabled: isDisabled || id === null }
 }
@@ -123,38 +88,11 @@ export interface EventBlocker {
 }
 
 export function EventBlockerRender(props: EventBlocker) {
-	return (
-		<ProvideDisabledContext isDisabled={props.block}>
-			{props.body && <ComponentRender {...props.body} />}
-		</ProvideDisabledContext>
-	)
-}
-
-/**
- * A container that prefixes all events triggered within with `scope`
- *
- * **Example**
- *
- * ```rust #[derive(HasActionKey, Serialize, Deserialize)] enum Event { Foo, Bar, }
- *
- * ActionScope::new(Event::Foo).payload(serde_json::json!({ "here": true })).body(Button::new("Click me").event(Event::Bar)) ```
- *
- * @component
- */
-export interface EventScope {
-	body?: Component
-	payload?: unknown
-	scope: EventKey
-}
-
-export function EventScopeRender(props: EventScope) {
-	const parentScope = useEventScope()
+	const currentContext = React.useContext(DisabledContext)
 
 	return (
-		<div class='w-full h-full'>
-			<ProvideScope scope={[{ key: props.scope, payload: props.payload ?? null }, ...parentScope]}>
-				{props.body ? <ComponentRender {...props.body} /> : <></>}
-			</ProvideScope>
-		</div>
+		<DisabledContext.Provider value={props.block || currentContext}>
+			<ComponentRender {...props.body} />
+		</DisabledContext.Provider>
 	)
 }

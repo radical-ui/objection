@@ -1,6 +1,6 @@
-import { EventKey, useDispatcher } from './event.tsx'
+import { useDispatcher } from './event.tsx'
 import { doBubble } from './bubble.ts'
-import { React } from './deps.ts'
+import { EventKey, React } from './deps.ts'
 import { IconName, IconRender } from './icon.tsx'
 import { Spinner } from './spinner.tsx'
 import { Color } from './types.ts'
@@ -20,7 +20,7 @@ export type ButtonSize = 'Small' | 'Medium' | 'Large'
  * @component
  */
 export interface Button {
-	event?: EventKey
+	event?: EventKey<null>
 	color: Color
 	full: boolean
 	label: string

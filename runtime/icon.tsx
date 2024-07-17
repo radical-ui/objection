@@ -1,6 +1,6 @@
-import { EventKey, useDispatcher } from './event.tsx'
+import { useDispatcher } from './event.tsx'
 import { doBubble } from './bubble.ts'
-import { React } from './deps.ts'
+import { EventKey, React } from './deps.ts'
 import { SkeletonBlock, useSkeletonDetection } from './skeleton.tsx'
 import { Spinner } from './spinner.tsx'
 import { Tooltip } from './tooltip.tsx'
@@ -76,7 +76,7 @@ export function IconRender(props: Icon) {
  * @component
  */
 export interface IconButton {
-	event?: EventKey
+	event?: EventKey<null>
 	color: Color
 	name: IconName
 	size: number
