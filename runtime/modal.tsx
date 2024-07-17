@@ -1,4 +1,4 @@
-import { ActionKey, useDispatcher } from './action.tsx'
+import { EventKey, useDispatcher } from './event.tsx'
 import { ButtonRender } from './button.tsx'
 import { Component, ComponentRender } from './component.tsx'
 import { React } from './deps.ts'
@@ -39,17 +39,17 @@ export type ModalSize = 'Small' | 'Medium' | 'Large'
  */
 export interface Modal {
 	body?: Component
-	cancel_action?: ActionKey
-	cancel_action_label?: string
+	cancel_event?: EventKey
+	cancel_event_label?: string
 	description?: string
-	finish_action?: ActionKey
-	finish_action_label?: string
+	finish_event?: EventKey
+	finish_event_label?: string
 	size: ModalSize
 	title: string
 }
 
 export function ModalRender(props: Modal) {
-	const { dispatch, isDisabled } = useDispatcher(props.cancel_action ?? null)
+	const { dispatch, isDisabled } = useDispatcher(props.cancel_event ?? null)
 	css.present()
 
 	React.useEffect(() => {
@@ -62,7 +62,7 @@ export function ModalRender(props: Modal) {
 		return () => {
 			globalThis.window.removeEventListener('keyup', listener)
 		}
-	}, [isDisabled, props.cancel_action])
+	}, [isDisabled, props.cancel_event])
 
 	return (
 		<div class={`fixed inset-0 modal`}>
@@ -77,36 +77,36 @@ export function ModalRender(props: Modal) {
 				<div class={`pointer-events-auto rounded shadow-lg bg-base p-30 ${getSizeClasses(props.size)} flex flex-col gap-10`}>
 					<div class='flex gap-10 items-center'>
 						<h2 class='text-2xl font-semibold text-fore-60 flex-1'>{props.title}</h2>
-						<IconButtonRender color={{ type: 'Fore', opacity: 60 }} name='mdi-close' size={30} action={props.cancel_action} />
+						<IconButtonRender color={{ type: 'Fore', opacity: 60 }} name='mdi-close' size={30} event={props.cancel_event} />
 					</div>
 
 					<p class='text-fore-40'>{props.description}</p>
 
 					<div class='flex-1 min-h-0'>{props.body && <ComponentRender {...props.body} />}</div>
 
-					{(props.cancel_action || props.finish_action) && (
+					{(props.cancel_event || props.finish_event) && (
 						<div class='flex gap-20'>
 							<div class='flex-1' />
 
-							{props.cancel_action && (
+							{props.cancel_event && (
 								<ButtonRender
 									color={{ type: 'Fore', opacity: 30 }}
 									full={false}
-									label={props.cancel_action_label || 'Cancel'}
+									label={props.cancel_event_label || 'Cancel'}
 									outline={false}
 									size='Medium'
-									action={props.cancel_action}
+									event={props.cancel_event}
 								/>
 							)}
 
-							{props.cancel_action && (
+							{props.cancel_event && (
 								<ButtonRender
 									color={{ type: 'Primary', opacity: 100 }}
 									full={false}
-									label={props.finish_action_label || 'Ok'}
+									label={props.finish_event_label || 'Ok'}
 									outline={false}
 									size='Medium'
-									action={props.finish_action}
+									event={props.finish_event}
 								/>
 							)}
 						</div>

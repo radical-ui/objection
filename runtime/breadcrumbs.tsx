@@ -3,7 +3,7 @@ import { LabelRender } from './label.tsx'
 import { IconRender } from './icon.tsx'
 import { Component, ComponentRender } from './component.tsx'
 import { FlatLoader } from './flat_loader.tsx'
-import { ActionKey, useDispatcher } from './action.tsx'
+import { EventKey, useDispatcher } from './event.tsx'
 
 /**
  * TODO
@@ -18,7 +18,7 @@ import { ActionKey, useDispatcher } from './action.tsx'
  */
 export interface Breadcrumbs {
 	body?: Component
-	crumbs: [ActionKey, string][]
+	crumbs: [EventKey, string][]
 	current?: string
 }
 
@@ -26,7 +26,7 @@ export function BreadcrumbsRender(props: Breadcrumbs) {
 	return (
 		<div class='h-full flex flex-col gap-10'>
 			<div class='flex gap-5 items-center'>
-				{props.crumbs.map((crumb) => <Crumb action={crumb[0]} text={crumb[1]} />)}
+				{props.crumbs.map((crumb) => <Crumb event={crumb[0]} text={crumb[1]} />)}
 
 				{props.current && (
 					<LabelRender color={{ type: 'Fore', opacity: 50 }} is_bold={true} is_italic={false} text={props.current} />
@@ -43,12 +43,12 @@ export function BreadcrumbsRender(props: Breadcrumbs) {
 }
 
 interface CrumbProps {
-	action: ActionKey
+	event: EventKey
 	text: string
 }
 
 function Crumb(props: CrumbProps) {
-	const { isLoading, dispatch, isDisabled } = useDispatcher(props.action)
+	const { isLoading, dispatch, isDisabled } = useDispatcher(props.event)
 
 	return (
 		<>

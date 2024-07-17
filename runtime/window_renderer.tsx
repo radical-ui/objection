@@ -1,5 +1,5 @@
-import { ProvideDispatch } from './action.tsx'
-import { RawDispatchFn } from './action.tsx'
+import { ProvideDispatch } from './event.tsx'
+import { RawDispatchFn } from './event.tsx'
 import { frontier, React } from './deps.ts'
 import { ProvideNotices } from './notices.tsx'
 import { ColorDefinition, ColorPalette, Notice, Window } from './types.ts'
@@ -11,7 +11,7 @@ import { ModalProvider } from './modal.tsx'
 export class WindowRenderer {
 	#internalUpdate: ((root: Component) => void) | null = null
 	#internalAddNotice: ((notice: Notice) => void) | null = null
-	#actionHandler: RawDispatchFn | null = null
+	#eventHandler: RawDispatchFn | null = null
 	#updateManager = new UpdateManager()
 	#didGiveTheme = false
 
@@ -34,7 +34,7 @@ export class WindowRenderer {
 	}
 
 	setActionHandler(dispatch: RawDispatchFn) {
-		this.#actionHandler = async (tree) => {
+		this.#eventHandler = async (tree) => {
 			try {
 				return await dispatch(tree)
 			} catch (error) {
@@ -107,9 +107,9 @@ export class WindowRenderer {
 					<ProvideUpdateManager manger={this.#updateManager}>
 						<ProvideDispatch
 							dispatch={(tree) => {
-								if (this.#actionHandler) return this.#actionHandler(tree)
+								if (this.#eventHandler) return this.#eventHandler(tree)
 
-								console.warn('No action handler set')
+								console.warn('No event handler set')
 								return Promise.resolve()
 							}}
 						>

@@ -1,4 +1,4 @@
-import { ActionKey, useDispatcher } from './action.tsx'
+import { EventKey, useDispatcher } from './event.tsx'
 import { Component, ComponentRender } from './component.tsx'
 import { React } from './deps.ts'
 import { IconRender } from './icon.tsx'
@@ -11,12 +11,12 @@ import { LabelRender } from './label.tsx'
  *
  * ```rust #[derive(HasActionKey, Serialize, Deserialize)] enum Event { Batter, }
  *
- * Flex::new(FlexKind::Column) .gap(30) .auto_item( RadioInput::new() .action(Event::Batter) .item(0, "Red") .item(1, "Green") ) .auto_item( RadioInput::new() .action(Event::Batter) .item(0, "Hi") .described_item(1, "Bye", Label::new("This is greeting that people say when they are bidding farewell to a friend")) .described_item(2, "Adieu", Label::new("The french form of \"Bye\"")) ) .auto_item( RadioInput::new() .item(0, "all are disabled here") .described_item(1, "Bye", Label::new("This is greeting that people say when they are bidding farewell to a friend")) .described_item(2, "Adieu", Label::new("The french form of \"Bye\"")) ) ```
+ * Flex::new(FlexKind::Column) .gap(30) .auto_item( RadioInput::new() .event(Event::Batter) .item(0, "Red") .item(1, "Green") ) .auto_item( RadioInput::new() .event(Event::Batter) .item(0, "Hi") .described_item(1, "Bye", Label::new("This is greeting that people say when they are bidding farewell to a friend")) .described_item(2, "Adieu", Label::new("The french form of \"Bye\"")) ) .auto_item( RadioInput::new() .item(0, "all are disabled here") .described_item(1, "Bye", Label::new("This is greeting that people say when they are bidding farewell to a friend")) .described_item(2, "Adieu", Label::new("The french form of \"Bye\"")) ) ```
  *
  * @component
  */
 export interface RadioInput {
-	action?: ActionKey
+	event?: EventKey
 	initial_value?: number
 	items: RadioItem[]
 }
@@ -27,7 +27,7 @@ export interface RadioItem {
 }
 
 export function RadioInputRender(props: RadioInput) {
-	const { dispatch, isDisabled } = useDispatcher(props.action ?? null)
+	const { dispatch, isDisabled } = useDispatcher(props.event ?? null)
 	const [selectedId, setSelectedId] = React.useState<number | null>(props.initial_value ?? null)
 
 	const someoneHasDescription = !!props.items.find((item) => item.description)
@@ -46,7 +46,7 @@ export function RadioInputRender(props: RadioInput) {
 						`}
 						disabled={isDisabled}
 						onClick={() => {
-							if (props.action) dispatch(item.id).then(() => setSelectedId(item.id))
+							if (props.event) dispatch(item.id).then(() => setSelectedId(item.id))
 						}}
 					>
 						<div class='flex items-center gap-5'>

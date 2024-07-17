@@ -1,3 +1,5 @@
+import { Component } from './component.tsx'
+
 export type Color =
 	| {
 		opacity: number

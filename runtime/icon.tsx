@@ -1,10 +1,9 @@
-import { useDispatcher } from './action.tsx'
+import { EventKey, useDispatcher } from './event.tsx'
 import { doBubble } from './bubble.ts'
 import { React } from './deps.ts'
 import { SkeletonBlock, useSkeletonDetection } from './skeleton.tsx'
 import { Spinner } from './spinner.tsx'
 import { Tooltip } from './tooltip.tsx'
-import { ActionKey } from './types.ts'
 import { Color } from './types.ts'
 import { getColor } from './utils.ts'
 
@@ -72,12 +71,12 @@ export function IconRender(props: Icon) {
  *
  * ```rust #[derive(HasActionKey, Serialize, Deserialize)] enum Event { Foo }
  *
- * Flex::new(FlexKind::Row) .gap(20) .auto_item( IconButton::new("mdi-ab-testing") .color(Color::Primary(100)) .title("A description of what this does and it is a rather long description") .size(40) .action(Event::Foo) ) .auto_item(IconButton::new("mdi-ab-testing")) .auto_item( IconButton::new("mdi-ab-testing") .color(Color::Primary(100)) .action(Event::Foo) ) ```
+ * Flex::new(FlexKind::Row) .gap(20) .auto_item( IconButton::new("mdi-ab-testing") .color(Color::Primary(100)) .title("A description of what this does and it is a rather long description") .size(40) .event(Event::Foo) ) .auto_item(IconButton::new("mdi-ab-testing")) .auto_item( IconButton::new("mdi-ab-testing") .color(Color::Primary(100)) .event(Event::Foo) ) ```
  *
  * @component
  */
 export interface IconButton {
-	action?: ActionKey
+	event?: EventKey
 	color: Color
 	name: IconName
 	size: number
@@ -85,7 +84,7 @@ export interface IconButton {
 }
 
 export function IconButtonRender(props: IconButton & { handleClick?(): void }) {
-	const { isLoading, dispatch, isDisabled: isActionDisabled } = useDispatcher(props.action ?? null)
+	const { isLoading, dispatch, isDisabled: isActionDisabled } = useDispatcher(props.event ?? null)
 
 	const isDisabled = isActionDisabled || isLoading
 	const size = Math.round(props.size * 1.5)

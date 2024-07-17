@@ -2,26 +2,26 @@ import { Component, ComponentRender } from './component.tsx'
 import { React } from './deps.ts'
 import { ManyMap } from './utils.ts'
 
-export type ActionKey = string
+export type EventKey = string
 
-export interface Action {
-	key: ActionKey
+export interface Event {
+	key: EventKey
 	payload?: unknown
 }
 
-export type RawDispatchFn = (actionTree: Action[]) => Promise<void>
+export type RawDispatchFn = (eventTree: Event[]) => Promise<void>
 export type DispatchFn = (payload: unknown) => Promise<void>
 
 const dispatchStartListeners = new ManyMap<string, VoidFunction>()
 const dispatchFinishListeners = new ManyMap<string, VoidFunction>()
 
 const DispatchContext = React.createContext<RawDispatchFn>(() => {
-	console.warn('Expected an action dispatcher to be set')
+	console.warn('Expected an event dispatcher to be set')
 
 	return Promise.resolve()
 })
 
-const ScopeContext = React.createContext<Action[]>([])
+const ScopeContext = React.createContext<Event[]>([])
 const DisabledContext = React.createContext(false)
 
 export interface ProvideDispatchProps {
@@ -34,7 +34,7 @@ export function ProvideDispatch(props: ProvideDispatchProps) {
 }
 
 export interface ProvideScopeProps {
-	scope: Action[]
+	scope: Event[]
 	children: React.ReactNode
 }
 
@@ -55,7 +55,7 @@ export function useRawDispatch() {
 	return React.useContext(DispatchContext)
 }
 
-export function useActionScope() {
+export function useEventScope() {
 	return React.useContext(ScopeContext)
 }
 
@@ -71,10 +71,10 @@ export interface UseDispatcherResult {
 
 export function useDispatcher(id: string | null): UseDispatcherResult {
 	const rawDispatch = useRawDispatch()
-	const scope = useActionScope()
+	const scope = useEventScope()
 	const isDisabled = useDisabledContext()
 
-	const fullId = id === null ? null : `${scope.map((action) => action.key).join(',')},${id}`
+	const fullId = id === null ? null : `${scope.map((event) => event.key).join(',')},${id}`
 	const [ongoingActionsCount, setOngoingActionsCount] = React.useState(0)
 
 	React.useEffect(() => {
@@ -113,16 +113,16 @@ export function useDispatcher(id: string | null): UseDispatcherResult {
  *
  * ```rust #[derive(Debug, HasActionKey, Serialize, Deserialize)] pub enum Event { Foo }
  *
- * ActionBlocker::new().body(Button::new("Disabled").action(Event::Foo)) ```
+ * ActionBlocker::new().body(Button::new("Disabled").event(Event::Foo)) ```
  *
  * @component
  */
-export interface ActionBlocker {
+export interface EventBlocker {
 	block: boolean
 	body?: Component
 }
 
-export function ActionBlockerRender(props: ActionBlocker) {
+export function EventBlockerRender(props: EventBlocker) {
 	return (
 		<ProvideDisabledContext isDisabled={props.block}>
 			{props.body && <ComponentRender {...props.body} />}
@@ -131,24 +131,24 @@ export function ActionBlockerRender(props: ActionBlocker) {
 }
 
 /**
- * A container that prefixes all actions triggered within with `scope`
+ * A container that prefixes all events triggered within with `scope`
  *
  * **Example**
  *
  * ```rust #[derive(HasActionKey, Serialize, Deserialize)] enum Event { Foo, Bar, }
  *
- * ActionScope::new(Event::Foo).payload(serde_json::json!({ "here": true })).body(Button::new("Click me").action(Event::Bar)) ```
+ * ActionScope::new(Event::Foo).payload(serde_json::json!({ "here": true })).body(Button::new("Click me").event(Event::Bar)) ```
  *
  * @component
  */
-export interface ActionScope {
+export interface EventScope {
 	body?: Component
 	payload?: unknown
-	scope: ActionKey
+	scope: EventKey
 }
 
-export function ActionScopeRender(props: ActionScope) {
-	const parentScope = useActionScope()
+export function EventScopeRender(props: EventScope) {
+	const parentScope = useEventScope()
 
 	return (
 		<div class='w-full h-full'>

@@ -1,27 +1,26 @@
-import { useDispatcher } from './action.tsx'
+import { EventKey, useDispatcher } from './event.tsx'
 import { doBubble } from './bubble.ts'
 import { React } from './deps.ts'
 import { IconName, IconRender } from './icon.tsx'
 import { Spinner } from './spinner.tsx'
 import { Color } from './types.ts'
-import { ActionKey } from './types.ts'
 import { getColor } from './utils.ts'
 
 export type ButtonSize = 'Small' | 'Medium' | 'Large'
 
 /**
- * A button that has a label and an action.
+ * A button that has a label and an event.
  *
  * **Example**
  *
  * ```rust #[derive(HasActionKey, Serialize, Deserialize)] enum Event { Foo, Bar, }
  *
- * Flex::new(FlexKind::Column) .gap(10) .align(FlexAlign::Center) .justify(FlexJustify::Center) .auto_item( Flex::new(FlexKind::Row) .gap(10) .align(FlexAlign::Center) .auto_item( Button::new("Small Button") .action(Event::Foo) .size(ButtonSize::Small) ) .auto_item( Button::new("Medium Button") .action(Event::Foo) ) .auto_item( Button::new("Large Button") .action(Event::Bar) .size(ButtonSize::Large) ) ) .auto_item( Flex::new(FlexKind::Row) .gap(10) .auto_item( Button::new("Fore Button") .action(Event::Foo) .color(Color::Fore(5)) ) .auto_item( Button::new("Success Button") .action(Event::Foo) .color(Color::Success(100)) ) .auto_item( Button::new("Danger Button") .action(Event::Foo) .color(Color::Danger(100)) ) ) .auto_item( Flex::new(FlexKind::Row) .gap(10) .auto_item( Button::new("Leading Icon") .action(Event::Foo) .leading_icon("mdi-ab-testing") ) .auto_item( Button::new("Trailing Icon") .action(Event::Foo) .trailing_icon("mdi-ab-testing") ) .auto_item( Button::new("Both") .action(Event::Bar) .trailing_icon("mdi-ab-testing") .leading_icon("mdi-ab-testing") .outline() ) ) ```
+ * Flex::new(FlexKind::Column) .gap(10) .align(FlexAlign::Center) .justify(FlexJustify::Center) .auto_item( Flex::new(FlexKind::Row) .gap(10) .align(FlexAlign::Center) .auto_item( Button::new("Small Button") .event(Event::Foo) .size(ButtonSize::Small) ) .auto_item( Button::new("Medium Button") .event(Event::Foo) ) .auto_item( Button::new("Large Button") .event(Event::Bar) .size(ButtonSize::Large) ) ) .auto_item( Flex::new(FlexKind::Row) .gap(10) .auto_item( Button::new("Fore Button") .event(Event::Foo) .color(Color::Fore(5)) ) .auto_item( Button::new("Success Button") .event(Event::Foo) .color(Color::Success(100)) ) .auto_item( Button::new("Danger Button") .event(Event::Foo) .color(Color::Danger(100)) ) ) .auto_item( Flex::new(FlexKind::Row) .gap(10) .auto_item( Button::new("Leading Icon") .event(Event::Foo) .leading_icon("mdi-ab-testing") ) .auto_item( Button::new("Trailing Icon") .event(Event::Foo) .trailing_icon("mdi-ab-testing") ) .auto_item( Button::new("Both") .event(Event::Bar) .trailing_icon("mdi-ab-testing") .leading_icon("mdi-ab-testing") .outline() ) ) ```
  *
  * @component
  */
 export interface Button {
-	action?: ActionKey
+	event?: EventKey
 	color: Color
 	full: boolean
 	label: string
@@ -32,7 +31,7 @@ export interface Button {
 }
 
 export function ButtonRender(props: Button) {
-	const { isLoading, dispatch, isDisabled: isActionDisabled } = useDispatcher(props.action ?? null)
+	const { isLoading, dispatch, isDisabled: isActionDisabled } = useDispatcher(props.event ?? null)
 
 	const scale = props.size === 'Large' ? 1 : props.size === 'Small' ? 0.6 : 0.8
 	const isDisabled = isActionDisabled || isLoading
@@ -64,7 +63,7 @@ export function ButtonRender(props: Button) {
 			type='button'
 			disabled={isDisabled}
 			onClick={(event) => {
-				if (!props.action) return console.error('button was clicked while disabled')
+				if (!props.event) return console.error('button was clicked while disabled')
 
 				doBubble(event.currentTarget, event)
 				dispatch(null)

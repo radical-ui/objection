@@ -1,6 +1,6 @@
 import { Color } from './types.ts'
 import { React } from './deps.ts'
-import { ActionKey, useDispatcher } from './action.tsx'
+import { EventKey, useDispatcher } from './event.tsx'
 import { SkeletonBlock, useSkeletonDetection } from './skeleton.tsx'
 import { getColor } from './utils.ts'
 import { FlatLoader } from './flat_loader.tsx'
@@ -12,13 +12,13 @@ import { FlatLoader } from './flat_loader.tsx'
  *
  * ```rust #[derive(Serialize, Deserialize, HasActionKey)] enum Event { Foo }
  *
- * Flex::new(FlexKind::Column) .gap(5) .justify(FlexJustify::Center) .align(FlexAlign::Center) .auto_item(Label::new("Some Label")) .auto_item(Label::new("Italic").italic()) .auto_item(Label::new("Bold").bold()) .auto_item(Label::new("Another Color").color(Color::Primary(100))) .auto_item(Label::new("This one is editable").edit_action(Event::Foo).color(Color::Primary(100))) .auto_item( Flex::new(FlexKind::Row) .auto_item(Label::new("And so is this").edit_action(Event::Foo)) .auto_item(Label::new("And this too (with a placeholder)").edit_action(Event::Foo).placeholder("This is the placeholder!!!! It is pretty long.")) ) ```
+ * Flex::new(FlexKind::Column) .gap(5) .justify(FlexJustify::Center) .align(FlexAlign::Center) .auto_item(Label::new("Some Label")) .auto_item(Label::new("Italic").italic()) .auto_item(Label::new("Bold").bold()) .auto_item(Label::new("Another Color").color(Color::Primary(100))) .auto_item(Label::new("This one is editable").edit_event(Event::Foo).color(Color::Primary(100))) .auto_item( Flex::new(FlexKind::Row) .auto_item(Label::new("And so is this").edit_event(Event::Foo)) .auto_item(Label::new("And this too (with a placeholder)").edit_event(Event::Foo).placeholder("This is the placeholder!!!! It is pretty long.")) ) ```
  *
  * @component
  */
 export interface Label {
 	color: Color
-	edit_action?: ActionKey
+	edit_event?: EventKey
 	is_bold: boolean
 	is_italic: boolean
 	placeholder?: string
@@ -32,14 +32,14 @@ export function LabelRender(props: Label) {
 	const [isEditing, setIsEditing] = React.useState(false)
 	const [value, setValue] = React.useState(props.text)
 	const [dirtyValue, setDirtyValue] = React.useState(props.text)
-	const { dispatch, isDisabled, isLoading } = useDispatcher(props.edit_action ?? null)
+	const { dispatch, isDisabled, isLoading } = useDispatcher(props.edit_event ?? null)
 
 	const isSkeleton = useSkeletonDetection()
 	const showPlaceholder = dirtyValue.length === 0
 	const hideStaticLabel = isSkeleton || isEditing && !showPlaceholder
 	const placeholder = props.placeholder ?? 'No content'
 
-	const canEdit = !!props.edit_action && !isDisabled
+	const canEdit = !!props.edit_event && !isDisabled
 	const isItalic = props.is_italic || showPlaceholder && !isEditing
 	const color = showPlaceholder ? { type: props.color.type, opacity: 30 } : props.color
 

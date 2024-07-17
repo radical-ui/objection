@@ -9,14 +9,14 @@ export interface Action {
 	payload?: unknown
 }
 
-export type RawDispatchFn = (actionTree: Action[]) => Promise<void>
+export type RawDispatchFn = (eventTree: Action[]) => Promise<void>
 export type DispatchFn = (payload: unknown) => Promise<void>
 
 const dispatchStartListeners = new ManyMap<string, VoidFunction>()
 const dispatchFinishListeners = new ManyMap<string, VoidFunction>()
 
 const DispatchContext = React.createContext<RawDispatchFn>(() => {
-	console.warn('Expected an action dispatcher to be set')
+	console.warn('Expected an event dispatcher to be set')
 
 	return Promise.resolve()
 })
@@ -74,7 +74,7 @@ export function useDispatcher(id: string | null): UseDispatcherResult {
 	const scope = useActionScope()
 	const isDisabled = useDisabledContext()
 
-	const fullId = id === null ? null : `${scope.map((action) => action.key).join(',')},${id}`
+	const fullId = id === null ? null : `${scope.map((event) => event.key).join(',')},${id}`
 	const [ongoingActionsCount, setOngoingActionsCount] = React.useState(0)
 
 	React.useEffect(() => {
@@ -113,7 +113,7 @@ export function useDispatcher(id: string | null): UseDispatcherResult {
  *
  * ```rust #[derive(Debug, HasActionKey, Serialize, Deserialize)] pub enum Event { Foo }
  *
- * ActionBlocker::new().body(Button::new("Disabled").action(Event::Foo)) ```
+ * ActionBlocker::new().body(Button::new("Disabled").event(Event::Foo)) ```
  *
  * @component
  */

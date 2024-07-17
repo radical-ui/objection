@@ -1,4 +1,4 @@
-import { ActionKey, useDispatcher } from './action.tsx'
+import { EventKey, useDispatcher } from './event.tsx'
 import { Component, ComponentRender } from './component.tsx'
 import { React } from './deps.ts'
 import { IconName, IconRender } from './icon.tsx'
@@ -13,22 +13,22 @@ import { Image, ImageRender } from './image.tsx'
  *
  * ```rust #[derive(HasActionKey, Serialize, Deserialize)] enum Action { Foo, Bar, }
  *
- * SidebarLayout::new("Abc Corp") .title_action(Action::Foo) .logo(Image::new("https://github.githubassets.com/assets/3m-0151c2fda0ce.svg").width(30).height(30)) .action_item(SidebarItem::new("Tasks").icon("mdi-ab-testing").action(Action::Foo)) .action_item(SidebarItem::new("Activities").icon("mdi-ab-testing").action(Action::Bar)) .group( SidebarGroup::new("Main") .item(SidebarItem::new("Tasks").icon("mdi-ab-testing").action(Action::Foo)) .item(SidebarItem::new("Activities").icon("mdi-ab-testing").action(Action::Bar)) ) .group( SidebarGroup::new("Records") .item(SidebarItem::new("Tasks").icon("mdi-ab-testing").action(Action::Foo)) .item(SidebarItem::new("Activities").icon("mdi-ab-testing").action(Action::Bar)) ) .initial_action(Action::Foo) .footer(Center::new().body("Za feetsies")) ```
+ * SidebarLayout::new("Abc Corp") .title_event(Action::Foo) .logo(Image::new("https://github.githubassets.com/assets/3m-0151c2fda0ce.svg").width(30).height(30)) .event_item(SidebarItem::new("Tasks").icon("mdi-ab-testing").event(Action::Foo)) .event_item(SidebarItem::new("Activities").icon("mdi-ab-testing").event(Action::Bar)) .group( SidebarGroup::new("Main") .item(SidebarItem::new("Tasks").icon("mdi-ab-testing").event(Action::Foo)) .item(SidebarItem::new("Activities").icon("mdi-ab-testing").event(Action::Bar)) ) .group( SidebarGroup::new("Records") .item(SidebarItem::new("Tasks").icon("mdi-ab-testing").event(Action::Foo)) .item(SidebarItem::new("Activities").icon("mdi-ab-testing").event(Action::Bar)) ) .initial_event(Action::Foo) .footer(Center::new().body("Za feetsies")) ```
  *
  * @component
  */
 export interface SidebarLayout {
-	action_items: SidebarItem[]
+	event_items: SidebarItem[]
 	body?: Component
 	footer?: Component
 	groups: SidebarGroup[]
-	initial_action?: ActionKey
+	initial_event?: EventKey
 	logo?: Image
 	title: string
-	title_action?: ActionKey
+	title_event?: EventKey
 }
 export interface SidebarItem {
-	action?: ActionKey
+	event?: EventKey
 	icon?: IconName
 	title: string
 }
@@ -38,7 +38,7 @@ export interface SidebarGroup {
 }
 
 export function SidebarLayoutRender(props: SidebarLayout) {
-	const [selectedKey, setSelectedKey] = React.useState(props.initial_action ?? null)
+	const [selectedKey, setSelectedKey] = React.useState(props.initial_event ?? null)
 
 	const setItem = (key: string) => setSelectedKey(key)
 
@@ -49,25 +49,25 @@ export function SidebarLayoutRender(props: SidebarLayout) {
 					<button
 						class='flex gap-10 items-center'
 						onClick={() => {
-							if (!props.title_action) return
+							if (!props.title_event) return
 
-							setItem(props.title_action)
+							setItem(props.title_event)
 						}}
 					>
 						{props.logo && <ImageRender {...props.logo} />}
 						<div class='text-xl font-bold'>{props.title}</div>
 					</button>
 
-					{props.action_items.length > 0 && (
+					{props.event_items.length > 0 && (
 						<div class='flex flex-col gap-10'>
-							{props.action_items.map((item) => (
+							{props.event_items.map((item) => (
 								<Item
 									onSelected={() => {
-										if (!item.action) return
+										if (!item.event) return
 
-										setItem(item.action)
+										setItem(item.event)
 									}}
-									isSelected={selectedKey ? selectedKey === item.action : false}
+									isSelected={selectedKey ? selectedKey === item.event : false}
 									{...item}
 								/>
 							))}
@@ -84,11 +84,11 @@ export function SidebarLayoutRender(props: SidebarLayout) {
 											return (
 												<Item
 													onSelected={() => {
-														if (!item.action) return
+														if (!item.event) return
 
-														setItem(item.action)
+														setItem(item.event)
 													}}
-													isSelected={selectedKey ? selectedKey === item.action : false}
+													isSelected={selectedKey ? selectedKey === item.event : false}
 													{...item}
 												/>
 											)
@@ -119,7 +119,7 @@ export function SidebarLayoutRender(props: SidebarLayout) {
 }
 
 function Item(props: SidebarItem & { isSelected: boolean; onSelected(): void }) {
-	const { isLoading, dispatch, isDisabled } = useDispatcher(props.action ?? null)
+	const { isLoading, dispatch, isDisabled } = useDispatcher(props.event ?? null)
 
 	// TODO implement isLoading
 

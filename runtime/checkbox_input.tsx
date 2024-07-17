@@ -1,7 +1,6 @@
-import { useDispatcher } from './action.tsx'
+import { EventKey, useDispatcher } from './event.tsx'
 import { React } from './deps.ts'
 import { IconRender } from './icon.tsx'
-import { ActionKey } from './types.ts'
 
 /**
  * A checkbox input, which can be either on or off.
@@ -12,18 +11,18 @@ import { ActionKey } from './types.ts'
  *
  * ```rust #[derive(HasActionKey, Serialize, Deserialize)] enum Action { Foo }
  *
- * Flex::new(FlexKind::Column) .auto_item(CheckboxInput::new("Allow tracking").initial_value(true).action(Action::Foo)) .auto_item(CheckboxInput::new("Allow tracking (disabled)").initial_value(false)) ```
+ * Flex::new(FlexKind::Column) .auto_item(CheckboxInput::new("Allow tracking").initial_value(true).event(Action::Foo)) .auto_item(CheckboxInput::new("Allow tracking (disabled)").initial_value(false)) ```
  *
  * @component
  */
 export interface CheckboxInput {
-	action?: ActionKey
+	event?: EventKey
 	initial_value: boolean
 	label: string
 }
 
 export function CheckboxInputRender(props: CheckboxInput) {
-	const { dispatch, isDisabled } = useDispatcher(props.action ?? null)
+	const { dispatch, isDisabled } = useDispatcher(props.event ?? null)
 	const [checked, setChecked] = React.useState(props.initial_value)
 
 	return (
@@ -34,7 +33,7 @@ export function CheckboxInputRender(props: CheckboxInput) {
 				disabled={isDisabled}
 				class='hidden'
 				onChange={() => {
-					if (!props.action) return
+					if (!props.event) return
 
 					dispatch(!checked)
 					setChecked(!checked)

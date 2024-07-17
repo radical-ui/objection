@@ -1,4 +1,4 @@
-import { ActionKey, useDisabledContext, useDispatcher } from './action.tsx'
+import { EventKey, useDisabledContext, useDispatcher } from './event.tsx'
 import { Color } from './types.ts'
 import { useUpdates } from './component_update.tsx'
 import { React } from './deps.ts'
@@ -55,11 +55,11 @@ export type TextInputRole = 'Plain' | 'Password' | 'Email' | 'Search' | 'Url' | 
 export type TextInputHook = number
 
 /**
- * A text input. If no change action, blur action, or dropdown selection action is supplied, the input will be disabled.
+ * A text input. If no change event, blur event, or dropdown selection event is supplied, the input will be disabled.
  *
- * If some initial dropdown options are supplied, but no `change_action` is supplied, the dropdown options will be sorted locally. If a `change_action` is supplied, the server is expected to send down a new list of dropdown options.
+ * If some initial dropdown options are supplied, but no `change_event` is supplied, the dropdown options will be sorted locally. If a `change_event` is supplied, the server is expected to send down a new list of dropdown options.
  *
- * If no `option_selection_action` is supplied, the selected dropdown options will simply replace the input value, triggering the default value update behavior.
+ * If no `option_selection_event` is supplied, the selected dropdown options will simply replace the input value, triggering the default value update behavior.
  *
  * `allow_multiple_options` has no effect if an `option_selected_option` is not supplied. If it is, more that one option can be selected.
  *
@@ -67,22 +67,22 @@ export type TextInputHook = number
  *
  * ```rust #[derive(HasActionKey, Serialize, Deserialize)] enum Event { InputChanged, InputBlurred, OptionSelected, Submit }
  *
- * Padding::all(30).body( Flex::new(FlexKind::Column) .gap(20) .auto_item(TextInput::new("Username").change_action(Event::InputChanged).submit_action(Event::Submit)) .auto_item(TextInput::new("Password").role(TextInputRole::Password).blur_action(Event::InputBlurred).submit_action(Event::Submit)) .auto_item(TextInput::new("With Initial Value").initial_value("Hello there!").blur_action(Event::InputBlurred).submit_action(Event::Submit)) .auto_item(TextInput::new("Email (disabled)").submit_action(Event::Submit).role(TextInputRole::Email).leading_icon("mdi-ab-testing")) .auto_item( TextInput::new("Dropdown with client filtering") .role(TextInputRole::Email) .blur_action(Event::InputBlurred) .submit_action(Event::Submit) .initial_dropdown_options(Vec::from([ DropdownOption::new(Uuid::new_v4(), "Option 1"), DropdownOption::new(Uuid::new_v4(), "Option 2"), DropdownOption::new(Uuid::new_v4(), "Option 3"), DropdownOption::new(Uuid::new_v4(), "Option 4"), DropdownOption::new(Uuid::new_v4(), "Option 5"), ])) ) .auto_item( TextInput::new("Dropdown with server filtering") .role(TextInputRole::Email) .change_action(Event::InputChanged) .submit_action(Event::Submit) .initial_dropdown_options(Vec::from([ DropdownOption::new(Uuid::new_v4(), "Option 1"), DropdownOption::new(Uuid::new_v4(), "Option 2"), DropdownOption::new(Uuid::new_v4(), "Option 3").is_disabled(), DropdownOption::new(Uuid::new_v4(), "Option 4"), DropdownOption::new(Uuid::new_v4(), "Option 5"), ])) ) .auto_item( TextInput::new("Dropdown without free text and client filtering") .role(TextInputRole::Email) .option_selected_action(Event::OptionSelected) .submit_action(Event::Submit) .initial_dropdown_options(Vec::from([ DropdownOption::new(Uuid::new_v4(), "Option 1"), DropdownOption::new(Uuid::new_v4(), "Option 2"), DropdownOption::new(Uuid::new_v4(), "Option 3"), DropdownOption::new(Uuid::new_v4(), "Option 4"), DropdownOption::new(Uuid::new_v4(), "Option 5"), ])) ) .auto_item( TextInput::new("Dropdown without free text and client filtering and multiple") .role(TextInputRole::Email) .option_selected_action(Event::OptionSelected) .submit_action(Event::Submit) .multiple() .initial_dropdown_options(Vec::from([ DropdownOption::new(Uuid::new_v4(), "Option 1"), DropdownOption::new(Uuid::new_v4(), "Option 2"), DropdownOption::new(Uuid::new_v4(), "Option 3"), DropdownOption::new(Uuid::new_v4(), "Option 4"), DropdownOption::new(Uuid::new_v4(), "Option 5"), ])) ) ) ```
+ * Padding::all(30).body( Flex::new(FlexKind::Column) .gap(20) .auto_item(TextInput::new("Username").change_event(Event::InputChanged).submit_event(Event::Submit)) .auto_item(TextInput::new("Password").role(TextInputRole::Password).blur_event(Event::InputBlurred).submit_event(Event::Submit)) .auto_item(TextInput::new("With Initial Value").initial_value("Hello there!").blur_event(Event::InputBlurred).submit_event(Event::Submit)) .auto_item(TextInput::new("Email (disabled)").submit_event(Event::Submit).role(TextInputRole::Email).leading_icon("mdi-ab-testing")) .auto_item( TextInput::new("Dropdown with client filtering") .role(TextInputRole::Email) .blur_event(Event::InputBlurred) .submit_event(Event::Submit) .initial_dropdown_options(Vec::from([ DropdownOption::new(Uuid::new_v4(), "Option 1"), DropdownOption::new(Uuid::new_v4(), "Option 2"), DropdownOption::new(Uuid::new_v4(), "Option 3"), DropdownOption::new(Uuid::new_v4(), "Option 4"), DropdownOption::new(Uuid::new_v4(), "Option 5"), ])) ) .auto_item( TextInput::new("Dropdown with server filtering") .role(TextInputRole::Email) .change_event(Event::InputChanged) .submit_event(Event::Submit) .initial_dropdown_options(Vec::from([ DropdownOption::new(Uuid::new_v4(), "Option 1"), DropdownOption::new(Uuid::new_v4(), "Option 2"), DropdownOption::new(Uuid::new_v4(), "Option 3").is_disabled(), DropdownOption::new(Uuid::new_v4(), "Option 4"), DropdownOption::new(Uuid::new_v4(), "Option 5"), ])) ) .auto_item( TextInput::new("Dropdown without free text and client filtering") .role(TextInputRole::Email) .option_selected_event(Event::OptionSelected) .submit_event(Event::Submit) .initial_dropdown_options(Vec::from([ DropdownOption::new(Uuid::new_v4(), "Option 1"), DropdownOption::new(Uuid::new_v4(), "Option 2"), DropdownOption::new(Uuid::new_v4(), "Option 3"), DropdownOption::new(Uuid::new_v4(), "Option 4"), DropdownOption::new(Uuid::new_v4(), "Option 5"), ])) ) .auto_item( TextInput::new("Dropdown without free text and client filtering and multiple") .role(TextInputRole::Email) .option_selected_event(Event::OptionSelected) .submit_event(Event::Submit) .multiple() .initial_dropdown_options(Vec::from([ DropdownOption::new(Uuid::new_v4(), "Option 1"), DropdownOption::new(Uuid::new_v4(), "Option 2"), DropdownOption::new(Uuid::new_v4(), "Option 3"), DropdownOption::new(Uuid::new_v4(), "Option 4"), DropdownOption::new(Uuid::new_v4(), "Option 5"), ])) ) ) ```
  *
  * @component
  */
 export interface TextInput {
-	blur_action?: ActionKey
-	change_action?: ActionKey
+	blur_event?: EventKey
+	change_event?: EventKey
 	initial_dropdown_options?: DropdownOption[]
 	initial_selected_options?: string[]
 	initial_value?: string
 	label: string
 	leading_icon?: IconName
 	multiple: boolean
-	option_selected_action?: ActionKey
+	option_selected_event?: EventKey
 	role: TextInputRole
-	submit_action?: ActionKey
+	submit_event?: EventKey
 	trailing_icon?: IconName
 	update_hook?: TextInputHook
 }
@@ -103,12 +103,12 @@ export function TextInputRender(props: TextInput) {
 		: []
 
 	const hasActionStopper = useDisabledContext()
-	const { isLoading: changeIsLoading, dispatch: dispatchChange } = useDispatcher(props.change_action ?? null)
-	const { isLoading: blurIsLoading, dispatch: dispatchBlur } = useDispatcher(props.blur_action ?? null)
+	const { isLoading: changeIsLoading, dispatch: dispatchChange } = useDispatcher(props.change_event ?? null)
+	const { isLoading: blurIsLoading, dispatch: dispatchBlur } = useDispatcher(props.blur_event ?? null)
 	const { isLoading: dropdownSelectionIsLoading, dispatch: dispatchDropdownSelection } = useDispatcher(
-		props.option_selected_action ?? null,
+		props.option_selected_event ?? null,
 	)
-	const { isLoading: submitIsLoading, dispatch: dispatchSubmit } = useDispatcher(props.submit_action ?? null)
+	const { isLoading: submitIsLoading, dispatch: dispatchSubmit } = useDispatcher(props.submit_event ?? null)
 	const update = useUpdates<TextInputUpdate>(props.update_hook ?? null)
 	const [text, setText] = React.useState(props.initial_value ?? '')
 	const [conceal, setConceal] = React.useState(props.role === 'Password')
@@ -129,11 +129,11 @@ export function TextInputRender(props: TextInput) {
 		if (update.type === 'SetDropdownOptions') setDropdownOptions(update.content.options)
 	}, [update])
 
-	const hasNoNotableActions = !props.option_selected_action && !props.blur_action && !props.change_action
+	const hasNoNotableActions = !props.option_selected_event && !props.blur_event && !props.change_event
 	const isDisabled = hasNoNotableActions || submitIsLoading || hasActionStopper
 
-	// if the server doesn't listen for dropdown selection actions, the text field is considered free.
-	const isFreeText = !props.option_selected_action
+	// if the server doesn't listen for dropdown selection events, the text field is considered free.
+	const isFreeText = !props.option_selected_event
 
 	const isLoading = changeIsLoading || blurIsLoading || dropdownSelectionIsLoading
 	const showDropdown = isFocused && dropdownOptions.length > 0
@@ -160,8 +160,8 @@ export function TextInputRender(props: TextInput) {
 		setText(text)
 		debouncedChangeFn(text)
 
-		// if a change action is supplied, we assume that the server will do option filtering
-		if (!skipDropdownRefresh && !props.change_action && props.initial_dropdown_options?.length) {
+		// if a change event is supplied, we assume that the server will do option filtering
+		if (!skipDropdownRefresh && !props.change_event && props.initial_dropdown_options?.length) {
 			setDropdownOptions(filterOptionsWithSearch(text, props.initial_dropdown_options))
 		}
 	}
@@ -192,7 +192,7 @@ export function TextInputRender(props: TextInput) {
 
 		// we close blur the input when the user is not likely to select another option
 		// if the text is free-flowing, the user is probably searching, and will probably want to find another result off of the current one
-		if (props.option_selected_action && !props.multiple) {
+		if (props.option_selected_event && !props.multiple) {
 			if (inputElement.current) inputElement.current.blur()
 		}
 	}
