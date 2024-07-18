@@ -28,6 +28,9 @@ export * from './skeleton.tsx'
 export * from './table.tsx'
 export * from './text_input.tsx'
 export * from './update_boundary.tsx'
+export * from './notice.tsx'
+export * from './theme.tsx'
+export * from './title.tsx'
 
 export function start(syncUrl: URL, initialComponent: Component, componentRenderer: ComponentIndexRenderer) {
 	setEndpoint(syncUrl)

@@ -1,5 +1,6 @@
 import { Component, ComponentRender } from './component.tsx'
 import { EventKey, getEventId, React, sendEvent } from './deps.ts'
+import { useNoticeDispatch } from './notice.tsx'
 import { ManyMap } from './utils.ts'
 
 export type DispatchFn<T> = (payload: T) => Promise<void>
@@ -22,6 +23,7 @@ export interface UseDispatcherResult<T> {
 
 export function useDispatcher<T>(key: EventKey<T> | null): UseDispatcherResult<T> {
 	const isDisabled = React.useContext(DisabledContext)
+	const dispatchNotice = useNoticeDispatch()
 
 	const id = key === null ? null : getEventId(key)
 
@@ -64,7 +66,15 @@ export function useDispatcher<T>(key: EventKey<T> | null): UseDispatcherResult<T
 		if (key === null || id === null) return
 
 		for (const listener of dispatchStartListeners.get(id)) listener()
-		await sendEvent(key, payload)
+
+		try {
+			await sendEvent(key, payload)
+		} catch (error) {
+			console.error(error)
+
+			if (dispatchNotice) dispatchNotice({ message: error.message || error.toString(), style: 'Error' })
+		}
+
 		for (const listener of dispatchFinishListeners.get(id)) listener()
 	}, [id])
 
