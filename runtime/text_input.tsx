@@ -1,11 +1,11 @@
 import { useDispatcher } from './event.tsx'
 import { Color } from './types.ts'
-import { useUpdates } from './component_update.tsx'
-import { EventKey, React } from './deps.ts'
+import { ActionKey, EventKey, React } from './deps.ts'
 import { IconName, IconRender } from './icon.tsx'
 import { getColor, isOk, makeDebounce } from './utils.ts'
 import { FlatLoader } from './flat_loader.tsx'
 import { JustTheCheckbox } from './checkbox_input.tsx'
+import { useAction } from './action.tsx'
 
 const getTrailingIcon = (role: TextInputRole, conceal: boolean) => {
 	if (role === 'Password') return conceal ? 'mdi-eye-off-outline' : 'mdi-eye-outline'
@@ -24,32 +24,17 @@ const getInputMode = (role: TextInputRole) => {
 	return 'text'
 }
 
-interface InputNotice {
-	isError: boolean
-	message: string
-}
-
 interface SelectedOption {
 	id: string
 	title: string
 }
 
-export type InputValidity = 'Valid' | 'Invalid'
+export interface InputValidity {
+	level: InputValidityLevel
+	message?: string
+}
 
-export type TextInputUpdate =
-	| {
-		content: {
-			message: string
-			validity: InputValidity
-		}
-		type: 'SetValidity'
-	}
-	| {
-		content: {
-			options: DropdownOption[]
-		}
-		type: 'SetDropdownOptions'
-	}
+export type InputValidityLevel = 'Valid' | 'Invalid' | 'Normal'
 
 export type TextInputRole = 'Plain' | 'Password' | 'Email' | 'Search' | 'Url' | 'Tel' | 'Numeric' | 'Decimal'
 export type TextInputHook = number
@@ -84,7 +69,9 @@ export interface TextInput {
 	role: TextInputRole
 	submit_event?: EventKey<null>
 	trailing_icon?: IconName
-	update_hook?: TextInputHook
+	default_validity?: InputValidity
+	set_options_action?: ActionKey<DropdownOption[]>
+	set_validity_action?: ActionKey<InputValidity>
 }
 export interface DropdownOption {
 	description?: string
@@ -109,25 +96,21 @@ export function TextInputRender(props: TextInput) {
 			props.option_selected_event ?? null,
 		)
 	const { isLoading: submitIsLoading, dispatch: dispatchSubmit, isDisabled: submitIsDisabled } = useDispatcher(props.submit_event ?? null)
-	const update = useUpdates<TextInputUpdate>(props.update_hook ?? null)
 	const [text, setText] = React.useState(props.initial_value ?? '')
 	const [conceal, setConceal] = React.useState(props.role === 'Password')
 	const [dropdownOptions, setDropdownOptions] = React.useState(props.initial_dropdown_options || [])
 	const [isFocused, setIsFocused] = React.useState(false)
-	const [notice, setNotice] = React.useState<InputNotice | null>(null)
 	const [selectedOptions, setSelectedOptions] = React.useState<SelectedOption[]>(initialOptions)
 	const [activeDropdownOptionIndex, setActiveDropdownOptionIndex] = React.useState<number | null>(null)
+	const [validity, setValidity] = React.useState<InputValidity>(props.default_validity || { level: 'Normal' })
 	const inputElement = React.useRef<HTMLInputElement | null>(null)
+
+	useAction(props.set_validity_action || null, (validity) => setValidity(validity))
+	useAction(props.set_options_action || null, (options) => setDropdownOptions(options))
 
 	React.useEffect(() => {
 		setConceal(props.role === 'Password')
 	}, [props.role])
-
-	React.useEffect(() => {
-		if (!update) return
-		if (update.type === 'SetValidity') setNotice({ isError: update.content.validity === 'Invalid', message: update.content.message })
-		if (update.type === 'SetDropdownOptions') setDropdownOptions(update.content.options)
-	}, [update])
 
 	const isDisabled = submitIsLoading || changeIsDisabled || blurIsDisabled || dropdownSelectionIsDisabled ||
 		submitIsDisabled
@@ -137,8 +120,11 @@ export function TextInputRender(props: TextInput) {
 
 	const isLoading = changeIsLoading || blurIsLoading || dropdownSelectionIsLoading
 	const showDropdown = isFocused && dropdownOptions.length > 0
-	const focusColor: Color = { type: notice ? notice.isError ? 'Danger' : 'Success' : 'Primary', opacity: 100 }
-	const normalColor = notice ? notice.isError ? 'danger' : 'success' : 'fore'
+	const focusColor: Color = {
+		type: validity.level === 'Invalid' ? 'Danger' : validity.level === 'Valid' ? 'Success' : 'Primary',
+		opacity: 100,
+	}
+	const normalColor = validity.level === 'Invalid' ? 'danger' : validity.level === 'Valid' ? 'success' : 'fore'
 	const isActive = text.trim().length > 0 || selectedOptions.length > 0
 	const labelBaseClasses = ['scale-75', 'translate-y-[-25%]', 'translate-x-[-12.5%]', `text-${getColor(focusColor)}`]
 	const labelClasses = isActive ? labelBaseClasses : labelBaseClasses.map((c) => `group-focus-within:${c}`)
@@ -364,10 +350,10 @@ export function TextInputRender(props: TextInput) {
 					`}
 				>
 					<div>{props.label}</div>
-					{notice && (
+					{validity.level && (
 						<>
 							<div>•</div>
-							<div>{notice.message}</div>
+							<div>{validity.message}</div>
 						</>
 					)}
 				</div>

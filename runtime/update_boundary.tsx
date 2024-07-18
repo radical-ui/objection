@@ -1,9 +1,9 @@
+import { useAction } from './action.tsx'
 import { Component, ComponentRender } from './component.tsx'
-import { useUpdates } from './component_update.tsx'
-import { React } from './deps.ts'
+import { ActionKey, React } from './deps.ts'
 
 /**
- * A boundary that allows it's children to be updated without beaming down a new window.
+ * A boundary that allows it's children to be updated without beaming down an entirely new widget tree.
  *
  * You can optionally set a child to be displayed until an update is sent. Once an update has been sent has been sent, the original child will never be rendered. ```
  *
@@ -11,13 +11,14 @@ import { React } from './deps.ts'
  */
 export interface UpdateBoundary {
 	child?: Component
-	id: number
+	action: ActionKey<Component>
 }
 
 export function UpdateBoundaryRender(props: UpdateBoundary) {
-	const update = useUpdates<Component>(props.id)
-	const component = update ?? props.child ?? null
+	const [currentComponent, setCurrentComponent] = React.useState(props.child)
 
-	if (component) return <ComponentRender {...component} />
+	useAction(props.action, (component) => setCurrentComponent(component))
+
+	if (currentComponent) return <ComponentRender {...currentComponent} />
 	return <></>
 }
