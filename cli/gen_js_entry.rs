@@ -9,8 +9,8 @@ pub fn gen_js_entry(runtime_url: &Url, engine_url: &Url, collection: &Collection
 
 	write!(js, "import {{ start, ")?;
 
-	for component in collection.get_component_info() {
-		write!(js, "{}, ", component.render_name)?;
+	for (name, _) in collection.get_component_info() {
+		write!(js, "{}, ", name)?;
 	}
 
 	write!(js, " }} from '{runtime_url}'")?;
@@ -18,12 +18,8 @@ pub fn gen_js_entry(runtime_url: &Url, engine_url: &Url, collection: &Collection
 
 	write!(js, "const renderComponent = component => {{\n")?;
 
-	for component in collection.get_component_info() {
-		write!(
-			js,
-			"\tif (component.type = '{}') return {}(component.def)\n",
-			&component.kind_name, &component.render_name
-		)?;
+	for (name, info) in collection.get_component_info() {
+		write!(js, "\tif (component.type = '{}') return {}(component.def)\n", name, &info.render_name)?;
 	}
 
 	write!(js, "\tthrow new Error('Unknown component type: ' + component.type)\n")?;
