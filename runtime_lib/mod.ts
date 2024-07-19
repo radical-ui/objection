@@ -8,8 +8,6 @@ export type EventKey<T> = { event_path: string[]; debugSymbol?: string }
 /**
  * An event that could be triggered, but that is not linked to any payload. This should only be used in cases where the event is not
  * actually triggered, but there is some reason to keep a reference to it.
- *
- * @feature_any_event
  */
 export type AnyEvent = { event_path: string[]; debugSymbol?: string }
 
