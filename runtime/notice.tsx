@@ -35,7 +35,7 @@ export interface NoticeManager {
 	body: Component
 }
 
-export function NoticeManager(props: NoticeManager) {
+export function NoticeManagerRender(props: NoticeManager) {
 	const [notices, setNotices] = React.useState<Notice[]>([])
 	const currentNotice = notices[0] ?? null
 
