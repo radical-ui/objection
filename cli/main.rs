@@ -1,9 +1,11 @@
 mod bundle;
 mod collect;
+mod convert;
 mod gen_js_entry;
 mod module_loader;
+mod print;
 
-use anyhow::{bail, Context, Result};
+use anyhow::{anyhow, bail, Context, Result};
 use bundle::Bundler;
 use clap::{Parser, Subcommand, ValueEnum};
 use collect::Collection;
@@ -11,7 +13,7 @@ use colored::{Color, Colorize};
 use deno_graph::source::MemoryLoader;
 use env_logger::Env;
 use gen_js_entry::gen_js_entry;
-use log::{error, Level, LevelFilter};
+use log::{error, warn, Level, LevelFilter};
 use module_loader::load_modules;
 use std::{env::current_dir, io::Write, path::PathBuf};
 use tokio::{fs::write, runtime::Builder};
@@ -152,8 +154,4 @@ async fn main_async() -> Result<()> {
 	write("bundle.js", response).await?;
 
 	Ok(())
-}
-
-fn contextual_format(main: &str, context: &str) -> String {
-	format!("{}\n  {} {}\n", main.bold(), "-->".bold().blue(), context)
 }
