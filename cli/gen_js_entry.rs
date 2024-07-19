@@ -29,6 +29,5 @@ pub fn gen_js_entry(runtime_url: &Url, engine_url: &Url, collection: &Collection
 
 	write!(js, "start(new Url('{engine_url}'), initial, renderComponent)")?;
 
-	println!("{}", &js);
 	Ok(js)
 }
