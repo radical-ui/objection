@@ -1,11 +1,11 @@
 use anyhow::{anyhow, Context, Error, Result};
-use deno_doc::{interface::InterfaceDef, js_doc::JsDocTag, ts_type::TsTypeDef, DocNodeKind, DocParser, DocParserOptions, Location};
+use deno_doc::{interface::InterfaceDef, js_doc::JsDocTag, ts_type::TsTypeDef, type_alias, DocNodeKind, DocParser, DocParserOptions, Location};
 use deno_graph::{source::MemoryLoader, BuildOptions, CapturingModuleAnalyzer, GraphKind, ModuleGraph};
 use log::{debug, warn};
 use std::collections::{HashMap, HashSet};
 use url::Url;
 
-use crate::{contextual_format, module_loader::load_modules};
+use crate::contextual_format;
 
 #[derive(Debug)]
 pub enum Kind {
@@ -13,6 +13,9 @@ pub enum Kind {
 	String,
 	Number,
 	Bool,
+	Null,
+	ActionKey { data_type: Box<Kind> },
+	EventKey { data_type: Box<Kind> },
 	Ref { name: String },
 	List { of: Box<Kind> },
 	Tuple { items: Vec<Kind> },
@@ -44,15 +47,20 @@ pub struct Property {
 
 #[derive(Debug)]
 pub struct ComponentInfo {
-	pub kind_name: String,
 	pub render_name: String,
+	/// The action name, linked to the type of the action data
+	pub actions: HashMap<String, String>,
+	/// The event name, linked to the type of the event data
+	pub events: HashMap<String, String>,
 }
 
 #[derive(Debug, Default)]
 pub struct Collection {
+	action_key_type_name: Option<String>,
+	event_key_type_name: Option<String>,
 	kinds: HashMap<String, InternalKindDefinition>,
 	erroring_kinds: HashMap<String, Error>,
-	components: Vec<ComponentInfo>,
+	components: HashMap<String, ComponentInfo>,
 	functions: HashSet<String>,
 	erroring_functions: HashMap<String, Error>,
 }
@@ -86,7 +94,33 @@ impl Collection {
 			},
 		)?;
 
-		for node in parser.parse_with_reexports(runtime_url)? {
+		let nodes = parser.parse_with_reexports(runtime_url)?;
+
+		for node in &nodes {
+			self.consider_js_doc_tags(&node.name, &node.js_doc.tags)
+		}
+
+		if let None = &self.event_key_type_name {
+			warn!(
+				"{}",
+				contextual_format(
+					"No type was found for noting event keys",
+					"Runtime events will not be recognized without a @feature_event_key js doc type tag to notate them. Additionally, this type must be exported from the runtime."
+				)
+			);
+		}
+
+		if let None = &self.action_key_type_name {
+			warn!(
+				"{}",
+				contextual_format(
+					"No type was found for noting action keys",
+					"Runtime action types will not be recognized without a @feature_action_key js doc tag to notate them. Additionally, this type must be exported from the runtime."
+				)
+			);
+		}
+
+		for node in nodes {
 			let name = node.name.clone();
 
 			match node.kind {
@@ -104,12 +138,13 @@ impl Collection {
 					&node.location,
 				),
 				DocNodeKind::Interface => {
-					let conversion = convert_interface(
-						node.interface_def.as_ref().ok_or(anyhow!("Bad deno_doc output: expected interface def."))?,
-						&node.location,
-					);
-
-					self.consider_js_doc_tags(&name, node.js_doc.tags);
+					let conversion = convert_interface(ConvertInterfaceParams {
+						interface: node.interface_def.as_ref().ok_or(anyhow!("Bad deno_doc output: expected interface def."))?,
+						location: &node.location,
+						component: self.components.get_mut(&name),
+						action_key_type_name: self.action_key_type_name.as_deref(),
+						event_key_type_name: self.event_key_type_name.as_deref(),
+					});
 
 					match conversion {
 						Ok(Conversion { kind, dependencies }) => {
@@ -141,9 +176,13 @@ impl Collection {
 						self.erroring_kinds
 							.insert(name, local_error("Type parameters are not supported.", &node.location));
 					} else {
-						let conversion = convert_ts_type(&type_alias.ts_type, &node.location);
-
-						self.consider_js_doc_tags(&name, node.js_doc.tags);
+						let conversion = convert_ts_type(ConvertTsTypeParams {
+							ts_type: &type_alias.ts_type,
+							location: &node.location,
+							component: self.components.get_mut(&node.name),
+							action_key_type_name: self.action_key_type_name.as_deref(),
+							event_key_type_name: self.event_key_type_name.as_deref(),
+						});
 
 						match conversion {
 							Ok(Conversion { kind, dependencies }) => {
@@ -175,7 +214,7 @@ impl Collection {
 	}
 
 	pub fn check_components(&mut self) {
-		let components = self.get_component_info().iter().map(|info| info.kind_name.as_str()).collect::<Vec<_>>();
+		let components = self.get_component_info().iter().map(|(name, _)| *name).collect::<Vec<_>>();
 		let unreachable_names = self.get_unrelated_names(components).iter().map(|name| name.to_string()).collect::<Vec<_>>();
 
 		self.prune_names(unreachable_names.iter().map(|item| item.as_str()));
@@ -191,7 +230,7 @@ impl Collection {
 			);
 		}
 
-		for component in &self.components {
+		for (name, component) in &self.components {
 			if !self.functions.contains(&component.render_name) {
 				self.erroring_functions.insert(
 					component.render_name.clone(),
@@ -199,7 +238,7 @@ impl Collection {
 						"{}",
 						contextual_format(
 							&format!("Missing function `{}`", &component.render_name),
-							&format!("Specified as the renderer for `{}`, but it was not exported", &component.kind_name)
+							&format!("Specified as the renderer for `{}`, but it was not exported", &name)
 						)
 					),
 				);
@@ -207,8 +246,8 @@ impl Collection {
 		}
 	}
 
-	pub fn get_component_info(&self) -> &[ComponentInfo] {
-		&self.components
+	pub fn get_component_info(&self) -> Vec<(&str, &ComponentInfo)> {
+		self.components.iter().map(|(name, info)| (name.as_str(), info)).collect()
 	}
 
 	pub fn get_all_names(&self) -> Vec<&str> {
@@ -303,7 +342,7 @@ impl Collection {
 			.collect()
 	}
 
-	fn consider_js_doc_tags(&mut self, node_name: &str, tags: Vec<JsDocTag>) {
+	fn consider_js_doc_tags(&mut self, node_name: &str, tags: &[JsDocTag]) {
 		for tag in tags {
 			if let JsDocTag::Unsupported { value } = tag {
 				let mut words = value.split_whitespace().rev().collect::<Vec<_>>();
@@ -313,10 +352,18 @@ impl Collection {
 				if label == "@component" {
 					let render_name = context.map(|inner| inner.to_string()).unwrap_or(format!("{node_name}Render"));
 
-					self.components.push(ComponentInfo {
-						kind_name: node_name.to_string(),
-						render_name,
-					});
+					self.components.insert(
+						node_name.to_string(),
+						ComponentInfo {
+							render_name,
+							actions: HashMap::new(),
+							events: HashMap::new(),
+						},
+					);
+				} else if value == "@feature_event_key" {
+					self.event_key_type_name = Some(node_name.to_string());
+				} else if value == "@feature_action_key" {
+					self.action_key_type_name = Some(node_name.to_string());
 				}
 			}
 		}
@@ -328,7 +375,23 @@ struct Conversion {
 	dependencies: Vec<String>,
 }
 
-fn convert_interface(interface: &InterfaceDef, location: &Location) -> Result<Conversion> {
+struct ConvertInterfaceParams<'a> {
+	interface: &'a InterfaceDef,
+	location: &'a Location,
+	component: Option<&'a mut ComponentInfo>,
+	action_key_type_name: Option<&'a str>,
+	event_key_type_name: Option<&'a str>,
+}
+
+fn convert_interface(params: ConvertInterfaceParams<'_>) -> Result<Conversion> {
+	let ConvertInterfaceParams {
+		interface,
+		location,
+		mut component,
+		action_key_type_name,
+		event_key_type_name,
+	} = params;
+
 	let mut interface_dependencies = Vec::new();
 	let mut properties = Vec::new();
 
@@ -355,8 +418,14 @@ fn convert_interface(interface: &InterfaceDef, location: &Location) -> Result<Co
 			}
 		};
 
-		let mut conversion = convert_ts_type(type_def, &property_def.location)
-			.with_context(|| local_message(&format!("Failed to convert interface property `{}`", property_def.name), &property_def.location))?;
+		let mut conversion = convert_ts_type(ConvertTsTypeParams {
+			ts_type: type_def,
+			location: &property_def.location,
+			component: component.as_deref_mut(),
+			action_key_type_name,
+			event_key_type_name,
+		})
+		.with_context(|| local_message(&format!("Failed to convert interface property `{}`", property_def.name), &property_def.location))?;
 
 		interface_dependencies.append(&mut conversion.dependencies);
 
@@ -373,7 +442,23 @@ fn convert_interface(interface: &InterfaceDef, location: &Location) -> Result<Co
 	})
 }
 
-fn convert_ts_type(ts_type: &TsTypeDef, location: &Location) -> Result<Conversion> {
+struct ConvertTsTypeParams<'a> {
+	ts_type: &'a TsTypeDef,
+	location: &'a Location,
+	component: Option<&'a mut ComponentInfo>,
+	action_key_type_name: Option<&'a str>,
+	event_key_type_name: Option<&'a str>,
+}
+
+fn convert_ts_type(params: ConvertTsTypeParams<'_>) -> Result<Conversion> {
+	let ConvertTsTypeParams {
+		ts_type,
+		location,
+		mut component,
+		action_key_type_name,
+		event_key_type_name,
+	} = params;
+
 	if let Some(keyword) = &ts_type.keyword {
 		if keyword == "string" {
 			return Ok(Conversion {
@@ -396,6 +481,13 @@ fn convert_ts_type(ts_type: &TsTypeDef, location: &Location) -> Result<Conversio
 			});
 		}
 
+		if keyword == "null" {
+			return Ok(Conversion {
+				kind: Kind::Null,
+				dependencies: Vec::new(),
+			});
+		}
+
 		if keyword == "unknown" {
 			return Ok(Conversion {
 				kind: Kind::Dynamic,
@@ -410,9 +502,72 @@ fn convert_ts_type(ts_type: &TsTypeDef, location: &Location) -> Result<Conversio
 		return local_err(&format!("Unknown keyword '{keyword}'"), location);
 	}
 
-	if let Some(type_ref) = &ts_type.type_ref {
+	if let Some(type_ref) = &params.ts_type.type_ref {
+		let mut type_params = Vec::with_capacity(type_ref.type_params.as_ref().map(|params| params.len()).unwrap_or_default());
+
+		if let Some(ts_type_params) = &type_ref.type_params {
+			for ts_type in ts_type_params {
+				type_params.push(convert_ts_type(ConvertTsTypeParams {
+					ts_type,
+					location,
+					component: component.as_deref_mut(),
+					action_key_type_name,
+					event_key_type_name,
+				})?);
+			}
+		}
+
+		if let Some(action_key_type_name) = action_key_type_name {
+			if &type_ref.type_name == action_key_type_name {
+				if type_params.len() != 1 {
+					return local_err(
+						&format!(
+							"Because it is an action key, expected to find 1 type parameter for `{action_key_type_name}`, but found {}",
+							type_params.len()
+						),
+						location,
+					);
+				}
+
+				let data_type = type_params.swap_remove(0);
+
+				return Ok(Conversion {
+					kind: Kind::ActionKey {
+						data_type: Box::new(data_type.kind),
+					},
+					dependencies: data_type.dependencies,
+				});
+			}
+		}
+
+		if let Some(event_key_type_name) = event_key_type_name {
+			if &type_ref.type_name == event_key_type_name {
+				if type_params.len() != 1 {
+					return local_err(
+						&format!(
+							"Because it is an event key, expected to find 1 type parameter for `{event_key_type_name}`, but found {}",
+							type_params.len()
+						),
+						location,
+					);
+				}
+
+				let data_type = type_params.swap_remove(0);
+
+				return Ok(Conversion {
+					kind: Kind::EventKey {
+						data_type: Box::new(data_type.kind),
+					},
+					dependencies: data_type.dependencies,
+				});
+			}
+		}
+
 		if type_ref.type_params.is_some() {
-			local_warn("Type ref was supplied parameters, but this is not supported", location)
+			return local_err(
+				&format!("Type `{}` was supplied type parameters, but this is not supported", &type_ref.type_name),
+				location,
+			);
 		}
 
 		return Ok(Conversion {
@@ -424,7 +579,13 @@ fn convert_ts_type(ts_type: &TsTypeDef, location: &Location) -> Result<Conversio
 	}
 
 	if let Some(array) = &ts_type.array {
-		let inner_conversion = convert_ts_type(array, location)?;
+		let inner_conversion = convert_ts_type(ConvertTsTypeParams {
+			ts_type: array,
+			location,
+			component,
+			action_key_type_name,
+			event_key_type_name,
+		})?;
 
 		return Ok(Conversion {
 			kind: Kind::List {
@@ -439,7 +600,14 @@ fn convert_ts_type(ts_type: &TsTypeDef, location: &Location) -> Result<Conversio
 		let mut items = Vec::new();
 
 		for ts_item in tuple {
-			let mut inner_conversion = convert_ts_type(ts_item, location).context("Failed to convert tuple")?;
+			let mut inner_conversion = convert_ts_type(ConvertTsTypeParams {
+				ts_type: ts_item,
+				location,
+				component: component.as_deref_mut(),
+				action_key_type_name,
+				event_key_type_name,
+			})
+			.context("Failed to convert tuple")?;
 
 			items.push(inner_conversion.kind);
 			combined_dependencies.append(&mut inner_conversion.dependencies);
@@ -497,13 +665,16 @@ fn convert_ts_type(ts_type: &TsTypeDef, location: &Location) -> Result<Conversio
 							);
 						}
 					} else if &property.name == "def" {
-						let mut def_conversion = convert_ts_type(
-							property
+						let mut def_conversion = convert_ts_type(ConvertTsTypeParams {
+							ts_type: property
 								.ts_type
 								.as_ref()
 								.ok_or(local_error("Expected to find a type assiciated with the 'def' field", &property.location))?,
-							&property.location,
-						)
+							location: &property.location,
+							component: component.as_deref_mut(),
+							action_key_type_name,
+							event_key_type_name,
+						})
 						.with_context(|| local_message(&format!("Failed to convert property {}", &property.name), &property.location))?;
 
 						combined_dependencies.append(&mut def_conversion.dependencies);
@@ -548,13 +719,8 @@ fn convert_ts_type(ts_type: &TsTypeDef, location: &Location) -> Result<Conversio
 		});
 	}
 
-	local_warn("Unknown type", location);
-	debug!("Type: {:#?}", ts_type);
-
-	Ok(Conversion {
-		kind: Kind::Bool,
-		dependencies: Vec::new(),
-	})
+	debug!("Encountered an unknown type: {:#?}", ts_type);
+	local_err("Unsupported type", location)
 }
 
 fn local_warn(message: &str, location: &Location) {
