@@ -144,7 +144,7 @@ async fn main_async() -> Result<()> {
 		bail!(
 			"could not mount runtime due to {} previous error{}",
 			error_count,
-			if error_count == 0 { "" } else { "s" }
+			if error_count == 1 { "" } else { "s" }
 		);
 	}
 
