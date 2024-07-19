@@ -1,5 +1,5 @@
 import { React } from './deps.ts'
-import { Color } from './types.ts'
+import { Color } from './theme.tsx'
 import { getColor } from './utils.ts'
 
 export interface SpinnerProps {

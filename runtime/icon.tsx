@@ -4,7 +4,7 @@ import { EventKey, React } from './deps.ts'
 import { SkeletonBlock, useSkeletonDetection } from './skeleton.tsx'
 import { Spinner } from './spinner.tsx'
 import { Tooltip } from './tooltip.tsx'
-import { Color } from './types.ts'
+import { Color } from './theme.tsx'
 import { getColor } from './utils.ts'
 
 const ICON_REGISTRY_URL = '/icons'

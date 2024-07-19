@@ -1,4 +1,4 @@
-import { Color } from './types.ts'
+import { Color } from './theme.tsx'
 import { EventKey, React } from './deps.ts'
 import { useDispatcher } from './event.tsx'
 import { SkeletonBlock, useSkeletonDetection } from './skeleton.tsx'

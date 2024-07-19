@@ -1,5 +1,5 @@
 import { useDispatcher } from './event.tsx'
-import { Color } from './types.ts'
+import { Color } from './theme.tsx'
 import { ActionKey, EventKey, React } from './deps.ts'
 import { IconName, IconRender } from './icon.tsx'
 import { getColor, isOk, makeDebounce } from './utils.ts'

@@ -1,4 +1,4 @@
-import { Color } from './types.ts'
+import { Color } from './theme.tsx'
 
 export function getColor(color: Color, opacityOverride: number | null = null) {
 	const opacity = opacityOverride !== null

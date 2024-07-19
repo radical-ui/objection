@@ -3,8 +3,8 @@ import { doBubble } from './bubble.ts'
 import { EventKey, React } from './deps.ts'
 import { IconName, IconRender } from './icon.tsx'
 import { Spinner } from './spinner.tsx'
-import { Color } from './types.ts'
 import { getColor } from './utils.ts'
+import { Color } from './theme.tsx'
 
 export type ButtonSize = 'Small' | 'Medium' | 'Large'
 

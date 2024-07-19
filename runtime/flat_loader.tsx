@@ -1,5 +1,5 @@
 import { React } from './deps.ts'
-import { Color } from './types.ts'
+import { Color } from './theme.tsx'
 import { getColor, GlobalCss } from './utils.ts'
 
 const css = new GlobalCss(`
