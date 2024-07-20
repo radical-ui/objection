@@ -8,15 +8,20 @@ name = "objection"
 path = "main.rs"
 
 [dependencies]
-anyhow = { version = "1.0.86", features = ["backtrace"] }
+anyhow = { version = "1", features = ["backtrace"] }
 clap = { version = "4", features = ["derive"] }
 colored = "2"
 deno_doc = { git = "ssh://git@github.com/radical-ui/deno_doc", rev = "4e99ed" }
 deno_graph = "0.80"
 env_logger = "0.11"
 log = "0.4"
+prettyplease = "0.2"
+proc-macro2 = "1"
+quote = "1"
 rand = "0.8"
 serde = "1"
 serde_json = "1"
+str_inflector = "0.12"
+syn = "2"
 tokio = { version = "1", features = ["full"] }
 url = "2"

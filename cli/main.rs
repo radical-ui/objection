@@ -2,10 +2,11 @@ mod bundle;
 mod collect;
 mod convert;
 mod gen_js_entry;
+mod gen_rust;
 mod module_loader;
 mod print;
 
-use anyhow::{anyhow, bail, Context, Result};
+use anyhow::{bail, Context, Result};
 use bundle::Bundler;
 use clap::{Parser, Subcommand, ValueEnum};
 use collect::Collection;
@@ -13,7 +14,8 @@ use colored::{Color, Colorize};
 use deno_graph::source::MemoryLoader;
 use env_logger::Env;
 use gen_js_entry::gen_js_entry;
-use log::{error, warn, Level, LevelFilter};
+use gen_rust::RustGen;
+use log::{error, Level, LevelFilter};
 use module_loader::load_modules;
 use std::{env::current_dir, io::Write, path::PathBuf};
 use tokio::{fs::write, runtime::Builder};
@@ -39,8 +41,19 @@ impl ToString for Platform {
 #[derive(Debug, ValueEnum, Clone)]
 enum Engine {
 	Rust,
-	Go,
-	Typescript,
+}
+
+impl Engine {
+	fn get_bindings(&self, collection: &Collection) -> Result<String> {
+		match self {
+			Self::Rust => {
+				let mut gen = RustGen::new(collection);
+				gen.gen();
+
+				Ok(gen.get_output()?)
+			}
+		}
+	}
 }
 
 #[derive(Parser, Debug, Clone)]
@@ -152,6 +165,9 @@ async fn main_async() -> Result<()> {
 
 	let response = bundler.bundle(gen_js_entry(&runtime_url, &args.engine_url, &collection)?).await?;
 	write("bundle.js", response).await?;
+
+	let bindings = args.engine.get_bindings(&collection)?;
+	write(args.bindings_path, bindings).await?;
 
 	Ok(())
 }

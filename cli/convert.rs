@@ -20,15 +20,23 @@ pub enum Kind {
 	List { of: Box<Kind> },
 	Tuple { items: Vec<Kind> },
 	StringEnum { variants: Vec<String> },
-	KeyedEnum { variants: Vec<Property> },
-	Object { properties: Vec<Property> },
+	KeyedEnum { variants: Vec<EnumProperty> },
+	Object { properties: Vec<ObjectProperty> },
 }
 
 #[derive(Debug)]
-pub struct Property {
+pub struct EnumProperty {
 	pub comment: Option<String>,
 	pub name: String,
 	pub kind: Kind,
+}
+
+#[derive(Debug)]
+pub struct ObjectProperty {
+	pub comment: Option<String>,
+	pub name: String,
+	pub kind: Kind,
+	pub is_optional: bool,
 }
 
 pub struct Conversion {
@@ -90,10 +98,11 @@ pub fn convert_interface(params: ConvertInterfaceParams<'_>) -> Result<Conversio
 
 		interface_dependencies.append(&mut conversion.dependencies);
 
-		properties.push(Property {
+		properties.push(ObjectProperty {
 			comment: property_def.js_doc.doc.clone(),
 			name: property_def.name.to_string(),
 			kind: conversion.kind,
+			is_optional: property_def.optional,
 		})
 	}
 
@@ -352,7 +361,7 @@ pub fn convert_ts_type(params: ConvertTsTypeParams<'_>) -> Result<Conversion> {
 					location,
 				))?;
 
-				keyed_variants.push(Property { comment, name, kind });
+				keyed_variants.push(EnumProperty { comment, name, kind });
 			} else {
 				return local_err(
 					"Unsupported enum type in variant #{variant_number}. Only string literals and keyed objects are supported.",

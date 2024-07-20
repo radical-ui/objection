@@ -26,11 +26,11 @@ struct InternalKindDefinition {
 
 #[derive(Debug)]
 pub struct ComponentInfo {
+	/// If `true`, this component is the index. It's kind should not contain any properties and will be overritten by the engine
+	/// implementation of an enum of all the other components.
+	pub is_index: bool,
+	/// The name that the renderer has chosen to use to refer to the function that renders this component
 	pub render_name: String,
-	/// The action name, linked to the type of the action data
-	pub actions: HashMap<String, String>,
-	/// The event name, linked to the type of the event data
-	pub events: HashMap<String, String>,
 }
 
 #[derive(Debug, Default)]
@@ -323,27 +323,37 @@ impl Collection {
 
 	fn consider_js_doc_tags(&mut self, node_name: &str, tags: &[JsDocTag]) {
 		for tag in tags {
+			let mut is_index = false;
+			let mut component = None;
+			let mut is_feature_action_key = false;
+			let mut is_feature_event_key = false;
+
 			if let JsDocTag::Unsupported { value } = tag {
 				let mut words = value.split_whitespace().rev().collect::<Vec<_>>();
 				let label = words.pop().unwrap();
 				let context = words.pop();
 
 				if label == "@component" {
-					let render_name = context.map(|inner| inner.to_string()).unwrap_or(format!("{node_name}Render"));
-
-					self.components.insert(
-						node_name.to_string(),
-						ComponentInfo {
-							render_name,
-							actions: HashMap::new(),
-							events: HashMap::new(),
-						},
-					);
+					component = Some(context.map(|inner| inner.to_string()).unwrap_or(format!("{node_name}Render")));
 				} else if value == "@feature_event_key" {
-					self.event_key_type_name = Some(node_name.to_string());
+					is_feature_event_key = true;
 				} else if value == "@feature_action_key" {
-					self.action_key_type_name = Some(node_name.to_string());
+					is_feature_action_key = true;
+				} else if value == "@component_index" {
+					is_index = true;
 				}
+			}
+
+			if is_feature_event_key {
+				self.event_key_type_name = Some(node_name.to_string());
+			}
+
+			if is_feature_action_key {
+				self.action_key_type_name = Some(node_name.to_string());
+			}
+
+			if let Some(render_name) = component {
+				self.components.insert(node_name.to_string(), ComponentInfo { render_name, is_index });
 			}
 		}
 	}
