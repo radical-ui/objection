@@ -239,6 +239,20 @@ impl Collection {
 		keys
 	}
 
+	pub fn resolve_kind<'a>(&'a self, kind: &'a Kind) -> (&'a Kind, Option<&str>) {
+		if let Kind::Ref { name } = kind {
+			if let Some(backing) = self.kinds.get(name) {
+				let (kind, resolved_name) = self.resolve_kind(&backing.kind);
+
+				(kind, Some(resolved_name.unwrap_or(name.as_str())))
+			} else {
+				(kind, None)
+			}
+		} else {
+			(kind, None)
+		}
+	}
+
 	pub fn get_unrelated_names<'a>(&'a self, names: impl IntoIterator<Item = &'a str>) -> Vec<&'a str> {
 		let mut marked_nodes = HashSet::<&'a str>::from_iter(self.get_all_names());
 

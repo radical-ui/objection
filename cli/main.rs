@@ -44,13 +44,13 @@ enum Engine {
 }
 
 impl Engine {
-	fn get_bindings(&self, collection: &Collection) -> Result<String> {
+	fn get_bindings(&self, collection: &Collection) -> String {
 		match self {
 			Self::Rust => {
 				let mut gen = RustGen::new(collection);
 				gen.gen();
 
-				Ok(gen.get_output()?)
+				gen.get_output()
 			}
 		}
 	}
@@ -166,7 +166,7 @@ async fn main_async() -> Result<()> {
 	let response = bundler.bundle(gen_js_entry(&runtime_url, &args.engine_url, &collection)?).await?;
 	write("bundle.js", response).await?;
 
-	let bindings = args.engine.get_bindings(&collection)?;
+	let bindings = args.engine.get_bindings(&collection);
 	write(args.bindings_path, bindings).await?;
 
 	Ok(())

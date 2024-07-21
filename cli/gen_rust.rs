@@ -1,4 +1,4 @@
-use anyhow::{Error, Result};
+use anyhow::Error;
 use inflector::Inflector;
 use log::error;
 use prettyplease::unparse;
@@ -183,6 +183,8 @@ impl RustGen<'_> {
 	fn gen_keyed_enum(&mut self, context_name: &str, comment: Option<&str>, variants: &[EnumProperty]) {
 		let name_ident = format_ident!("{context_name}");
 		let mut variant_def_tokens = Vec::new();
+
+		// TODO add constructors for objects that can be constructed
 		// let mut constructors = Vec::new();
 
 		for variant in variants {
@@ -213,37 +215,141 @@ impl RustGen<'_> {
 
 	fn gen_struct(&mut self, context_name: &str, comment: Option<&str>, properties: &[ObjectProperty]) {
 		let name_ident = format_ident!("{context_name}");
-		let mut property_def_tokens = Vec::new();
+		let mut property_def_tokens = TokenStream::new();
+		let mut methods = TokenStream::new();
+
+		let constructor_tokens = {
+			let info = self.get_constructor_info(GetConstructorInfoParams {
+				struct_name: context_name,
+				argument_prefix: None,
+				properties,
+				limit: 3,
+			});
+
+			info.map(
+				|ConstructorInfo {
+				     construction_body_tokens,
+				     argument_tokens,
+				     comment,
+				 }| {
+					let full_comment = format!("Construct a new {context_name}.\n\n{comment}");
+
+					quote! {
+						#[doc = #full_comment]
+						pub fn new(#argument_tokens) -> #name_ident {
+							#name_ident { #construction_body_tokens }
+						}
+					}
+				},
+			)
+		};
 
 		for property in properties {
-			let name_ident = format_ident!("{}", &property.name);
-			let kind_tokens = self.gen_kind(
-				&get_struct_property_context_name(context_name, &property.name),
-				property.comment.as_deref(),
-				&property.kind,
-			);
+			let snake_property_name = property.name.to_snake_case();
+			let snake_property_ident = format_ident!("{}", &snake_property_name);
+			let comment_str = comment.unwrap_or_default();
+			let (resolved_kind, _) = self.collection.resolve_kind(&property.kind);
 
-			let def_tokens = quote! { #name_ident: #kind_tokens };
+			let kind_tokens = {
+				let tokens = self.gen_kind(
+					&get_struct_property_context_name(context_name, &property.name),
+					property.comment.as_deref(),
+					&property.kind,
+				);
 
-			property_def_tokens.push(def_tokens)
+				if property.is_optional {
+					quote! { Option<#tokens> }
+				} else {
+					tokens
+				}
+			};
+
+			let default_method = quote! {
+				pub fn #snake_property_ident(mut self, #snake_property_ident: #kind_tokens) -> #name_ident {
+					self.#snake_property_ident = #snake_property_ident;
+
+					self
+				}
+			};
+
+			methods.extend(iter::once(if let Kind::Bool = resolved_kind {
+				let property_if_ident = format_ident!("{snake_property_name}_if");
+
+				quote! {
+					pub fn #snake_property_ident(mut self) -> #name_ident {
+						self.#snake_property_ident = true;
+
+						self
+					}
+
+					pub fn #property_if_ident(mut self, #snake_property_ident: #kind_tokens) -> #name_ident {
+						self.#snake_property_ident = #snake_property_ident;
+
+						self
+					}
+				}
+			} else if let Kind::Object { properties } = resolved_kind {
+				self.get_constructor_info(GetConstructorInfoParams {
+					struct_name: context_name,
+					argument_prefix: Some(&snake_property_name),
+					properties,
+					limit: 3,
+				})
+				.map(
+					|ConstructorInfo {
+					     construction_body_tokens,
+					     argument_tokens,
+					     comment,
+					 }| {
+						let full_name_ident = format_ident!("{snake_property_ident}_full");
+
+						// TODO comments
+						quote! {
+							pub fn #snake_property_ident(mut self, #argument_tokens) -> #name_ident {
+								// TODO these kind tokens here may not work when there is a level of indirection with aliases
+								self.#snake_property_ident = #kind_tokens { #construction_body_tokens };
+
+								self
+							}
+
+							pub fn #full_name_ident(mut self, #snake_property_ident: #kind_tokens) -> #name_ident {
+								self.#snake_property_ident = #snake_property_ident;
+
+								self
+							}
+						}
+					},
+				)
+				.unwrap_or(default_method)
+			} else {
+				default_method
+			}));
+
+			let def_tokens = quote! {
+				#[doc = #comment_str]
+				pub #snake_property_ident: #kind_tokens,
+			};
+
+			property_def_tokens.extend(iter::once(def_tokens));
 		}
 
 		let comment_str = comment.unwrap_or_default();
 		let item = quote! {
 			#[doc = #comment_str]
-			pub struct #name_ident {
-				#( pub #property_def_tokens, )*
-			}
+			#[serde(rename_all = "camelCase")]
+			pub struct #name_ident { #property_def_tokens }
 
 			impl #name_ident {
+				#constructor_tokens
 
+				#methods
 			}
 		};
 
 		self.add_item(context_name, item)
 	}
 
-	fn get_constructor_info(&mut self, params: GetConstructorInfoParams<'_>) -> Result<Option<ConstructorInfo>> {
+	fn get_constructor_info(&mut self, params: GetConstructorInfoParams<'_>) -> Option<ConstructorInfo> {
 		let GetConstructorInfoParams {
 			struct_name,
 			argument_prefix,
@@ -266,7 +372,7 @@ impl RustGen<'_> {
 			}
 
 			if arguments_so_far == limit {
-				return Ok(None);
+				return None;
 			}
 
 			let argument_name_ident = match argument_prefix {
@@ -290,11 +396,11 @@ impl RustGen<'_> {
 			arguments_so_far += 1;
 		}
 
-		Ok(Some(ConstructorInfo {
+		Some(ConstructorInfo {
 			construction_body_tokens,
 			argument_tokens,
 			comment,
-		}))
+		})
 	}
 }
 
@@ -306,4 +412,14 @@ fn get_struct_property_context_name(struct_context_name: &str, property_name: &s
 fn get_keyed_enum_variant_context_name(enum_context_name: &str, variant_name: &str) -> String {
 	// all variant names must be pascal case, so nothing to do here
 	format!("{enum_context_name}{variant_name}")
+}
+
+fn get_boolean_verb(snake_str: &str) -> &str {
+	if snake_str.starts_with("is_") {
+		&snake_str[3..]
+	} else if snake_str.starts_with("did_") {
+		&snake_str[4..]
+	} else {
+		snake_str
+	}
 }
