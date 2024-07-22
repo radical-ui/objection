@@ -16,7 +16,7 @@ use deno_graph::source::MemoryLoader;
 use env_logger::Env;
 use gen_js_entry::gen_js_entry;
 use gen_rust::RustGen;
-use log::{error, Level, LevelFilter};
+use log::{error, Level};
 use module_loader::load_modules;
 use std::{env::current_dir, io::Write, path::PathBuf};
 use tokio::{fs::write, runtime::Builder};
@@ -110,7 +110,6 @@ enum Operation {
 
 fn main() {
 	env_logger::Builder::from_env(Env::default().default_filter_or("info"))
-		.filter_level(LevelFilter::Info)
 		.format(|buf, record| {
 			writeln!(
 				buf,
