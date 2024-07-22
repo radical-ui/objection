@@ -166,7 +166,7 @@ async fn main_async() -> Result<()> {
 	}
 
 	let response = bundler.bundle(gen_js_entry(&runtime_url, &args.engine_url, &collection)?).await?;
-	write("bundle.js", response).await?;
+	write("target/bundle.js", response).await?;
 
 	let bindings = args.engine.get_bindings(&collection);
 	write(args.bindings_path, bindings).await?;
