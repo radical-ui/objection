@@ -11,14 +11,22 @@ interface Chunk {
 	content: Component
 }
 
+export interface NestedFlowHeaderItem {
+	text: string
+}
+
+export interface NestedFlowContentItem {
+	content: Component
+	header_text: string
+}
+
 export type NestedFlowItem =
 	| {
-		text: string
+		def: NestedFlowHeaderItem
 		type: 'Header'
 	}
 	| {
-		content: Component
-		header_text: string
+		def: NestedFlowContentItem
 		type: 'Content'
 	}
 
@@ -47,14 +55,14 @@ const getBlocks = (items: NestedFlowItem[]) => {
 		const lastBlock = blocks[blocks.length - 1]
 
 		if (item.type === 'Header') {
-			if (!lastBlock.header) lastBlock.header = item.text
-			else blocks.push({ header: item.text, chunks: [] })
+			if (!lastBlock.header) lastBlock.header = item.def.text
+			else blocks.push({ header: item.def.text, chunks: [] })
 
 			continue
 		}
 
 		if (item.type === 'Content') {
-			lastBlock.chunks.push({ header: item.header_text, content: item.content })
+			lastBlock.chunks.push({ header: item.def.header_text, content: item.def.content })
 			continue
 		}
 	}

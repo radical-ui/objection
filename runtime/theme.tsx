@@ -1,35 +1,11 @@
 import { Component, ComponentRender } from './component.tsx'
 import { frontier, React } from './deps.ts'
 
-export type Color =
-	| {
-		opacity: number
-		type: 'Primary'
-	}
-	| {
-		opacity: number
-		type: 'Fore'
-	}
-	| {
-		opacity: number
-		type: 'DecorationFore'
-	}
-	| {
-		opacity: number
-		type: 'Base'
-	}
-	| {
-		opacity: number
-		type: 'Danger'
-	}
-	| {
-		opacity: number
-		type: 'Warn'
-	}
-	| {
-		opacity: number
-		type: 'Success'
-	}
+export interface Color {
+	opacity: number
+	type: ColorType
+}
+
 export type ColorType = 'Primary' | 'Fore' | 'DecorationFore' | 'Base' | 'Danger' | 'Warn' | 'Success'
 export type SelectionMode = 'OptIn' | 'OptOut'
 
@@ -64,6 +40,8 @@ export interface ColorDefinition {
 /**
  * A theme manager for all components. Currently the theme of all components, regardless of location are affected, but this is expected to change
  * to where only child components are affected.
+ *
+ * @component
  */
 export interface ThemeManager {
 	theme: Theme

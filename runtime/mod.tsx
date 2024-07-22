@@ -1,7 +1,7 @@
 import { Component, ComponentIndexRenderer, ComponentRender, ProvideComponentIndexRenderer } from './component.tsx'
 import { React, setEndpoint } from './deps.ts'
 
-export type { ActionKey, EventKey } from './deps.ts'
+export type { ActionKey, AnyEvent, EventKey } from './deps.ts'
 
 export * from './event.tsx'
 export * from './component.tsx'

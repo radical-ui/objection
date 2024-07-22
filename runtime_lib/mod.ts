@@ -3,20 +3,32 @@
  *
  * @feature_event_key
  */
-export type EventKey<T> = { event_path: string[]; debugSymbol?: string }
+export type EventKey<T> = { eventPath: string[]; debugSymbol?: string }
 
 /**
  * An event that could be triggered, but that is not linked to any payload. This should only be used in cases where the event is not
  * actually triggered, but there is some reason to keep a reference to it.
  */
-export type AnyEvent = { event_path: string[]; debugSymbol?: string }
+export interface AnyEvent {
+	eventPath: string[]
+	debugSymbol?: string
+}
 
 /**
  * An action that could be triggered, where `T` is the data that the action will contain
  *
  * @feature_action_key
  */
-export type ActionKey<T> = { action_path: string[]; debugSymbol?: string }
+export type ActionKey<T> = { actionPath: string[]; debugSymbol?: string }
+
+/**
+ * An event that could be triggered, but that is not linked to any payload. This should only be used in cases where the event is not
+ * actually triggered, but there is some reason to keep a reference to it.
+ */
+export interface AnyEvent {
+	actionPath: string[]
+	debugSymbol?: string
+}
 
 const actionListeners = new Map<string, (d: unknown) => void>()
 let sessionId: string | null = null
@@ -66,11 +78,11 @@ export function registerActionListener<T>(key: ActionKey<T>, listener: (data: T)
 }
 
 export function getActionId(actionKey: ActionKey<unknown>) {
-	return safeJoin(actionKey.action_path)
+	return safeJoin(actionKey.actionPath)
 }
 
 export function getEventId(eventKey: EventKey<unknown>) {
-	return safeJoin(eventKey.event_path)
+	return safeJoin(eventKey.eventPath)
 }
 
 function safeJoin(path: string[]) {
