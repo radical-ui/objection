@@ -1,7 +1,7 @@
 use anyhow::{anyhow, Error, Result};
 use deno_doc::{js_doc::JsDocTag, DocNodeKind, DocParser, DocParserOptions};
 use deno_graph::{source::MemoryLoader, BuildOptions, CapturingModuleAnalyzer, GraphKind, ModuleGraph};
-use log::warn;
+use log::{debug, trace, warn};
 use std::collections::{HashMap, HashSet};
 use url::Url;
 
@@ -108,12 +108,12 @@ impl Collection {
 				}
 				DocNodeKind::Class => local_warn("Classes are not a support type of export and will be ignored (at {})", &node.location),
 				DocNodeKind::Enum => local_warn(
-					"Enums are not a supported type of export and will be ignored. Use a keyed or string literal union instead (at {})",
+					"Enums are not a supported type of export and will be ignored. Use a keyed or string literal union instead",
 					&node.location,
 				),
 				DocNodeKind::Import => (), // TODO we should figure out how to handle the "import item as anotherItem" cases
 				DocNodeKind::ModuleDoc => local_warn(
-					"Module docs are ignored. To document a specific component, place the doc comment on that component's interface (at {})",
+					"Module docs are ignored. To document a specific component, place the doc comment on that component's interface",
 					&node.location,
 				),
 				DocNodeKind::Interface => {
@@ -175,8 +175,10 @@ impl Collection {
 								);
 							}
 							Err(error) => {
-								self.erroring_kinds
-									.insert(name, error.context(local_message("Failed to convert type alias.", &node.location)));
+								self.erroring_kinds.insert(
+									name.clone(),
+									error.context(local_message(&format!("Failed to convert type alias `{}`", name), &node.location)),
+								);
 							}
 						};
 					}
@@ -195,6 +197,8 @@ impl Collection {
 	pub fn check_components(&mut self) {
 		let components = self.get_component_info().iter().map(|(name, _)| *name).collect::<Vec<_>>();
 		let unreachable_names = self.get_unrelated_names(components).iter().map(|name| name.to_string()).collect::<Vec<_>>();
+
+		debug!("Removing the following names from the graph because they were deemed unreachable by component types: {unreachable_names:#?}");
 
 		self.prune_names(unreachable_names.iter().map(|item| item.as_str()));
 		self.meet_all_dependencies();
@@ -254,23 +258,32 @@ impl Collection {
 	}
 
 	pub fn get_unrelated_names<'a>(&'a self, names: impl IntoIterator<Item = &'a str>) -> Vec<&'a str> {
-		let mut marked_nodes = HashSet::<&'a str>::from_iter(self.get_all_names());
+		let mut marked_nodes = HashSet::<&'a str>::new();
 
-		fn remove_dependencies(name: &str, conversions: &HashMap<String, InternalKindDefinition>, marked_nodes: &mut HashSet<&str>) {
-			if let Some(definition) = conversions.get(name) {
-				for dependency in &definition.dependencies {
-					marked_nodes.remove(dependency.as_str());
-					remove_dependencies(name, conversions, marked_nodes);
+		fn mark_dependencies<'b>(name: &str, kinds: &'b HashMap<String, InternalKindDefinition>, marked_nodes: &mut HashSet<&'b str>) {
+			if let Some(def) = kinds.get(name) {
+				for dependency in &def.dependencies {
+					if !marked_nodes.contains(dependency.as_str()) {
+						trace!("marking dependency: {name} => {dependency}");
+
+						marked_nodes.insert(dependency.as_str());
+						mark_dependencies(dependency.as_str(), kinds, marked_nodes);
+					}
 				}
 			}
 		}
 
 		for name in names {
-			marked_nodes.remove(name);
-			remove_dependencies(name, &self.kinds, &mut marked_nodes);
+			marked_nodes.insert(name);
+			mark_dependencies(name, &self.kinds, &mut marked_nodes);
 		}
 
-		marked_nodes.drain().collect()
+		self.kinds
+			.keys()
+			.map(|key| key.as_str())
+			.filter(|key| !marked_nodes.contains(key))
+			.chain(self.erroring_kinds.keys().map(|key| key.as_str()).filter(|key| !marked_nodes.contains(key)))
+			.collect()
 	}
 
 	pub fn prune_names<'a>(&mut self, names: impl IntoIterator<Item = &'a str>) {
@@ -303,7 +316,7 @@ impl Collection {
 				anyhow!(
 					"{}",
 					contextual_format(
-						"Missing type `{name}`",
+						&format!("Missing type `{name}`",),
 						&format!(
 							"Expected because it was referenced by {}",
 							dependents.iter().map(|d| format!("`{d}`")).collect::<Vec<_>>().join(", ")

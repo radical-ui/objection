@@ -39,6 +39,7 @@ pub struct ObjectProperty {
 	pub is_optional: bool,
 }
 
+#[derive(Debug)]
 pub struct Conversion {
 	pub kind: Kind,
 	pub dependencies: Vec<String>,
@@ -244,7 +245,7 @@ pub fn convert_ts_type(params: ConvertTsTypeParams<'_>) -> Result<Conversion> {
 			kind: Kind::Ref {
 				name: type_ref.type_name.clone(),
 			},
-			dependencies: Vec::new(),
+			dependencies: Vec::from([type_ref.type_name.clone()]),
 		});
 	}
 
@@ -347,24 +348,25 @@ pub fn convert_ts_type(params: ConvertTsTypeParams<'_>) -> Result<Conversion> {
 						})
 						.with_context(|| local_message(&format!("Failed to convert property {}", &property.name), &property.location))?;
 
+						debug!("{:?}", &def_conversion.dependencies);
 						combined_dependencies.append(&mut def_conversion.dependencies);
 						definition_kind = Some(def_conversion.kind);
 					}
 				}
 
 				let name = name.ok_or(local_error(
-					"Union variant #{variant_number} is not a valid keyed object. No 'type' field was found.",
+					&format!("Union variant #{variant_number} is not a valid keyed object. No 'type' field was found.",),
 					location,
 				))?;
 				let kind = definition_kind.ok_or(local_error(
-					"Union variant #{variant_number} is not a valid keyed object. No 'def' field was found.",
+					&format!("Union variant #{variant_number} is not a valid keyed object. No 'def' field was found."),
 					location,
 				))?;
 
 				keyed_variants.push(EnumProperty { comment, name, kind });
 			} else {
 				return local_err(
-					"Unsupported enum type in variant #{variant_number}. Only string literals and keyed objects are supported.",
+					&format!("Unsupported enum type in variant #{variant_number}. Only string literals and keyed objects are supported."),
 					location,
 				);
 			}
@@ -382,11 +384,15 @@ pub fn convert_ts_type(params: ConvertTsTypeParams<'_>) -> Result<Conversion> {
 				dependencies: Vec::new(),
 			}
 		} else {
-			Conversion {
+			dbg!(Conversion {
 				kind: Kind::KeyedEnum { variants: keyed_variants },
 				dependencies: combined_dependencies,
-			}
+			})
 		});
+	}
+
+	if let Some(type_literal) = &ts_type.type_literal {
+		return local_err("Object literals are not supported for types. Use an interface instead.", location);
 	}
 
 	debug!("Encountered an unknown type: {:#?}", ts_type);
