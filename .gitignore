@@ -2,4 +2,5 @@
 /www/icons
 /www/build.js
 /.helix
+/example/bindings.rs
 .DS_Store
