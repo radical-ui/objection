@@ -1,6 +1,6 @@
 use anyhow::Error;
 use inflector::Inflector;
-use log::error;
+use log::{debug, error};
 use prettyplease::unparse;
 use proc_macro2::TokenStream;
 use quote::{format_ident, quote};
@@ -247,7 +247,7 @@ impl RustGen<'_> {
 		for property in properties {
 			let snake_property_name = property.name.to_snake_case();
 			let snake_property_ident = format_ident!("{}", &snake_property_name);
-			let comment_str = comment.unwrap_or_default();
+			let comment_tokens = property.comment.as_deref().map(|text| quote! { #[doc = #text] });
 			let (resolved_kind, _) = self.collection.resolve_kind(&property.kind);
 
 			let kind_tokens = {
@@ -326,16 +326,18 @@ impl RustGen<'_> {
 			}));
 
 			let def_tokens = quote! {
-				#[doc = #comment_str]
+				#comment_tokens
 				pub #snake_property_ident: #kind_tokens,
 			};
 
 			property_def_tokens.extend(iter::once(def_tokens));
 		}
 
-		let comment_str = comment.unwrap_or_default();
+		let comment_tokens = comment.map(|text| quote! { #[doc = #text] });
+
 		let item = quote! {
-			#[doc = #comment_str]
+			#comment_tokens
+			#[derive(serde::Serialize, serde::Deserialize)]
 			#[serde(rename_all = "camelCase")]
 			pub struct #name_ident { #property_def_tokens }
 
