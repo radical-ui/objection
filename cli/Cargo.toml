@@ -8,6 +8,7 @@ name = "objection"
 path = "main.rs"
 
 [dependencies]
+anstyle = "1.0.7"
 anyhow = { version = "1", features = ["backtrace"] }
 clap = { version = "4", features = ["derive"] }
 colored = "2"

@@ -6,9 +6,10 @@ mod gen_rust;
 mod module_loader;
 mod print;
 
+use anstyle::{AnsiColor, Color as AnsColor, Style};
 use anyhow::{bail, Context, Result};
 use bundle::Bundler;
-use clap::{Parser, Subcommand, ValueEnum};
+use clap::{builder::Styles, Parser, Subcommand, ValueEnum};
 use collect::Collection;
 use colored::{Color, Colorize};
 use deno_graph::source::MemoryLoader;
@@ -57,6 +58,7 @@ impl Engine {
 }
 
 #[derive(Parser, Debug, Clone)]
+#[command(styles = get_styles())]
 struct Command {
 	/// The runtime to use. Can be a path or a full url
 	#[arg(long)]
@@ -170,4 +172,15 @@ async fn main_async() -> Result<()> {
 	write(args.bindings_path, bindings).await?;
 
 	Ok(())
+}
+
+fn get_styles() -> Styles {
+	Styles::styled()
+		.usage(Style::new().bold().underline().fg_color(Some(AnsColor::Ansi(AnsiColor::Yellow))))
+		.header(Style::new().bold().underline().fg_color(Some(AnsColor::Ansi(AnsiColor::Yellow))))
+		.literal(Style::new().fg_color(Some(AnsColor::Ansi(AnsiColor::Green))))
+		.invalid(Style::new().bold().fg_color(Some(AnsColor::Ansi(AnsiColor::Red))))
+		.error(Style::new().bold().fg_color(Some(AnsColor::Ansi(AnsiColor::Red))))
+		.valid(Style::new().bold().underline().fg_color(Some(AnsColor::Ansi(AnsiColor::Green))))
+		.placeholder(Style::new().fg_color(Some(AnsColor::Ansi(AnsiColor::White))))
 }
