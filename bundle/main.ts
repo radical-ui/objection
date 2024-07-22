@@ -49,7 +49,7 @@ const build = await rollup.rollup({
 	}],
 })
 
-print(colors.gray(`Generating...\r`))
+print(colors.gray(`Generating...`))
 
 const { output } = await build.generate({ sourcemap: 'inline', format: 'esm' })
 const code = output[0].code
