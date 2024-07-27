@@ -2,7 +2,7 @@ use inflector::Inflector;
 use log::debug;
 use prettyplease::unparse;
 use proc_macro2::TokenStream;
-use quote::{format_ident, quote};
+use quote::{format_ident, quote, quote_spanned};
 use std::{collections::HashSet, iter};
 use syn::parse2;
 
@@ -42,6 +42,7 @@ impl RustGen<'_> {
 
 	pub fn gen(&mut self) {
 		for def in self.collection.get_kinds() {
+			debug!("Generating {}", def.name);
 			let comment = def.comment.unwrap_or("");
 
 			match def.kind {
@@ -135,6 +136,7 @@ impl RustGen<'_> {
 					let comment_str = comment.unwrap_or_default();
 					let item = quote! {
 						#[doc = #comment_str]
+						#[derive(Debug, serde::Serialize, serde::Deserialize)]
 						pub enum #name_ident {
 							#( #variant_idents, )*
 						}
@@ -148,7 +150,7 @@ impl RustGen<'_> {
 			Kind::KeyedEnum { variants } => {
 				let name_ident = format_ident!("{context_name}");
 
-				if self.has_item(context_name) {
+				if !self.has_item(context_name) {
 					self.gen_keyed_enum(context_name, comment, &variants)
 				}
 
@@ -196,6 +198,7 @@ impl RustGen<'_> {
 		let comment_str = comment.unwrap_or_default();
 		let item = quote! {
 			#[doc = #comment_str]
+			#[derive(Debug, serde::Serialize, serde::Deserialize)]
 			pub enum #name_ident {
 				#( #variant_def_tokens, )*
 			}
@@ -245,22 +248,21 @@ impl RustGen<'_> {
 			let comment_tokens = property.comment.as_deref().map(|text| quote! { #[doc = #text] });
 			let (resolved_kind, _) = self.collection.resolve_kind(&property.kind);
 
-			let kind_tokens = {
-				let tokens = self.gen_kind(
-					&get_struct_property_context_name(context_name, &property.name),
-					property.comment.as_deref(),
-					&property.kind,
-				);
+			let bare_kind_tokens = self.gen_kind(
+				&get_struct_property_context_name(context_name, &property.name),
+				property.comment.as_deref(),
+				&property.kind,
+			);
 
-				if property.is_optional {
-					quote! { Option<#tokens> }
-				} else {
-					tokens
-				}
+			let kind_tokens_type = if property.is_optional {
+				let clone = bare_kind_tokens.clone();
+				quote! { Option<#clone> }
+			} else {
+				bare_kind_tokens.clone()
 			};
 
 			let default_method = quote! {
-				pub fn #snake_property_ident(mut self, #snake_property_ident: #kind_tokens) -> #name_ident {
+				pub fn #snake_property_ident(mut self, #snake_property_ident: #kind_tokens_type) -> #name_ident {
 					self.#snake_property_ident = #snake_property_ident;
 
 					self
@@ -277,7 +279,7 @@ impl RustGen<'_> {
 						self
 					}
 
-					pub fn #property_if_ident(mut self, #snake_property_ident: #kind_tokens) -> #name_ident {
+					pub fn #property_if_ident(mut self, #snake_property_ident: #kind_tokens_type) -> #name_ident {
 						self.#snake_property_ident = #snake_property_ident;
 
 						self
@@ -297,18 +299,30 @@ impl RustGen<'_> {
 					     comment,
 					 }| {
 						let full_name_ident = format_ident!("{snake_property_ident}_full");
+						let option_wrapped_construction_tokens = if property.is_optional {
+							quote! { Some(#bare_kind_tokens { #construction_body_tokens }) }
+						} else {
+							quote! { #bare_kind_tokens { #construction_body_tokens } }
+						};
+						let option_wrapped_snake_property = if property.is_optional {
+							quote! {
+								Some(#snake_property_ident)
+							}
+						} else {
+							quote! { #snake_property_ident }
+						};
 
 						// TODO comments
 						quote! {
 							pub fn #snake_property_ident(mut self, #argument_tokens) -> #name_ident {
 								// TODO these kind tokens here may not work when there is a level of indirection with aliases
-								self.#snake_property_ident = #kind_tokens { #construction_body_tokens };
+								self.#snake_property_ident = #option_wrapped_construction_tokens;
 
 								self
 							}
 
-							pub fn #full_name_ident(mut self, #snake_property_ident: #kind_tokens) -> #name_ident {
-								self.#snake_property_ident = #snake_property_ident;
+							pub fn #full_name_ident(mut self, #snake_property_ident: #bare_kind_tokens) -> #name_ident {
+								self.#snake_property_ident = #option_wrapped_snake_property;
 
 								self
 							}
@@ -322,7 +336,7 @@ impl RustGen<'_> {
 
 			let def_tokens = quote! {
 				#comment_tokens
-				pub #snake_property_ident: #kind_tokens,
+				pub #snake_property_ident: #kind_tokens_type,
 			};
 
 			property_def_tokens.extend(iter::once(def_tokens));
@@ -332,7 +346,7 @@ impl RustGen<'_> {
 
 		let item = quote! {
 			#comment_tokens
-			#[derive(serde::Serialize, serde::Deserialize)]
+			#[derive(Debug, serde::Serialize, serde::Deserialize)]
 			#[serde(rename_all = "camelCase")]
 			pub struct #name_ident { #property_def_tokens }
 
@@ -360,7 +374,7 @@ impl RustGen<'_> {
 		let mut arguments_so_far = 0_usize;
 
 		for property in properties {
-			let property_name_ident = format_ident!("{}", &property.name);
+			let property_name_ident = format_ident!("{}", &property.name.to_snake_case());
 
 			if property.is_optional {
 				construction_body_tokens.extend(iter::once(quote! { #property_name_ident: None, }));
@@ -373,8 +387,8 @@ impl RustGen<'_> {
 			}
 
 			let argument_name_ident = match argument_prefix {
-				Some(prefix) => format_ident!("{prefix}_{}", &property.name),
-				None => format_ident!("{}", &property.name),
+				Some(prefix) => format_ident!("{prefix}_{}", &property.name.to_snake_case()),
+				None => format_ident!("{}", &property.name.to_snake_case()),
 			};
 
 			let type_ = self.gen_kind(
