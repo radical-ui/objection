@@ -10,7 +10,7 @@ use syn::parse2;
 use crate::{
 	collect::Collection,
 	convert::{EnumProperty, Kind, ObjectProperty},
-	print::contextual_format,
+	diagnostic::Diagnostic,
 };
 
 struct GetConstructorInfoParams<'a> {
@@ -30,7 +30,6 @@ pub struct RustGen<'a> {
 	collection: &'a Collection,
 	names_generated: HashSet<String>,
 	tokens: TokenStream,
-	diagnostics: Vec<Error>,
 }
 
 impl RustGen<'_> {
@@ -39,7 +38,6 @@ impl RustGen<'_> {
 			collection,
 			names_generated: HashSet::new(),
 			tokens: TokenStream::new(),
-			diagnostics: Vec::new(),
 		}
 	}
 
@@ -82,13 +80,11 @@ impl RustGen<'_> {
 		let file = match parse2(self.tokens) {
 			Ok(file) => file,
 			Err(_) => {
-				error!(
-					"{}",
-					contextual_format(
-						"Invalid rust code was generated. This is a bug.",
-						"Continuing on with invalid code so that it can be debugged"
-					)
-				);
+				Diagnostic::start("Invalid rust code was generated. This is a bug.")
+					.shift()
+					.text("Continuing on with invalid code so that it can be debugged")
+					.build()
+					.print_error();
 
 				return text;
 			}
@@ -414,14 +410,4 @@ fn get_struct_property_context_name(struct_context_name: &str, property_name: &s
 fn get_keyed_enum_variant_context_name(enum_context_name: &str, variant_name: &str) -> String {
 	// all variant names must be pascal case, so nothing to do here
 	format!("{enum_context_name}{variant_name}")
-}
-
-fn get_boolean_verb(snake_str: &str) -> &str {
-	if snake_str.starts_with("is_") {
-		&snake_str[3..]
-	} else if snake_str.starts_with("did_") {
-		&snake_str[4..]
-	} else {
-		snake_str
-	}
 }

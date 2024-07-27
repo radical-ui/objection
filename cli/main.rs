@@ -1,10 +1,10 @@
 mod bundle;
 mod collect;
 mod convert;
+mod diagnostic;
 mod gen_js_entry;
 mod gen_rust;
 mod module_loader;
-mod print;
 
 use anstyle::{AnsiColor, Color as AnsColor, Style};
 use anyhow::{bail, Context, Result};

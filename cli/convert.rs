@@ -2,10 +2,7 @@ use anyhow::{Context, Result};
 use deno_doc::{interface::InterfaceDef, ts_type::TsTypeDef, Location};
 use log::debug;
 
-use crate::{
-	collect::ComponentInfo,
-	print::{local_err, local_error, local_message},
-};
+use crate::{collect::ComponentInfo, diagnostic::Diagnostic};
 
 #[derive(Debug)]
 pub enum Kind {
@@ -66,25 +63,33 @@ pub fn convert_interface(params: ConvertInterfaceParams<'_>) -> Result<Conversio
 	let mut properties = Vec::new();
 
 	if !interface.extends.is_empty() {
-		return local_err(
-			"Interface extensions are not supported, instead specify all properties in the interface body",
-			location,
-		);
+		return Diagnostic::start("Interface extensions are not supported, instead specify all properties in the interface body")
+			.shift()
+			.location(location)
+			.build()
+			.err();
 	}
 
 	if !interface.methods.is_empty() {
-		return local_err(
+		return Diagnostic::start(
 			"Methods are not supported in exported interfaces. If this is releated to private client-only functionality, consider \
-			inlining the methods in the render function (at {})",
-			location,
-		);
+			inlining the methods in the render function",
+		)
+		.shift()
+		.location(location)
+		.build()
+		.err();
 	}
 
 	for property_def in &interface.properties {
 		let type_def = match &property_def.ts_type {
 			Some(def) => def,
 			None => {
-				return local_err("Interface property does not have an associated type (at {})", &property_def.location);
+				return Diagnostic::start("Interface property does not have an associated type")
+					.shift()
+					.location(&property_def.location)
+					.build()
+					.err();
 			}
 		};
 
@@ -95,7 +100,13 @@ pub fn convert_interface(params: ConvertInterfaceParams<'_>) -> Result<Conversio
 			action_key_type_name,
 			event_key_type_name,
 		})
-		.with_context(|| local_message(&format!("Failed to convert interface property `{}`", property_def.name), &property_def.location))?;
+		.with_context(|| {
+			Diagnostic::start("Failed to convert interface property ")
+				.inline_code(&property_def.name)
+				.shift()
+				.location(&property_def.location)
+				.build()
+		})?;
 
 		interface_dependencies.append(&mut conversion.dependencies);
 
@@ -167,10 +178,10 @@ pub fn convert_ts_type(params: ConvertTsTypeParams<'_>) -> Result<Conversion> {
 		}
 
 		if keyword == "any" {
-			return local_err("Use 'unknown' instead of 'any'", location);
+			return Diagnostic::start("Use 'unknown' instead of 'any'").shift().location(location).build().err();
 		}
 
-		return local_err(&format!("Unknown keyword '{keyword}'"), location);
+		return Diagnostic::start("Unknown keyword '{keyword}'").shift().location(location).build().err();
 	}
 
 	if let Some(type_ref) = &params.ts_type.type_ref {
@@ -191,13 +202,14 @@ pub fn convert_ts_type(params: ConvertTsTypeParams<'_>) -> Result<Conversion> {
 		if let Some(action_key_type_name) = action_key_type_name {
 			if &type_ref.type_name == action_key_type_name {
 				if type_params.len() != 1 {
-					return local_err(
-						&format!(
-							"Because it is an action key, expected to find 1 type parameter for `{action_key_type_name}`, but found {}",
-							type_params.len()
-						),
-						location,
-					);
+					return Diagnostic::start("Because it is an action key, expected to find 1 type parameter for ")
+						.inline_code(action_key_type_name)
+						.text(", but found ")
+						.text(type_params.len().to_string().as_str())
+						.shift()
+						.location(location)
+						.build()
+						.err();
 				}
 
 				let data_type = type_params.swap_remove(0);
@@ -214,13 +226,14 @@ pub fn convert_ts_type(params: ConvertTsTypeParams<'_>) -> Result<Conversion> {
 		if let Some(event_key_type_name) = event_key_type_name {
 			if &type_ref.type_name == event_key_type_name {
 				if type_params.len() != 1 {
-					return local_err(
-						&format!(
-							"Because it is an event key, expected to find 1 type parameter for `{event_key_type_name}`, but found {}",
-							type_params.len()
-						),
-						location,
-					);
+					return Diagnostic::start("Because it is an event key, expected to find 1 type parameter for ")
+						.inline_code(event_key_type_name)
+						.text(", but found ")
+						.text(type_params.len().to_string().as_str())
+						.shift()
+						.location(location)
+						.build()
+						.err();
 				}
 
 				let data_type = type_params.swap_remove(0);
@@ -235,10 +248,13 @@ pub fn convert_ts_type(params: ConvertTsTypeParams<'_>) -> Result<Conversion> {
 		}
 
 		if type_ref.type_params.is_some() {
-			return local_err(
-				&format!("Type `{}` was supplied type parameters, but this is not supported", &type_ref.type_name),
-				location,
-			);
+			return Diagnostic::start("Type ")
+				.inline_code(&type_ref.type_name)
+				.text(" was supplied type parameters, but this is not supported")
+				.shift()
+				.location(location)
+				.build()
+				.err();
 		}
 
 		return Ok(Conversion {
@@ -301,10 +317,13 @@ pub fn convert_ts_type(params: ConvertTsTypeParams<'_>) -> Result<Conversion> {
 				if let Some(string) = &literal.string {
 					string_variants.push(string.clone());
 				} else {
-					return local_err(
-						&format!("Failed to convert variant #{variant_number} in union. Only string literals and keyed objects are supported."),
-						location,
-					);
+					return Diagnostic::start("Failed to convert variant ")
+						.text(variant_number)
+						.text(" in union. Only string literals and keyed objects are supported.")
+						.shift()
+						.location(location)
+						.build()
+						.err();
 				}
 			} else if let Some(type_literal) = &ts_type.type_literal {
 				let mut comment = None;
@@ -315,38 +334,60 @@ pub fn convert_ts_type(params: ConvertTsTypeParams<'_>) -> Result<Conversion> {
 					if &property.name == "type" {
 						comment = property.js_doc.doc.clone();
 
-						let type_type = property
-							.ts_type
-							.as_ref()
-							.ok_or(local_error("Expected to find a type associated with the 'type' field", &property.location))?;
+						let type_type = property.ts_type.as_ref().ok_or(
+							Diagnostic::start("Expected to find a type associated with the ")
+								.inline_code("type")
+								.text(" field")
+								.shift()
+								.location(&property.location)
+								.build()
+								.error(),
+						)?;
 
 						if let Some(literal) = &type_type.literal {
 							if let Some(string) = &literal.string {
 								name = Some(string.clone())
 							} else {
-								return local_err(
-									"The type of the 'type' property must be a string literal, as this is a keyed object",
-									&property.location,
-								);
+								return Diagnostic::start("The type of the ")
+									.inline_code("type")
+									.text(" property must be a string literal, as this is a keyed object")
+									.shift()
+									.location(&property.location)
+									.build()
+									.err();
 							}
 						} else {
-							return local_err(
-								"The type of the 'type' property must be a string literal, as this is a keyed object",
-								&property.location,
-							);
+							return Diagnostic::start("The type of the ")
+								.inline_code("type")
+								.text(" property must be a string literal, as this is a keyed object")
+								.shift()
+								.location(&property.location)
+								.build()
+								.err();
 						}
 					} else if &property.name == "def" {
 						let mut def_conversion = convert_ts_type(ConvertTsTypeParams {
-							ts_type: property
-								.ts_type
-								.as_ref()
-								.ok_or(local_error("Expected to find a type assiciated with the 'def' field", &property.location))?,
+							ts_type: property.ts_type.as_ref().ok_or(
+								Diagnostic::start("Expected to find a type assiciated with the ")
+									.inline_code("def")
+									.text(" field")
+									.shift()
+									.location(&property.location)
+									.build()
+									.error(),
+							)?,
 							location: &property.location,
 							component: component.as_deref_mut(),
 							action_key_type_name,
 							event_key_type_name,
 						})
-						.with_context(|| local_message(&format!("Failed to convert property {}", &property.name), &property.location))?;
+						.with_context(|| {
+							Diagnostic::start("Failed to convert property ")
+								.inline_code(&property.name)
+								.shift()
+								.location(&property.location)
+								.build()
+						})?;
 
 						debug!("{:?}", &def_conversion.dependencies);
 						combined_dependencies.append(&mut def_conversion.dependencies);
@@ -354,28 +395,52 @@ pub fn convert_ts_type(params: ConvertTsTypeParams<'_>) -> Result<Conversion> {
 					}
 				}
 
-				let name = name.ok_or(local_error(
-					&format!("Union variant #{variant_number} is not a valid keyed object. No 'type' field was found.",),
-					location,
-				))?;
-				let kind = definition_kind.ok_or(local_error(
-					&format!("Union variant #{variant_number} is not a valid keyed object. No 'def' field was found."),
-					location,
-				))?;
+				let name = name.ok_or(
+					Diagnostic::start("Union variant ")
+						.text(variant_number)
+						.text("is not a valid keyed object. No ")
+						.inline_code("type")
+						.text(" field was found.")
+						.shift()
+						.location(location)
+						.build()
+						.error(),
+				)?;
+				let kind = definition_kind.ok_or(
+					Diagnostic::start("Union variant ")
+						.text(variant_number)
+						.text(" is not a valid keyed object. No ")
+						.inline_code("def")
+						.text(" field was found")
+						.shift()
+						.location(location)
+						.build()
+						.error(),
+				)?;
 
 				keyed_variants.push(EnumProperty { comment, name, kind });
 			} else {
-				return local_err(
-					&format!("Unsupported enum type in variant #{variant_number}. Only string literals and keyed objects are supported."),
-					location,
-				);
+				return Diagnostic::start("Unsupported enum type in variant ")
+					.text(variant_number)
+					.text(". Only string literals and keyed objects are supported.")
+					.shift()
+					.location(location)
+					.build()
+					.err();
 			}
 
 			variant_number += 1;
 		}
 
 		if !string_variants.is_empty() && !keyed_variants.is_empty() {
-			return local_err("Found a union with both string and keyed object variants. This is not allowed. The entire union must be made up of either string literals or keyed objects", location);
+			return Diagnostic::start(
+				"Found a union with both string and keyed object variants. This is not allowed.\
+				The entire union must be made up of either string literals or keyed objects",
+			)
+			.shift()
+			.location(location)
+			.build()
+			.err();
 		}
 
 		return Ok(if !string_variants.is_empty() {
@@ -384,17 +449,21 @@ pub fn convert_ts_type(params: ConvertTsTypeParams<'_>) -> Result<Conversion> {
 				dependencies: Vec::new(),
 			}
 		} else {
-			dbg!(Conversion {
+			Conversion {
 				kind: Kind::KeyedEnum { variants: keyed_variants },
 				dependencies: combined_dependencies,
-			})
+			}
 		});
 	}
 
-	if let Some(type_literal) = &ts_type.type_literal {
-		return local_err("Object literals are not supported for types. Use an interface instead.", location);
+	if let Some(_) = &ts_type.type_literal {
+		return Diagnostic::start("Object literals are not supported for types. Use an interface instead.")
+			.shift()
+			.location(location)
+			.build()
+			.err();
 	}
 
 	debug!("Encountered an unknown type: {:#?}", ts_type);
-	local_err("Unsupported type", location)
+	Diagnostic::start("Unsupported type").shift().location(location).build().err()
 }

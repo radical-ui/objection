@@ -1,13 +1,16 @@
 use anyhow::{anyhow, Error, Result};
 use deno_doc::{js_doc::JsDocTag, DocNodeKind, DocParser, DocParserOptions};
 use deno_graph::{source::MemoryLoader, BuildOptions, CapturingModuleAnalyzer, GraphKind, ModuleGraph};
-use log::{debug, trace, warn};
-use std::collections::{HashMap, HashSet};
+use log::{debug, trace};
+use std::{
+	borrow::{Borrow, BorrowMut},
+	collections::{HashMap, HashSet},
+};
 use url::Url;
 
 use crate::{
 	convert::{convert_interface, convert_ts_type, Conversion, ConvertInterfaceParams, ConvertTsTypeParams, Kind},
-	print::{contextual_format, local_error, local_message, local_warn},
+	diagnostic::Diagnostic,
 };
 
 #[derive(Debug)]
@@ -80,23 +83,18 @@ impl Collection {
 		}
 
 		if let None = &self.event_key_type_name {
-			warn!(
-				"{}",
-				contextual_format(
-					"No type was found for noting event keys",
-					"Runtime events will not be recognized without a @feature_event_key js doc type tag to notate them. Additionally, this type must be exported from the runtime."
-				)
-			);
+			Diagnostic::start("No type was found for noting event keys")
+				.shift()
+				.text("Runtime events will not be recognized without a @feature_event_key js doc type tag to notate them. Additionally, this type must be exported from the runtime.")
+				.build()
+				.print_warn();
 		}
 
 		if let None = &self.action_key_type_name {
-			warn!(
-				"{}",
-				contextual_format(
-					"No type was found for noting action keys",
-					"Runtime action types will not be recognized without a @feature_action_key js doc tag to notate them. Additionally, this type must be exported from the runtime."
-				)
-			);
+			Diagnostic::start("No type was found for noting action keys")
+				.shift()
+				.text("Runtime action types will not be recognized without a @feature_action_key js doc tag to notate them. Additionally, this type must be exported from the runtime.").build()
+				.print_warn();
 		}
 
 		for node in nodes {
@@ -106,16 +104,26 @@ impl Collection {
 				DocNodeKind::Function => {
 					self.functions.insert(name);
 				}
-				DocNodeKind::Class => local_warn("Classes are not a support type of export and will be ignored (at {})", &node.location),
-				DocNodeKind::Enum => local_warn(
-					"Enums are not a supported type of export and will be ignored. Use a keyed or string literal union instead",
-					&node.location,
-				),
+				DocNodeKind::Class => Diagnostic::start("Classes are not a supported type of export and will be ignored")
+					.shift()
+					.location(&node.location)
+					.build()
+					.print_warn(),
+				DocNodeKind::Enum => {
+					Diagnostic::start("Enums are not a supported type of export and will be ignored. Use a keyed or string literal union instead")
+						.shift()
+						.location(&node.location)
+						.build()
+						.print_warn()
+				}
 				DocNodeKind::Import => (), // TODO we should figure out how to handle the "import item as anotherItem" cases
-				DocNodeKind::ModuleDoc => local_warn(
-					"Module docs are ignored. To document a specific component, place the doc comment on that component's interface",
-					&node.location,
-				),
+				DocNodeKind::ModuleDoc => {
+					Diagnostic::start("Module docs are ignored. To document a specific component, place the doc comment on that component's interface")
+						.shift()
+						.location(&node.location)
+						.build()
+						.print_warn()
+				}
 				DocNodeKind::Interface => {
 					let conversion = convert_interface(ConvertInterfaceParams {
 						interface: node.interface_def.as_ref().ok_or(anyhow!("Bad deno_doc output: expected interface def."))?,
@@ -139,12 +147,22 @@ impl Collection {
 						Err(error) => {
 							self.erroring_kinds.insert(
 								name,
-								error.context(local_message(&format!("Failed to convert interface `{}`", &node.name), &node.location)),
+								error.context(
+									Diagnostic::start("Failed to convert interface ")
+										.inline_code(&node.name)
+										.shift()
+										.location(&node.location)
+										.build(),
+								),
 							);
 						}
 					};
 				}
-				DocNodeKind::Namespace => local_warn("Namespaces are not supported and will be ignored (at {})", &node.location),
+				DocNodeKind::Namespace => Diagnostic::start("Namespaces are not supported and will be ignored")
+					.shift()
+					.location(&node.location)
+					.build()
+					.print_warn(),
 				DocNodeKind::TypeAlias => {
 					let type_alias = node
 						.type_alias_def
@@ -152,8 +170,14 @@ impl Collection {
 						.ok_or(anyhow!("Bad deno_doc output: expected type alias def for node of kind type alias."))?;
 
 					if !type_alias.type_params.is_empty() {
-						self.erroring_kinds
-							.insert(name, local_error("Type parameters are not supported.", &node.location));
+						self.erroring_kinds.insert(
+							name,
+							Diagnostic::start("Type parameters are not supported")
+								.shift()
+								.location(&node.location)
+								.build()
+								.error(),
+						);
 					} else {
 						let conversion = convert_ts_type(ConvertTsTypeParams {
 							ts_type: &type_alias.ts_type,
@@ -177,17 +201,27 @@ impl Collection {
 							Err(error) => {
 								self.erroring_kinds.insert(
 									name.clone(),
-									error.context(local_message(&format!("Failed to convert type alias `{}`", name), &node.location)),
+									error.context(
+										Diagnostic::start("Failed to convert type alias ")
+											.inline_code(&name)
+											.shift()
+											.location(&node.location)
+											.build()
+											.error(),
+									),
 								);
 							}
 						};
 					}
 				}
-				DocNodeKind::Variable => local_warn(
+				DocNodeKind::Variable => Diagnostic::start(
 					"Exported variables are not supported and will be ignored. If you want to export a component render \
 					function, `export function` instead",
-					&node.location,
-				),
+				)
+				.shift()
+				.location(&node.location)
+				.build()
+				.print_error(),
 			}
 		}
 
@@ -206,10 +240,14 @@ impl Collection {
 		if !self.functions.contains("start") {
 			self.erroring_functions.insert(
 				"start".to_string(),
-				anyhow!(
-					"{}",
-					&contextual_format("Missing function `start`", "All renderers must export a `start` function.")
-				),
+				Diagnostic::start("Missing function")
+					.inline_code("start")
+					.shift()
+					.text("All renderers must export a")
+					.inline_code("start")
+					.text("function")
+					.build()
+					.error(),
 			);
 		}
 
@@ -217,13 +255,14 @@ impl Collection {
 			if !self.functions.contains(&component.render_name) {
 				self.erroring_functions.insert(
 					component.render_name.clone(),
-					anyhow!(
-						"{}",
-						contextual_format(
-							&format!("Missing function `{}`", &component.render_name),
-							&format!("Specified as the renderer for `{}`, but it was not exported", &name)
-						)
-					),
+					Diagnostic::start("Missing function ")
+						.inline_code(&component.render_name)
+						.shift()
+						.text("Specified as the renderer for ")
+						.inline_code(&name)
+						.text(", but it was not exported")
+						.build()
+						.error(),
 				);
 			}
 		}
@@ -313,16 +352,13 @@ impl Collection {
 		for (name, dependents) in missing {
 			self.erroring_kinds.insert(
 				name.clone(),
-				anyhow!(
-					"{}",
-					contextual_format(
-						&format!("Missing type `{name}`",),
-						&format!(
-							"Expected because it was referenced by {}",
-							dependents.iter().map(|d| format!("`{d}`")).collect::<Vec<_>>().join(", ")
-						)
-					),
-				),
+				Diagnostic::start("Missing type ")
+					.inline_code(&name)
+					.shift()
+					.text("Expected because it was referenced by ")
+					.join_map(dependents.iter(), |builder, dependent| builder.inline_code(&dependent))
+					.build()
+					.error(),
 			);
 		}
 	}
@@ -338,14 +374,19 @@ impl Collection {
 	}
 
 	pub fn get_kinds(&self) -> Vec<KindDefinition> {
-		self.kinds
+		let mut kinds = self
+			.kinds
 			.iter()
 			.map(|(name, def)| KindDefinition {
 				name,
 				comment: def.comment.as_deref(),
 				kind: &def.kind,
 			})
-			.collect()
+			.collect::<Vec<_>>();
+
+		kinds.sort_by(|a, b| a.name.cmp(b.name));
+
+		kinds
 	}
 
 	fn consider_js_doc_tags(&mut self, node_name: &str, tags: &[JsDocTag]) {
