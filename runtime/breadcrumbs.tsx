@@ -33,9 +33,7 @@ export function BreadcrumbsRender(props: Breadcrumbs) {
 			<div class='flex gap-5 items-center'>
 				{props.crumbs.map((crumb) => <Crumb {...crumb} />)}
 
-				{props.current && (
-					<LabelRender color={{ type: 'Fore', opacity: 50 }} is_bold={true} is_italic={false} text={props.current} />
-				)}
+				{props.current && <LabelRender color={{ kind: 'Fore', opacity: 50 }} isBold={true} isItalic={false} text={props.current} />}
 			</div>
 
 			{props.body && (
@@ -57,16 +55,16 @@ function Crumb(props: Crumb) {
 				class={`relative transition-opacity ${isLoading ? 'opacity-80 cursor-not-allowed' : 'cursor-pointer hover:opacity-80'}`}
 				onClick={() => dispatch(null)}
 			>
-				<LabelRender color={{ type: 'Primary', opacity: 100 }} is_bold={true} is_italic={false} text={props.text} />
+				<LabelRender color={{ kind: 'Primary', opacity: 100 }} isBold={true} isItalic={false} text={props.text} />
 
 				{isLoading && (
 					<div class='absolute -bottom-4 left-0 right-0 overflow-hidden'>
-						<FlatLoader color={{ type: 'Primary', opacity: 100 }} size={4} />
+						<FlatLoader color={{ kind: 'Primary', opacity: 100 }} size={4} />
 					</div>
 				)}
 			</button>
 
-			<IconRender color={{ type: 'Fore', opacity: 10 }} name='mdi-chevron-right' size={20} />
+			<IconRender color={{ kind: 'Fore', opacity: 10 }} name='mdi-chevron-right' size={20} />
 		</>
 	)
 }

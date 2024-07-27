@@ -4,6 +4,7 @@ mod convert;
 mod diagnostic;
 mod gen_js_entry;
 mod gen_rust;
+mod inspect;
 mod module_loader;
 
 use anstyle::{AnsiColor, Color as AnsColor, Style};
@@ -13,9 +14,11 @@ use clap::{builder::Styles, Parser, Subcommand, ValueEnum};
 use collect::Collection;
 use colored::{Color, Colorize};
 use deno_graph::source::MemoryLoader;
+use diagnostic::DiagnosticList;
 use env_logger::Env;
 use gen_js_entry::gen_js_entry;
 use gen_rust::RustGen;
+use inspect::Inspector;
 use log::{error, info, Level};
 use module_loader::load_modules;
 use std::{env::current_dir, io::Write, path::PathBuf};
@@ -144,6 +147,7 @@ async fn main_async() -> Result<()> {
 	let args = Command::parse();
 	let base_url = Url::from_directory_path(current_dir().context("Failed to get the current working directory")?).unwrap();
 	let runtime_url = base_url.join(&args.runtime).context("Failed to resolve runtime entry")?;
+	let mut diagnostic_list = DiagnosticList::new();
 	let mut memory_loader = MemoryLoader::default();
 	let mut bundler = Bundler::default();
 	let mut collection = Collection::default();
@@ -170,6 +174,13 @@ async fn main_async() -> Result<()> {
 	}
 
 	info!("Mounted runtime");
+
+	let inspector = Inspector::new(&collection);
+	inspector.inspect(&mut diagnostic_list);
+
+	diagnostic_list.flush("validate runtime")?;
+	info!("Validated runtime");
+
 	let response = bundler.bundle(gen_js_entry(&runtime_url, &args.engine_url, &collection)?).await?;
 	info!("Bundled runtime");
 

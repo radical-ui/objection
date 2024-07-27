@@ -31,7 +31,7 @@ export function useNoticeDispatch() {
  * @component
  */
 export interface NoticeManager {
-	add_notice_action: ActionKey<Notice>
+	addNoticeAction: ActionKey<Notice>
 	body: Component
 }
 
@@ -43,7 +43,7 @@ export function NoticeManagerRender(props: NoticeManager) {
 		setNotices(notices.slice(1))
 	}
 
-	useAction(props.add_notice_action, (notice) => {
+	useAction(props.addNoticeAction, (notice) => {
 		setNotices((notices) => [...notices, notice])
 	})
 
@@ -92,7 +92,7 @@ function SingleNotice(props: Notice & { dismiss(): void }) {
 			>
 				<IconRender
 					name={props.style === 'Success' ? 'mdi-check-bold' : 'mdi-close-thick'}
-					color={{ type: props.style === 'Success' ? 'Success' : 'Danger', opacity: 100 }}
+					color={{ kind: props.style === 'Success' ? 'Success' : 'Danger', opacity: 100 }}
 					size={20}
 				/>
 				<div>{props.message}</div>

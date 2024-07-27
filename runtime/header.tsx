@@ -36,14 +36,14 @@ export interface HeaderActionItem {
  * @component
  */
 export interface Header {
-	event_items: HeaderActionItem[]
+	eventItems: HeaderActionItem[]
 	size: HeaderSize
 	subtitle?: string
-	subtitle_edit_event?: EventKey<string>
-	subtitle_placeholder?: string
+	subtitleEditEvent?: EventKey<string>
+	subtitlePlaceholder?: string
 	title: string
-	title_edit_event?: EventKey<string>
-	title_placeholder?: string
+	titleEditEvent?: EventKey<string>
+	titlePlaceholder?: string
 }
 
 export function HeaderRender(props: Header) {
@@ -52,18 +52,18 @@ export function HeaderRender(props: Header) {
 			<div class='flex gap-5 items-center'>
 				<h1 class={`flex-1 text-primary flex text-${getTextSize(props.size)}`}>
 					<LabelRender
-						color={{ type: 'Fore', opacity: 90 }}
-						is_bold
-						is_italic={false}
+						color={{ kind: 'Fore', opacity: 90 }}
+						isBold
+						isItalic={false}
 						text={props.title}
-						edit_event={props.title_edit_event}
-						placeholder={props.title_placeholder}
+						editEvent={props.titleEditEvent}
+						placeholder={props.titlePlaceholder}
 					/>
 				</h1>
-				{props.event_items.map((item) => (
+				{props.eventItems.map((item) => (
 					<div class='h-0 flex items-center'>
 						<IconButtonRender
-							color={{ type: 'Primary', opacity: 100 }}
+							color={{ kind: 'Primary', opacity: 100 }}
 							name={item.icon}
 							size={getIconSize(props.size)}
 							event={item.event}
@@ -76,11 +76,11 @@ export function HeaderRender(props: Header) {
 				<h3 class='text-fore-30 flex'>
 					<LabelRender
 						text={props.subtitle}
-						is_bold={false}
-						is_italic={false}
-						color={{ type: 'Fore', opacity: 30 }}
-						edit_event={props.subtitle_edit_event}
-						placeholder={props.subtitle_placeholder}
+						isBold={false}
+						isItalic={false}
+						color={{ kind: 'Fore', opacity: 30 }}
+						editEvent={props.subtitleEditEvent}
+						placeholder={props.subtitlePlaceholder}
 					/>
 				</h3>
 			)}

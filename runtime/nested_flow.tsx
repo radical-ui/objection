@@ -17,7 +17,7 @@ export interface NestedFlowHeaderItem {
 
 export interface NestedFlowContentItem {
 	content: Component
-	header_text: string
+	headerText: string
 }
 
 export type NestedFlowItem =
@@ -62,7 +62,7 @@ const getBlocks = (items: NestedFlowItem[]) => {
 		}
 
 		if (item.type === 'Content') {
-			lastBlock.chunks.push({ header: item.def.header_text, content: item.def.content })
+			lastBlock.chunks.push({ header: item.def.headerText, content: item.def.content })
 			continue
 		}
 	}

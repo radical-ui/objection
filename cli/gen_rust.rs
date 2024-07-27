@@ -1,6 +1,5 @@
-use anyhow::Error;
 use inflector::Inflector;
-use log::{debug, error};
+use log::debug;
 use prettyplease::unparse;
 use proc_macro2::TokenStream;
 use quote::{format_ident, quote};

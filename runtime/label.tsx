@@ -18,9 +18,9 @@ import { FlatLoader } from './flat_loader.tsx'
  */
 export interface Label {
 	color: Color
-	edit_event?: EventKey<string>
-	is_bold: boolean
-	is_italic: boolean
+	editEvent?: EventKey<string>
+	isBold: boolean
+	isItalic: boolean
 	placeholder?: string
 	text: string
 }
@@ -32,19 +32,19 @@ export function LabelRender(props: Label) {
 	const [isEditing, setIsEditing] = React.useState(false)
 	const [value, setValue] = React.useState(props.text)
 	const [dirtyValue, setDirtyValue] = React.useState(props.text)
-	const { dispatch, isDisabled, isLoading } = useDispatcher(props.edit_event ?? null)
+	const { dispatch, isDisabled, isLoading } = useDispatcher(props.editEvent ?? null)
 
 	const isSkeleton = useSkeletonDetection()
 	const showPlaceholder = dirtyValue.length === 0
 	const hideStaticLabel = isSkeleton || isEditing && !showPlaceholder
 	const placeholder = props.placeholder ?? 'No content'
 
-	const canEdit = !!props.edit_event && !isDisabled
-	const isItalic = props.is_italic || showPlaceholder && !isEditing
-	const color = showPlaceholder ? { type: props.color.type, opacity: 30 } : props.color
+	const canEdit = !!props.editEvent && !isDisabled
+	const isItalic = props.isItalic || showPlaceholder && !isEditing
+	const color = showPlaceholder ? { kind: props.color.kind, opacity: 30 } : props.color
 
 	const textStyleClasses = `
-		${props.is_bold ? 'font-semibold' : ''}
+		${props.isBold ? 'font-semibold' : ''}
 		${isItalic ? 'italic' : ''}
 	`
 	const styleClasses = `
@@ -136,7 +136,7 @@ export function LabelRender(props: Label) {
 
 			{isLoading && (
 				<div class='absolute left-5 right-5 bottom-0 height-2 overflow-hidden'>
-					<FlatLoader color={{ type: 'Primary', opacity: 100 }} size={2} />
+					<FlatLoader color={{ kind: 'Primary', opacity: 100 }} size={2} />
 				</div>
 			)}
 		</div>

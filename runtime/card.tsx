@@ -39,7 +39,7 @@ export function CardRender(props: Card) {
 		<div
 			class={`
 				w-full h-full border rounded-md
-				border-${getColor({ type: props.color, opacity: 10 })} bg-${getColor({ type: props.color, opacity: 5 })}
+				border-${getColor({ kind: props.color, opacity: 10 })} bg-${getColor({ kind: props.color, opacity: 5 })}
 			`}
 		>
 			{props.body && <ComponentRender {...props.body} />}

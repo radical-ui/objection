@@ -4,7 +4,7 @@ export function getColor(color: Color, opacityOverride: number | null = null) {
 	const opacity = opacityOverride !== null
 		? opacityOverride < 0 ? Math.max(color.opacity + opacityOverride, 5) : opacityOverride
 		: color.opacity
-	const type = color.type === 'DecorationFore' ? 'decoration-fore' : color.type.toLowerCase()
+	const type = color.kind === 'DecorationFore' ? 'decoration-fore' : color.kind.toLowerCase()
 
 	return `${type}-${opacity}`
 }

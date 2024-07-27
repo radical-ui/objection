@@ -17,11 +17,11 @@ const SkeletonContext = React.createContext(false)
  */
 export interface Skeleton {
 	body: Component
-	linked_event: AnyEvent
+	linkedEvent: AnyEvent
 }
 
 export function SkeletonRender(props: Skeleton) {
-	const { isLoading } = useDispatcher(props.linked_event)
+	const { isLoading } = useDispatcher(props.linkedEvent)
 
 	return (
 		<SkeletonContext.Provider value={isLoading}>

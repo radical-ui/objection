@@ -3,26 +3,26 @@ import { frontier, React } from './deps.ts'
 
 export interface Color {
 	opacity: number
-	type: ColorType
+	kind: ColorType
 }
 
 export type ColorType = 'Primary' | 'Fore' | 'DecorationFore' | 'Base' | 'Danger' | 'Warn' | 'Success'
 export type SelectionMode = 'OptIn' | 'OptOut'
 
 export interface Theme {
-	dark_palette: ColorPalette
-	default_font?: string
-	fancy_font?: string
-	light_palette: ColorPalette
-	round_base: boolean
-	selection_mode: SelectionMode
-	window_scrolling: boolean
+	darkPalette: ColorPalette
+	defaultFont?: string
+	fancyFont?: string
+	lightPalette: ColorPalette
+	roundBase: boolean
+	selectionMode: SelectionMode
+	windowScrolling: boolean
 }
 
 export interface ColorPalette {
 	base: ColorDefinition
 	danger: ColorDefinition
-	decoration_fore: ColorDefinition
+	decorationFore: ColorDefinition
 	fore: ColorDefinition
 	notice: ColorDefinition
 	primary: ColorDefinition
@@ -50,14 +50,14 @@ export interface ThemeManager {
 
 export function ThemeManagerRender(props: ThemeManager) {
 	frontier.setupDynamicTheme({
-		lightPalette: convertPalette(props.theme.light_palette),
-		darkPalette: convertPalette(props.theme.dark_palette),
+		lightPalette: convertPalette(props.theme.lightPalette),
+		darkPalette: convertPalette(props.theme.darkPalette),
 		options: {
-			roundBase: props.theme.round_base,
-			selectionMode: props.theme.selection_mode === 'OptIn' ? 'opt-in' : 'opt-out',
-			windowScrolling: props.theme.window_scrolling,
-			defaultFont: props.theme.default_font ?? undefined,
-			fancyFont: props.theme.fancy_font ?? undefined,
+			roundBase: props.theme.roundBase,
+			selectionMode: props.theme.selectionMode === 'OptIn' ? 'opt-in' : 'opt-out',
+			windowScrolling: props.theme.windowScrolling,
+			defaultFont: props.theme.defaultFont ?? undefined,
+			fancyFont: props.theme.fancyFont ?? undefined,
 		},
 	})
 
@@ -70,7 +70,7 @@ function convertPalette(palette: ColorPalette): frontier.Palette {
 		secondary: toColor(palette.secondary),
 		base: toColor(palette.base),
 		fore: toColor(palette.fore),
-		decorationFore: toColor(palette.decoration_fore),
+		decorationFore: toColor(palette.decorationFore),
 		danger: toColor(palette.danger),
 		warn: toColor(palette.warn),
 		success: toColor(palette.success),

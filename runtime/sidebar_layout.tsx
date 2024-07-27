@@ -19,14 +19,14 @@ import { getEventId } from '../runtime_lib/mod.ts'
  * @component
  */
 export interface SidebarLayout {
-	event_items: SidebarItem[]
+	eventItems: SidebarItem[]
 	body?: Component
 	footer?: Component
 	groups: SidebarGroup[]
-	initial_event?: EventKey<null>
+	initialEvent?: EventKey<null>
 	logo?: Image
 	title: string
-	title_event?: EventKey<null>
+	titleEvent?: EventKey<null>
 }
 export interface SidebarItem {
 	event?: EventKey<null>
@@ -39,7 +39,7 @@ export interface SidebarGroup {
 }
 
 export function SidebarLayoutRender(props: SidebarLayout) {
-	const [selectedKey, setSelectedKey] = React.useState(props.initial_event ? getEventId(props.initial_event) : null)
+	const [selectedKey, setSelectedKey] = React.useState(props.initialEvent ? getEventId(props.initialEvent) : null)
 
 	const setItem = (key: EventKey<null>) => setSelectedKey(getEventId(key))
 
@@ -50,18 +50,18 @@ export function SidebarLayoutRender(props: SidebarLayout) {
 					<button
 						class='flex gap-10 items-center'
 						onClick={() => {
-							if (!props.title_event) return
+							if (!props.titleEvent) return
 
-							setItem(props.title_event)
+							setItem(props.titleEvent)
 						}}
 					>
 						{props.logo && <ImageRender {...props.logo} />}
 						<div class='text-xl font-bold'>{props.title}</div>
 					</button>
 
-					{props.event_items.length > 0 && (
+					{props.eventItems.length > 0 && (
 						<div class='flex flex-col gap-10'>
-							{props.event_items.map((item) => (
+							{props.eventItems.map((item) => (
 								<Item
 									onSelected={() => {
 										if (!item.event) return
@@ -137,7 +137,7 @@ function Item(props: SidebarItem & { isSelected: boolean; onSelected(): void }) 
 			{props.icon && (
 				<IconRender
 					name={props.icon}
-					color={{ type: props.isSelected ? 'Primary' : 'Fore', opacity: props.isSelected ? 100 : 40 }}
+					color={{ kind: props.isSelected ? 'Primary' : 'Fore', opacity: props.isSelected ? 100 : 40 }}
 					size={20}
 				/>
 			)}

@@ -17,7 +17,7 @@ import { LabelRender } from './label.tsx'
  */
 export interface RadioInput {
 	event?: EventKey<number>
-	initial_value?: number
+	initialValue?: number
 	items: RadioItem[]
 }
 export interface RadioItem {
@@ -28,7 +28,7 @@ export interface RadioItem {
 
 export function RadioInputRender(props: RadioInput) {
 	const { dispatch, isDisabled } = useDispatcher(props.event ?? null)
-	const [selectedId, setSelectedId] = React.useState<number | null>(props.initial_value ?? null)
+	const [selectedId, setSelectedId] = React.useState<number | null>(props.initialValue ?? null)
 
 	const someoneHasDescription = !!props.items.find((item) => item.description)
 	const goVertical = someoneHasDescription || props.items.length > 4
@@ -53,9 +53,9 @@ export function RadioInputRender(props: RadioInput) {
 							<IconRender
 								name={isSelected ? 'mdi-radiobox-marked' : 'mdi-radiobox-blank'}
 								size={20}
-								color={isSelected ? { opacity: 100, type: 'Primary' } : { opacity: 50, type: 'Fore' }}
+								color={isSelected ? { opacity: 100, kind: 'Primary' } : { opacity: 50, kind: 'Fore' }}
 							/>
-							<LabelRender color={{ type: 'Fore', opacity: 50 }} is_bold is_italic={false} text={item.title} />
+							<LabelRender color={{ kind: 'Fore', opacity: 50 }} isBold isItalic={false} text={item.title} />
 						</div>
 						{item.description && (
 							<div class='text-fore-40 pl-25'>

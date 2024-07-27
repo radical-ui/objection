@@ -39,17 +39,17 @@ export type ModalSize = 'Small' | 'Medium' | 'Large'
  */
 export interface Modal {
 	body?: Component
-	cancel_event?: EventKey<null>
-	cancel_event_label?: string
+	cancelEvent?: EventKey<null>
+	cancelEventLabel?: string
 	description?: string
-	finish_event?: EventKey<null>
-	finish_event_label?: string
+	finishEvent?: EventKey<null>
+	finishEventLabel?: string
 	size: ModalSize
 	title: string
 }
 
 export function ModalRender(props: Modal) {
-	const { dispatch, isDisabled } = useDispatcher(props.cancel_event ?? null)
+	const { dispatch, isDisabled } = useDispatcher(props.cancelEvent ?? null)
 	css.present()
 
 	React.useEffect(() => {
@@ -62,7 +62,7 @@ export function ModalRender(props: Modal) {
 		return () => {
 			globalThis.window.removeEventListener('keyup', listener)
 		}
-	}, [isDisabled, props.cancel_event])
+	}, [isDisabled, props.cancelEvent])
 
 	return (
 		<div class={`fixed inset-0 modal`}>
@@ -77,36 +77,36 @@ export function ModalRender(props: Modal) {
 				<div class={`pointer-events-auto rounded shadow-lg bg-base p-30 ${getSizeClasses(props.size)} flex flex-col gap-10`}>
 					<div class='flex gap-10 items-center'>
 						<h2 class='text-2xl font-semibold text-fore-60 flex-1'>{props.title}</h2>
-						<IconButtonRender color={{ type: 'Fore', opacity: 60 }} name='mdi-close' size={30} event={props.cancel_event} />
+						<IconButtonRender color={{ kind: 'Fore', opacity: 60 }} name='mdi-close' size={30} event={props.cancelEvent} />
 					</div>
 
 					<p class='text-fore-40'>{props.description}</p>
 
 					<div class='flex-1 min-h-0'>{props.body && <ComponentRender {...props.body} />}</div>
 
-					{(props.cancel_event || props.finish_event) && (
+					{(props.cancelEvent || props.finishEvent) && (
 						<div class='flex gap-20'>
 							<div class='flex-1' />
 
-							{props.cancel_event && (
+							{props.cancelEvent && (
 								<ButtonRender
-									color={{ type: 'Fore', opacity: 30 }}
+									color={{ kind: 'Fore', opacity: 30 }}
 									full={false}
-									label={props.cancel_event_label || 'Cancel'}
+									label={props.cancelEventLabel || 'Cancel'}
 									outline={false}
 									size='Medium'
-									event={props.cancel_event}
+									event={props.cancelEvent}
 								/>
 							)}
 
-							{props.cancel_event && (
+							{props.cancelEvent && (
 								<ButtonRender
-									color={{ type: 'Primary', opacity: 100 }}
+									color={{ kind: 'Primary', opacity: 100 }}
 									full={false}
-									label={props.finish_event_label || 'Ok'}
+									label={props.finishEventLabel || 'Ok'}
 									outline={false}
 									size='Medium'
-									event={props.finish_event}
+									event={props.finishEvent}
 								/>
 							)}
 						</div>

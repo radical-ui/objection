@@ -57,56 +57,56 @@ export type TextInputHook = number
  * @component
  */
 export interface TextInput {
-	blur_event?: EventKey<string>
-	change_event?: EventKey<string>
-	initial_dropdown_options?: DropdownOption[]
-	initial_selected_options?: string[]
-	initial_value?: string
+	blurEvent?: EventKey<string>
+	changeEvent?: EventKey<string>
+	initialDropdownOptions?: DropdownOption[]
+	initialSelectedOptions?: string[]
+	initialValue?: string
 	label: string
-	leading_icon?: IconName
+	leadingIcon?: IconName
 	multiple: boolean
-	option_selected_event?: EventKey<string[]>
+	optionSelectedEvent?: EventKey<string[]>
 	role: TextInputRole
-	submit_event?: EventKey<null>
-	trailing_icon?: IconName
-	default_validity?: InputValidity
-	set_options_action?: ActionKey<DropdownOption[]>
-	set_validity_action?: ActionKey<InputValidity>
+	submitEvent?: EventKey<null>
+	trailingIcon?: IconName
+	defaultValidity?: InputValidity
+	setOptionsAction?: ActionKey<DropdownOption[]>
+	setValidityAction?: ActionKey<InputValidity>
 }
 export interface DropdownOption {
 	description?: string
 	id: string
 	informative?: string
-	is_disabled: boolean
+	isDisabled: boolean
 	title: string
 }
 
 export function TextInputRender(props: TextInput) {
-	const initialOptions = props.initial_selected_options && props.initial_dropdown_options
-		? props.initial_dropdown_options.filter((option) => props.initial_selected_options!.includes(option.id)).map((option) => ({
+	const initialOptions = props.initialSelectedOptions && props.initialDropdownOptions
+		? props.initialDropdownOptions.filter((option) => props.initialSelectedOptions!.includes(option.id)).map((option) => ({
 			id: option.id,
 			title: option.title,
 		}))
 		: []
 
-	const { isLoading: changeIsLoading, dispatch: dispatchChange, isDisabled: changeIsDisabled } = useDispatcher(props.change_event ?? null)
-	const { isLoading: blurIsLoading, dispatch: dispatchBlur, isDisabled: blurIsDisabled } = useDispatcher(props.blur_event ?? null)
+	const { isLoading: changeIsLoading, dispatch: dispatchChange, isDisabled: changeIsDisabled } = useDispatcher(props.changeEvent ?? null)
+	const { isLoading: blurIsLoading, dispatch: dispatchBlur, isDisabled: blurIsDisabled } = useDispatcher(props.blurEvent ?? null)
 	const { isLoading: dropdownSelectionIsLoading, dispatch: dispatchDropdownSelection, isDisabled: dropdownSelectionIsDisabled } =
 		useDispatcher(
-			props.option_selected_event ?? null,
+			props.optionSelectedEvent ?? null,
 		)
-	const { isLoading: submitIsLoading, dispatch: dispatchSubmit, isDisabled: submitIsDisabled } = useDispatcher(props.submit_event ?? null)
-	const [text, setText] = React.useState(props.initial_value ?? '')
+	const { isLoading: submitIsLoading, dispatch: dispatchSubmit, isDisabled: submitIsDisabled } = useDispatcher(props.submitEvent ?? null)
+	const [text, setText] = React.useState(props.initialValue ?? '')
 	const [conceal, setConceal] = React.useState(props.role === 'Password')
-	const [dropdownOptions, setDropdownOptions] = React.useState(props.initial_dropdown_options || [])
+	const [dropdownOptions, setDropdownOptions] = React.useState(props.initialDropdownOptions || [])
 	const [isFocused, setIsFocused] = React.useState(false)
 	const [selectedOptions, setSelectedOptions] = React.useState<SelectedOption[]>(initialOptions)
 	const [activeDropdownOptionIndex, setActiveDropdownOptionIndex] = React.useState<number | null>(null)
-	const [validity, setValidity] = React.useState<InputValidity>(props.default_validity || { level: 'Normal' })
+	const [validity, setValidity] = React.useState<InputValidity>(props.defaultValidity || { level: 'Normal' })
 	const inputElement = React.useRef<HTMLInputElement | null>(null)
 
-	useAction(props.set_validity_action || null, (validity) => setValidity(validity))
-	useAction(props.set_options_action || null, (options) => setDropdownOptions(options))
+	useAction(props.setValidityAction || null, (validity) => setValidity(validity))
+	useAction(props.setOptionsAction || null, (options) => setDropdownOptions(options))
 
 	React.useEffect(() => {
 		setConceal(props.role === 'Password')
@@ -116,20 +116,20 @@ export function TextInputRender(props: TextInput) {
 		submitIsDisabled
 
 	// if the server doesn't listen for dropdown selection events, the text field is considered free.
-	const isFreeText = !props.option_selected_event
+	const isFreeText = !props.optionSelectedEvent
 
 	const isLoading = changeIsLoading || blurIsLoading || dropdownSelectionIsLoading
 	const showDropdown = isFocused && dropdownOptions.length > 0
 	const focusColor: Color = {
-		type: validity.level === 'Invalid' ? 'Danger' : validity.level === 'Valid' ? 'Success' : 'Primary',
+		kind: validity.level === 'Invalid' ? 'Danger' : validity.level === 'Valid' ? 'Success' : 'Primary',
 		opacity: 100,
 	}
 	const normalColor = validity.level === 'Invalid' ? 'danger' : validity.level === 'Valid' ? 'success' : 'fore'
 	const isActive = text.trim().length > 0 || selectedOptions.length > 0
 	const labelBaseClasses = ['scale-75', 'translate-y-[-25%]', 'translate-x-[-12.5%]', `text-${getColor(focusColor)}`]
 	const labelClasses = isActive ? labelBaseClasses : labelBaseClasses.map((c) => `group-focus-within:${c}`)
-	const trailingIcon = props.trailing_icon ?? getTrailingIcon(props.role, conceal)
-	const swapIcon = props.role === 'Password' && !props.trailing_icon
+	const trailingIcon = props.trailingIcon ?? getTrailingIcon(props.role, conceal)
+	const swapIcon = props.role === 'Password' && !props.trailingIcon
 
 	React.useEffect(() => {
 		if (isFreeText) setActiveDropdownOptionIndex(null)
@@ -147,8 +147,8 @@ export function TextInputRender(props: TextInput) {
 		debouncedChangeFn(text)
 
 		// if a change event is supplied, we assume that the server will do option filtering
-		if (!skipDropdownRefresh && !props.change_event && props.initial_dropdown_options?.length) {
-			setDropdownOptions(filterOptionsWithSearch(text, props.initial_dropdown_options))
+		if (!skipDropdownRefresh && !props.changeEvent && props.initialDropdownOptions?.length) {
+			setDropdownOptions(filterOptionsWithSearch(text, props.initialDropdownOptions))
 		}
 	}
 
@@ -178,7 +178,7 @@ export function TextInputRender(props: TextInput) {
 
 		// we close blur the input when the user is not likely to select another option
 		// if the text is free-flowing, the user is probably searching, and will probably want to find another result off of the current one
-		if (props.option_selected_event && !props.multiple) {
+		if (props.optionSelectedEvent && !props.multiple) {
 			if (inputElement.current) inputElement.current.blur()
 		}
 	}
@@ -213,7 +213,7 @@ export function TextInputRender(props: TextInput) {
 			iterateCount++
 
 			if (nextDropdownIndex >= dropdownOptions.length) nextDropdownIndex = 0
-			if (dropdownOptions[nextDropdownIndex].is_disabled) {
+			if (dropdownOptions[nextDropdownIndex].isDisabled) {
 				nextDropdownIndex++
 				continue
 			}
@@ -238,7 +238,7 @@ export function TextInputRender(props: TextInput) {
 			iterateCount++
 
 			if (previousDropdownIndex < 0) previousDropdownIndex = dropdownOptions.length - 1
-			if (dropdownOptions[previousDropdownIndex].is_disabled) {
+			if (dropdownOptions[previousDropdownIndex].isDisabled) {
 				previousDropdownIndex--
 				continue
 			}
@@ -253,8 +253,8 @@ export function TextInputRender(props: TextInput) {
 		if (selectedOptions.length) removeDropdownOption(selectedOptions[selectedOptions.length - 1].id)
 	}
 
-	const iconColor: Color = { type: 'Fore', opacity: 60 }
-	const leadingIconNode = props.leading_icon && <IconRender name={props.leading_icon} size={20} color={iconColor} />
+	const iconColor: Color = { kind: 'Fore', opacity: 60 }
+	const leadingIconNode = props.leadingIcon && <IconRender name={props.leadingIcon} size={20} color={iconColor} />
 	const trailingIconNode = trailingIcon && <IconRender name={trailingIcon} size={20} color={iconColor} />
 	const reducedTrailingIconNode = swapIcon
 		? <Clicker onClicked={() => setConceal(!conceal)}>{trailingIconNode}</Clicker>
@@ -300,7 +300,7 @@ export function TextInputRender(props: TextInput) {
 						onInput={(event) => handleInputChange(event.currentTarget.value)}
 						// This is so that mousedown events can be prevented at a higher level without affecting the default behavior of a mousedown in the input
 						onMouseDown={(event) => event.stopPropagation()}
-						defaultValue={props.initial_value ?? ''}
+						defaultValue={props.initialValue ?? ''}
 						onBlur={() => {
 							setIsFocused(false)
 							dispatchBlur(text)
@@ -412,10 +412,10 @@ interface ExtraDropdownItemProps {
 function DropdownItem(props: DropdownOption & ExtraDropdownItemProps) {
 	return (
 		<button
-			disabled={props.is_disabled}
+			disabled={props.isDisabled}
 			class={`
 				flex gap-15 items-center px-14
-				${props.is_disabled ? 'cursor-not-allowed opacity-50' : props.isActive ? 'bg-primary-10' : 'bg-transparent hover:bg-fore-5'}
+				${props.isDisabled ? 'cursor-not-allowed opacity-50' : props.isActive ? 'bg-primary-10' : 'bg-transparent hover:bg-fore-5'}
 			`}
 			onClick={(event) => {
 				event.preventDefault() // we don't want to refocus the input in the case where it was
@@ -456,7 +456,7 @@ function SelectedOptionChip(props: SelectedOptionChip) {
 				class='cursor-pointer rounded-full h-24 w-24 bg-transparent hover:bg-fore-10 transition-colors flex items-center justify-center'
 				onClick={() => props.onClear()}
 			>
-				<IconRender color={{ type: 'Fore', opacity: 80 }} name='mdi-close-thick' size={15} />
+				<IconRender color={{ kind: 'Fore', opacity: 80 }} name='mdi-close-thick' size={15} />
 			</div>
 			<div>{props.title}</div>
 		</div>

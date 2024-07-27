@@ -24,10 +24,10 @@ export interface Button {
 	color: Color
 	full: boolean
 	label: string
-	leading_icon?: IconName
+	leadingIcon?: IconName
 	outline: boolean
 	size: ButtonSize
-	trailing_icon?: IconName
+	trailingIcon?: IconName
 }
 
 export function ButtonRender(props: Button) {
@@ -38,9 +38,9 @@ export function ButtonRender(props: Button) {
 
 	const innerColor: Color = props.outline
 		? props.color
-		: props.color.type === 'Base' || props.color.type === 'Fore'
-		? { type: 'Fore', opacity: 100 }
-		: { type: 'DecorationFore', opacity: 100 }
+		: props.color.kind === 'Base' || props.color.kind === 'Fore'
+		? { kind: 'Fore', opacity: 100 }
+		: { kind: 'DecorationFore', opacity: 100 }
 
 	const textColor = `text-${getColor(innerColor, 100)}`
 
@@ -74,9 +74,9 @@ export function ButtonRender(props: Button) {
 					flex gap-${Math.round(scale * 8)} items-center ${isLoading ? `opacity-0` : ''}
 					${props.full ? 'w-full justify-center' : ''}`}
 			>
-				{props.leading_icon && <IconRender name={props.leading_icon} size={Math.round(scale * 18)} color={innerColor} />}
+				{props.leadingIcon && <IconRender name={props.leadingIcon} size={Math.round(scale * 18)} color={innerColor} />}
 				<div class={`${props.size === 'Large' ? 'text-lg' : ''} ${props.size === 'Small' ? 'text-sm' : ''}`}>{props.label}</div>
-				{props.trailing_icon && <IconRender name={props.trailing_icon} size={Math.round(scale * 18)} color={innerColor} />}
+				{props.trailingIcon && <IconRender name={props.trailingIcon} size={Math.round(scale * 18)} color={innerColor} />}
 			</div>
 
 			{isLoading
