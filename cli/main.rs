@@ -16,7 +16,7 @@ use deno_graph::source::MemoryLoader;
 use env_logger::Env;
 use gen_js_entry::gen_js_entry;
 use gen_rust::RustGen;
-use log::{error, Level};
+use log::{error, info, Level};
 use module_loader::load_modules;
 use std::{env::current_dir, io::Write, path::PathBuf};
 use tokio::{fs::write, runtime::Builder};
@@ -50,8 +50,12 @@ impl Engine {
 			Self::Rust => {
 				let mut gen = RustGen::new(collection);
 				gen.gen();
+				info!("Generated rust engine bindings");
 
-				gen.get_output()
+				let output = gen.get_output();
+				info!("Formatted rust engine bindings");
+
+				output
 			}
 		}
 	}
@@ -145,6 +149,7 @@ async fn main_async() -> Result<()> {
 	let mut collection = Collection::default();
 
 	load_modules(&runtime_url, &mut memory_loader, &mut bundler).await?;
+	info!("Loaded runtime");
 
 	collection.collect(&runtime_url, &memory_loader).await?;
 	collection.check_components();
@@ -164,11 +169,18 @@ async fn main_async() -> Result<()> {
 		);
 	}
 
+	info!("Mounted runtime");
 	let response = bundler.bundle(gen_js_entry(&runtime_url, &args.engine_url, &collection)?).await?;
+	info!("Bundled runtime");
+
 	write("target/bundle.js", response).await?;
 
+	info!("Wrote runtime platform to target/bundle.js");
+
 	let bindings = args.engine.get_bindings(&collection);
-	write(args.bindings_path, bindings).await?;
+	write(&args.bindings_path, bindings).await?;
+
+	info!("Wrote rust engine bindings to {}", args.bindings_path.into_os_string().into_string().unwrap());
 
 	Ok(())
 }
