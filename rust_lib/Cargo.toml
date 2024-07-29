@@ -1,12 +1,10 @@
 [package]
-name = "example"
+name = "objection"
 version = "0.1.0"
 edition = "2021"
 
-[[bin]]
-name = "objection_example"
-path = "main.rs"
+[lib]
+path = "mod.rs"
 
 [dependencies]
 serde = { version = "1", features = ["derive"] }
-objection = { path = "../rust_lib" }
