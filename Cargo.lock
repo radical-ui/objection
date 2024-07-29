@@ -321,6 +321,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "crossbeam-utils"
+version = "0.8.20"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "22ec99545bb0ed0ea7bb9b8e1e9122ea386ff8a48c0922e43f36d45ab09e0e80"
+
+[[package]]
 name = "crypto-common"
 version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -372,6 +378,20 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "978747c1d849a7d2ee5e8adc0159961c48fb7e5db2f06af6723b80123bb53856"
 dependencies = [
  "cfg-if",
+ "hashbrown",
+ "lock_api",
+ "once_cell",
+ "parking_lot_core",
+]
+
+[[package]]
+name = "dashmap"
+version = "6.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "804c8821570c3f8b70230c2ba75ffa5c0f9a4189b9a432b6656c536712acae28"
+dependencies = [
+ "cfg-if",
+ "crossbeam-utils",
  "hashbrown",
  "lock_api",
  "once_cell",
@@ -653,7 +673,11 @@ checksum = "5443807d6dff69373d433ab9ef5378ad8df50ca6298caf15de6e52e24aaf54d5"
 name = "example"
 version = "0.1.0"
 dependencies = [
+ "dashmap 6.0.1",
+ "log",
+ "objection",
  "serde",
+ "tokio",
 ]
 
 [[package]]
@@ -1099,6 +1123,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "081b846d1d56ddfc18fdf1a922e4f6e07a11768ea1b92dec44e42b72712ccfce"
 dependencies = [
  "memchr",
+]
+
+[[package]]
+name = "objection"
+version = "0.1.0"
+dependencies = [
+ "serde",
 ]
 
 [[package]]
@@ -1749,7 +1780,7 @@ checksum = "83406221c501860fce9c27444f44125eafe9e598b8b81be7563d7036784cd05c"
 dependencies = [
  "ahash",
  "anyhow",
- "dashmap",
+ "dashmap 5.5.3",
  "once_cell",
  "regex",
  "serde",
@@ -1968,7 +1999,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "446da32cac8299973aaf1d37496562bfd0c1e4f3c3ab5d0af6f07f42e8184102"
 dependencies = [
  "base64",
- "dashmap",
+ "dashmap 5.5.3",
  "indexmap",
  "once_cell",
  "serde",
