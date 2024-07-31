@@ -70,6 +70,10 @@ pub struct MountEventData {
 	pub token: String,
 }
 
+pub struct UiResponse {
+	actions: Vec<Value>,
+}
+
 pub struct RootUi {
 	event_path: Vec<String>,
 	event_data: Option<Value>,
@@ -108,6 +112,10 @@ impl RootUi {
 			None
 		})
 	}
+
+	pub fn into_response(self) -> UiResponse {
+		UiResponse { actions: self.actions }
+	}
 }
 
 #[derive(Debug, Error)]
@@ -143,7 +151,7 @@ fn parse_request(json: Value) -> Result<RawRequest, RequestError> {
 pub async fn handle_request<'a, Func, Output, Error>(request_body: Value, mut f: Func) -> Value
 where
 	Error: Display + Sized,
-	Output: Future<Output = std::result::Result<RootUi, Error>>,
+	Output: Future<Output = std::result::Result<UiResponse, Error>>,
 	Func: FnMut(String, RootUi) -> Output,
 {
 	let RawRequest { session_id, events } = match parse_request(request_body) {
@@ -164,7 +172,7 @@ where
 		// really hate that I have to do this clone here, but it needs to be done until rust has better support for async closures
 		// the concept is to ensure that session_id is borowed
 		let actions = match f(session_id.clone(), RootUi::from_event(event)).await {
-			Ok(ui) => ui.actions,
+			Ok(response) => response.actions,
 			Err(error) => Vec::from([json!({
 				"key": {
 					"actionPath": ["root_error"],

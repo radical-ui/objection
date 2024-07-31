@@ -1,7 +1,7 @@
 use anyhow::{bail, Error, Result};
 use axum::{extract::State, routing::post, Json, Router};
 use log::{debug, info};
-use objection::{handle_request, RootUi};
+use objection::{handle_request, RootUi, UiResponse};
 use serde_json::Value;
 use session_manager::{EnqueueResult, PollResult, Queue, QueueBuilder, Worker};
 use tokio::net::TcpListener;
@@ -15,7 +15,7 @@ struct Session {}
 impl Worker for Session {
 	type Context = ();
 	type Request = RootUi;
-	type Response = Result<RootUi, Error>;
+	type Response = Result<UiResponse, Error>;
 	type Id = String;
 
 	async fn create(id: &Self::Id, context: Self::Context) -> Self {
@@ -23,7 +23,9 @@ impl Worker for Session {
 	}
 
 	async fn handle(&mut self, request: Self::Request) -> Self::Response {
-		Ok(request)
+		// request.set_root_ui();
+
+		Ok(request.into_response())
 	}
 
 	async fn destroy(self) {}
@@ -52,7 +54,7 @@ async fn main() {
 	axum::serve(listener, app).await.unwrap();
 }
 
-async fn cycle_event_loop(queue: &Queue<Session>, session_id: String, mut ui: RootUi) -> Result<RootUi> {
+async fn cycle_event_loop(queue: &Queue<Session>, session_id: String, mut ui: RootUi) -> Result<UiResponse> {
 	if let Some(mount_data) = ui.take_mount_event()? {
 		debug!("mounting a new session {session_id}; {mount_data:?}");
 		queue.spawn(session_id.clone(), ()).await;
