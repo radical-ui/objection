@@ -20,7 +20,7 @@ where
 
 	fn handle(&mut self, request: Self::Request) -> impl Future<Output = Self::Response> + Send;
 
-	fn destroy(self) -> impl Future<Output = Self::Response> + Send;
+	fn destroy(self) -> impl Future<Output = ()> + Send;
 }
 
 #[must_use = "The potential non-sent cases should be handled"]
