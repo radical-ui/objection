@@ -1,8 +1,8 @@
 use inflector::Inflector;
-use log::debug;
+use log::{debug, error};
 use prettyplease::unparse;
 use proc_macro2::TokenStream;
-use quote::{format_ident, quote, quote_spanned};
+use quote::{format_ident, quote};
 use std::{collections::HashSet, iter};
 use syn::parse2;
 
@@ -41,6 +41,8 @@ impl RustGen<'_> {
 	}
 
 	pub fn gen(&mut self) {
+		self.gen_index();
+
 		for def in self.collection.get_kinds() {
 			debug!("Generating {}", def.name);
 			let comment = def.comment.unwrap_or("");
@@ -91,6 +93,32 @@ impl RustGen<'_> {
 		};
 
 		unparse(&file)
+	}
+
+	fn gen_index(&mut self) {
+		let mut index_ident = None;
+		let mut inner_tokens = TokenStream::new();
+
+		for (name, info) in self.collection.get_component_info() {
+			let name_ident = format_ident!("{name}");
+
+			if info.is_index {
+				index_ident = Some(name_ident);
+				continue;
+			}
+
+			inner_tokens.extend(iter::once(quote! { #name_ident(#name_ident), }));
+		}
+
+		if index_ident.is_none() {
+			error!("No component index was found during rust code gen. This indicates a failure in the checking step");
+		}
+
+		self.tokens.extend(iter::once(quote! {
+			pub enum #index_ident {
+				#inner_tokens
+			}
+		}));
 	}
 
 	fn gen_kind(&mut self, context_name: &str, comment: Option<&str>, kind: &Kind) -> TokenStream {

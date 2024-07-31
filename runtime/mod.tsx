@@ -1,4 +1,4 @@
-import { ComponentIndexRenderer, ComponentRender, ProvideComponentIndexRenderer } from './component.tsx'
+import { ComponentIndexRenderer, ProvideComponentIndexRenderer } from './component.tsx'
 import { Component, MOUNT_ACTION, React, READY_EVENT, sendEvent, setEndpoint, shouldSendReadyEvent } from './deps.ts'
 import { UpdateBoundaryRender } from './update_boundary.tsx'
 

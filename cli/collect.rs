@@ -2,10 +2,7 @@ use anyhow::{anyhow, Error, Result};
 use deno_doc::{js_doc::JsDocTag, DocNodeKind, DocParser, DocParserOptions};
 use deno_graph::{source::MemoryLoader, BuildOptions, CapturingModuleAnalyzer, GraphKind, ModuleGraph};
 use log::{debug, trace};
-use std::{
-	borrow::{Borrow, BorrowMut},
-	collections::{HashMap, HashSet},
-};
+use std::collections::{HashMap, HashSet};
 use url::Url;
 
 use crate::{
@@ -45,6 +42,7 @@ pub struct Collection {
 	components: HashMap<String, ComponentInfo>,
 	functions: HashSet<String>,
 	erroring_functions: HashMap<String, Error>,
+	other_diagnostics: Vec<Error>,
 }
 
 impl Collection {
@@ -229,6 +227,8 @@ impl Collection {
 	}
 
 	pub fn check_components(&mut self) {
+		// TODO all of this should be in `Inspect`
+
 		let components = self.get_component_info().iter().map(|(name, _)| *name).collect::<Vec<_>>();
 		let unreachable_names = self.get_unrelated_names(components).iter().map(|name| name.to_string()).collect::<Vec<_>>();
 
@@ -251,7 +251,14 @@ impl Collection {
 			);
 		}
 
+		let mut found_index = false;
+
 		for (name, component) in &self.components {
+			if component.is_index {
+				debug!("Found `{name}` as the component index");
+				found_index = true;
+			}
+
 			if !self.functions.contains(&component.render_name) {
 				self.erroring_functions.insert(
 					component.render_name.clone(),
@@ -265,6 +272,18 @@ impl Collection {
 						.error(),
 				);
 			}
+		}
+
+		if !found_index {
+			self.other_diagnostics.push(
+				Diagnostic::start("No component index was specified")
+					.shift()
+					.text("Either annotate a component with @feature_component_index, or export ")
+					.inline_code("Component")
+					.text(" provided by runtime_lib")
+					.build()
+					.error(),
+			)
 		}
 	}
 
@@ -364,11 +383,12 @@ impl Collection {
 	}
 
 	pub fn get_errors(&self) -> Vec<&Error> {
-		let mut kind_errors = self.erroring_kinds.values().collect::<Vec<_>>();
-
-		for error in self.erroring_functions.values() {
-			kind_errors.push(error);
-		}
+		let kind_errors = self
+			.erroring_kinds
+			.values()
+			.chain(self.erroring_functions.values())
+			.chain(self.other_diagnostics.iter())
+			.collect::<Vec<_>>();
 
 		kind_errors
 	}
@@ -390,12 +410,12 @@ impl Collection {
 	}
 
 	fn consider_js_doc_tags(&mut self, node_name: &str, tags: &[JsDocTag]) {
-		for tag in tags {
-			let mut is_index = false;
-			let mut component = None;
-			let mut is_feature_action_key = false;
-			let mut is_feature_event_key = false;
+		let mut is_index = false;
+		let mut component = None;
+		let mut is_feature_action_key = false;
+		let mut is_feature_event_key = false;
 
+		for tag in tags {
 			if let JsDocTag::Unsupported { value } = tag {
 				let mut words = value.split_whitespace().rev().collect::<Vec<_>>();
 				let label = words.pop().unwrap();
@@ -407,22 +427,22 @@ impl Collection {
 					is_feature_event_key = true;
 				} else if value == "@feature_action_key" {
 					is_feature_action_key = true;
-				} else if value == "@component_index" {
+				} else if value == "@feature_component_index" {
 					is_index = true;
 				}
 			}
+		}
 
-			if is_feature_event_key {
-				self.event_key_type_name = Some(node_name.to_string());
-			}
+		if is_feature_event_key {
+			self.event_key_type_name = Some(node_name.to_string());
+		}
 
-			if is_feature_action_key {
-				self.action_key_type_name = Some(node_name.to_string());
-			}
+		if is_feature_action_key {
+			self.action_key_type_name = Some(node_name.to_string());
+		}
 
-			if let Some(render_name) = component {
-				self.components.insert(node_name.to_string(), ComponentInfo { render_name, is_index });
-			}
+		if let Some(render_name) = component {
+			self.components.insert(node_name.to_string(), ComponentInfo { render_name, is_index });
 		}
 	}
 }

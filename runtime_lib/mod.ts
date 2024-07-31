@@ -1,9 +1,12 @@
 /**
+ * A component
+ *
  * @component
- * @component_index
+ * @feature_component_index
  */
-// deno-lint-ignore no-empty-interface
-export interface Component {}
+export interface Component {
+	aUniqueKeyToHelpPreventThisTypeFromBeingAny: number
+}
 
 /**
  * An event that could be triggered, where `T` is the data that the event will contain
