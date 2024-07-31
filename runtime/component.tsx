@@ -1,4 +1,4 @@
-import { React } from './deps.ts'
+import { Component, React } from './deps.ts'
 
 export type ComponentIndexRenderer = (component: Component) => React.ReactElement
 
@@ -12,12 +12,6 @@ export interface ProvideComponentIndexRendererProps {
 export function ProvideComponentIndexRenderer(props: ProvideComponentIndexRendererProps) {
 	return <Context.Provider value={props.renderer}>{props.children}</Context.Provider>
 }
-
-/**
- * @component_index
- */
-// deno-lint-ignore no-empty-interface
-export interface Component {}
 
 export function ComponentRender(component: Component) {
 	const renderer = React.useContext(Context)

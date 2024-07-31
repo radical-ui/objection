@@ -1,6 +1,6 @@
 import { useDispatcher } from './event.tsx'
-import { Component, ComponentRender } from './component.tsx'
-import { EventKey, React } from './deps.ts'
+import { ComponentRender } from './component.tsx'
+import { Component, EventKey, React } from './deps.ts'
 import { IconRender } from './icon.tsx'
 import { LabelRender } from './label.tsx'
 

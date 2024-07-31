@@ -1,7 +1,8 @@
-import { Component, ComponentIndexRenderer, ComponentRender, ProvideComponentIndexRenderer } from './component.tsx'
-import { React, setEndpoint } from './deps.ts'
+import { ComponentIndexRenderer, ComponentRender, ProvideComponentIndexRenderer } from './component.tsx'
+import { Component, MOUNT_ACTION, React, READY_EVENT, sendEvent, setEndpoint, shouldSendReadyEvent } from './deps.ts'
+import { UpdateBoundaryRender } from './update_boundary.tsx'
 
-export type { ActionKey, AnyEvent, EventKey } from './deps.ts'
+export type { ActionKey, AnyEvent, Component, EventKey } from './deps.ts'
 
 export * from './event.tsx'
 export * from './component.tsx'
@@ -40,10 +41,21 @@ export function start(syncUrl: URL, initialComponent: Component, componentRender
 
 	React.render(
 		<ProvideComponentIndexRenderer renderer={componentRenderer}>
-			<ComponentRender {...initialComponent} />
+			<UpdateBoundaryRender child={<ComponentRender {...initialComponent} />} action={MOUNT_ACTION} />
 		</ProvideComponentIndexRenderer>,
 		rootElement,
 	)
+
+	if (shouldSendReadyEvent()) {
+		console.log('Sending ready event...')
+
+		sendEvent(READY_EVENT, {
+			token: localStorage.getItem('token'),
+		})
+			.then(() => {
+				console.log('Mounted.')
+			})
+	}
 }
 
 /**

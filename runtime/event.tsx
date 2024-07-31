@@ -1,5 +1,5 @@
-import { Component, ComponentRender } from './component.tsx'
-import { EventKey, getEventId, React, sendEvent } from './deps.ts'
+import { ComponentRender } from './component.tsx'
+import { Component, EventKey, getEventId, React, sendEvent } from './deps.ts'
 import { useNoticeDispatch } from './notice.tsx'
 import { ManyMap } from './utils.ts'
 

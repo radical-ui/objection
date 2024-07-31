@@ -1,7 +1,7 @@
-import { EventKey, React } from './deps.ts'
+import { Component, EventKey, React } from './deps.ts'
 import { LabelRender } from './label.tsx'
 import { IconRender } from './icon.tsx'
-import { Component, ComponentRender } from './component.tsx'
+import { ComponentRender } from './component.tsx'
 import { FlatLoader } from './flat_loader.tsx'
 import { useDispatcher } from './event.tsx'
 

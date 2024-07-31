@@ -1,4 +1,11 @@
 /**
+ * @component
+ * @component_index
+ */
+// deno-lint-ignore no-empty-interface
+export interface Component {}
+
+/**
  * An event that could be triggered, where `T` is the data that the event will contain
  *
  * @feature_event_key
@@ -29,6 +36,19 @@ export interface AnyEvent {
 	actionPath: string[]
 	debugSymbol?: string
 }
+
+export const MOUNT_ACTION: ActionKey<Component> = {
+	actionPath: ['root_mount'],
+	debugSymbol: 'Mount at root',
+}
+
+export const READY_EVENT: EventKey<{ token: string | null }> = {
+	eventPath: ['root_app_ready'],
+	debugSymbol: 'Application is ready to be mounted',
+}
+
+export type EngineRequest = { key: EventKey<unknown>; data: unknown }[]
+export type EngineResponse = { key: ActionKey<unknown>; data: unknown }[]
 
 const actionListeners = new Map<string, (d: unknown) => void>()
 let sessionId: string | null = null
@@ -83,6 +103,11 @@ export function getActionId(actionKey: ActionKey<unknown>) {
 
 export function getEventId(eventKey: EventKey<unknown>) {
 	return safeJoin(eventKey.eventPath)
+}
+
+export function shouldSendReadyEvent() {
+	// @ts-ignore no harm can come from reading the value if it doesn't exist
+	return !!globalThis.window.objectionShouldSignalApplicationReady
 }
 
 function safeJoin(path: string[]) {

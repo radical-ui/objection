@@ -1,5 +1,5 @@
-import { Component, ComponentRender } from './component.tsx'
-import { React } from './deps.ts'
+import { ComponentRender } from './component.tsx'
+import { Component, React } from './deps.ts'
 import { SkeletonBlock, useSkeletonDetection } from './skeleton.tsx'
 import { ColorType } from './theme.tsx'
 import { getColor } from './utils.ts'

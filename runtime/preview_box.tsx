@@ -1,5 +1,5 @@
-import { Component, ComponentRender } from './component.tsx'
-import { React } from './deps.ts'
+import { ComponentRender } from './component.tsx'
+import { Component, React } from './deps.ts'
 
 const svg =
 	"<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' width='32' height='32' fill='none' stroke='rgb(100, 100, 100, 0.1)'><path d='M0 .5H31.5V32'/></svg>"

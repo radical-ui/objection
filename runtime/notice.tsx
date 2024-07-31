@@ -1,6 +1,6 @@
 import { useAction } from './action.tsx'
-import { Component, ComponentRender } from './component.tsx'
-import { ActionKey, React } from './deps.ts'
+import { ComponentRender } from './component.tsx'
+import { ActionKey, Component, React } from './deps.ts'
 import { IconRender } from './icon.tsx'
 import { GlobalCss } from './utils.ts'
 

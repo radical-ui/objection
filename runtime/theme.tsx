@@ -1,5 +1,5 @@
-import { Component, ComponentRender } from './component.tsx'
-import { frontier, React } from './deps.ts'
+import { ComponentRender } from './component.tsx'
+import { Component, frontier, React } from './deps.ts'
 
 export interface Color {
 	opacity: number

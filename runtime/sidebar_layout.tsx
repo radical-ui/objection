@@ -1,6 +1,6 @@
 import { useDispatcher } from './event.tsx'
-import { Component, ComponentRender } from './component.tsx'
-import { EventKey, React } from './deps.ts'
+import { ComponentRender } from './component.tsx'
+import { Component, EventKey, React } from './deps.ts'
 import { IconName, IconRender } from './icon.tsx'
 import { Image, ImageRender } from './image.tsx'
 import { getEventId } from '../runtime_lib/mod.ts'

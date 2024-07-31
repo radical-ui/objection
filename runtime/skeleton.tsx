@@ -1,6 +1,6 @@
 import { useDispatcher } from './event.tsx'
-import { Component, ComponentRender } from './component.tsx'
-import { AnyEvent, React } from './deps.ts'
+import { ComponentRender } from './component.tsx'
+import { AnyEvent, Component, React } from './deps.ts'
 
 const SkeletonContext = React.createContext(false)
 

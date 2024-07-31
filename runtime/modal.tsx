@@ -1,7 +1,7 @@
 import { useDispatcher } from './event.tsx'
 import { ButtonRender } from './button.tsx'
-import { Component, ComponentRender } from './component.tsx'
-import { EventKey, React } from './deps.ts'
+import { ComponentRender } from './component.tsx'
+import { Component, EventKey, React } from './deps.ts'
 import { IconButtonRender } from './icon.tsx'
 import { GlobalCss } from './utils.ts'
 

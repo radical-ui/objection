@@ -1,5 +1,5 @@
-import { Component, ComponentRender } from './component.tsx'
-import { React } from './deps.ts'
+import { ComponentRender } from './component.tsx'
+import { Component, React } from './deps.ts'
 
 export type FlexKind = 'Row' | 'Column'
 export type FlexAlign = 'Stretch' | 'Center' | 'Start' | 'End' | 'Baseline' | 'SafeCenter'
