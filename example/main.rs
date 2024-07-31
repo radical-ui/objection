@@ -1,6 +1,6 @@
 use anyhow::{bail, Error, Result};
 use axum::{extract::State, routing::post, Json, Router};
-use log::info;
+use log::{debug, info};
 use objection::{handle_request, RootUi};
 use serde_json::Value;
 use session_manager::{EnqueueResult, PollResult, Queue, QueueBuilder, Worker};
@@ -52,10 +52,15 @@ async fn main() {
 	axum::serve(listener, app).await.unwrap();
 }
 
-async fn cycle_event_loop(queue: &Queue<Session>, session_id: String, ui: RootUi) -> Result<RootUi> {
+async fn cycle_event_loop(queue: &Queue<Session>, session_id: String, mut ui: RootUi) -> Result<RootUi> {
+	if let Some(mount_data) = ui.take_mount_event()? {
+		debug!("mounting a new session {session_id}; {mount_data:?}");
+		queue.spawn(session_id.clone(), ()).await;
+	}
+
 	match queue.enqueue(&session_id, ui) {
 		EnqueueResult::WorkerAtCapacity => bail!("Slow down a little!! You've been rate-limited"),
-		EnqueueResult::NoWorker => bail!("No session exists for id"),
+		EnqueueResult::NoWorker => bail!("No session is associated with id {session_id}"),
 		EnqueueResult::Sent => (),
 	};
 

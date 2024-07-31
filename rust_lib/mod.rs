@@ -65,7 +65,7 @@ pub enum TakeMountEventError {
 	FailedToDeserializeMountData { serde_error: String },
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 pub struct MountEventData {
 	pub token: String,
 }
@@ -98,7 +98,7 @@ impl RootUi {
 	pub fn take_mount_event(&mut self) -> Result<Option<MountEventData>, TakeMountEventError> {
 		let first_event = self.event_path.first().ok_or(TakeMountEventError::EmptyEventPath)?;
 
-		Ok(if first_event == "root_mount" {
+		Ok(if first_event == "root_app_ready" {
 			Some(from_value(self.event_data.take().ok_or(TakeMountEventError::NoEventData)?).map_err(|inner| {
 				TakeMountEventError::FailedToDeserializeMountData {
 					serde_error: inner.to_string(),
