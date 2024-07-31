@@ -21,7 +21,7 @@ use gen_rust::RustGen;
 use inspect::Inspector;
 use log::{error, info, Level};
 use module_loader::load_modules;
-use std::{env::current_dir, io::Write, path::PathBuf};
+use std::{env::current_dir, io::Write, path::PathBuf, process::exit};
 use tokio::{
 	fs::{read_to_string, write},
 	runtime::Builder,
@@ -141,7 +141,10 @@ fn main() {
 	Builder::new_current_thread().enable_all().build().unwrap().block_on(async {
 		match main_async().await {
 			Ok(_) => (),
-			Err(err) => error!("{:?}", err),
+			Err(err) => {
+				error!("{:?}", err);
+				exit(1);
+			}
 		}
 	});
 }
