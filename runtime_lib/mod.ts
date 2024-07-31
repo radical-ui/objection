@@ -68,8 +68,8 @@ export async function sendEvent<T>(key: EventKey<T>, data: T) {
 
 	const response = await fetch(endpoint, {
 		method: 'POST',
-		body: JSON.stringify([{ key, data }]),
-		headers: { 'content-type': 'application/json', 'x-session-id': sessionId },
+		body: JSON.stringify({ sessionId, events: [{ key, data }] }),
+		headers: { 'content-type': 'application/json' },
 	})
 		.catch(() => null)
 

@@ -22,7 +22,10 @@ use inspect::Inspector;
 use log::{error, info, Level};
 use module_loader::load_modules;
 use std::{env::current_dir, io::Write, path::PathBuf};
-use tokio::{fs::write, runtime::Builder};
+use tokio::{
+	fs::{read_to_string, write},
+	runtime::Builder,
+};
 use url::Url;
 
 #[derive(Debug, ValueEnum, Clone, Default)]
@@ -184,7 +187,10 @@ async fn main_async() -> Result<()> {
 	let response = bundler.bundle(gen_js_entry(&runtime_url, &args.engine_url, &collection)?).await?;
 	info!("Bundled runtime");
 
-	write("target/bundle.js", response).await?;
+	write("target/web/index.html", read_to_string("platform/web/index.html").await.unwrap())
+		.await
+		.unwrap();
+	write("target/web/bundle.js", response).await?;
 
 	info!("Wrote runtime platform to target/bundle.js");
 

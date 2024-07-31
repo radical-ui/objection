@@ -151,7 +151,7 @@ where
 		Err(err) => {
 			return json!([
 				{
-					"key": { "action_path": ["root_error"] },
+					"key": { "actionPath": ["root_error"] },
 					"data": err.to_string()
 				}
 			])
@@ -167,7 +167,7 @@ where
 			Ok(ui) => ui.actions,
 			Err(error) => Vec::from([json!({
 				"key": {
-					"action_path": ["root_error"],
+					"actionPath": ["root_error"],
 					"data": error.to_string()
 				}
 			})]),

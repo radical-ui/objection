@@ -41,7 +41,7 @@ export function start(syncUrl: URL, initialComponent: Component, componentRender
 
 	React.render(
 		<ProvideComponentIndexRenderer renderer={componentRenderer}>
-			<UpdateBoundaryRender child={<ComponentRender {...initialComponent} />} action={MOUNT_ACTION} />
+			<UpdateBoundaryRender child={initialComponent} action={MOUNT_ACTION} />
 		</ProvideComponentIndexRenderer>,
 		rootElement,
 	)

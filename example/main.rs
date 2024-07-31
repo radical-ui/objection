@@ -5,6 +5,7 @@ use objection::{handle_request, RootUi};
 use serde_json::Value;
 use session_manager::{EnqueueResult, PollResult, Queue, QueueBuilder, Worker};
 use tokio::net::TcpListener;
+use tower_http::cors::CorsLayer;
 
 mod bindings;
 mod session_manager;
@@ -42,6 +43,7 @@ async fn main() {
 				Json(handle_request(body, |session_id, ui| cycle_event_loop(queue, session_id, ui)).await)
 			}),
 		)
+		.layer(CorsLayer::very_permissive())
 		.with_state(queue);
 
 	let listener = TcpListener::bind(("localhost", port)).await.unwrap();
