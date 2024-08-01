@@ -340,6 +340,7 @@ impl RustGen<'_> {
 				#( #variant_def_tokens, )*
 			}
 
+			#[allow(dead_code)]
 			impl #name_ident {
 
 			}
@@ -508,6 +509,7 @@ impl RustGen<'_> {
 			#[serde(rename_all = "camelCase")]
 			pub struct #name_ident { #property_def_tokens }
 
+			#[allow(dead_code)]
 			impl #name_ident {
 				#constructor_tokens
 
@@ -562,7 +564,11 @@ impl RustGen<'_> {
 				},
 			)?;
 
-			construction_body_tokens.extend(iter::once(quote! { #property_name_ident: #value_tokens, }));
+			construction_body_tokens.extend(iter::once(if property_name_ident.to_string() == value_tokens.to_string() {
+				quote! { #property_name_ident, }
+			} else {
+				quote! { #property_name_ident: #value_tokens, }
+			}));
 			argument_tokens.extend(iter::once(quote! { #argument_name_ident: #call_signature_tokens, }));
 
 			if let Some(property_comment) = &property.comment {
