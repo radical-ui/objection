@@ -1,14 +1,17 @@
 use anyhow::{bail, Error, Result};
 use axum::{extract::State, routing::post, Json, Router};
+use bindings::{Component, Label, ThemeManager};
 use log::{debug, info};
 use objection::{handle_request, RootUi, UiResponse};
 use serde_json::Value;
 use session_manager::{EnqueueResult, PollResult, Queue, QueueBuilder, Worker};
+use theme::get_theme;
 use tokio::net::TcpListener;
 use tower_http::cors::CorsLayer;
 
 mod bindings;
 mod session_manager;
+mod theme;
 
 struct Session {}
 
@@ -22,8 +25,8 @@ impl Worker for Session {
 		Session {}
 	}
 
-	async fn handle(&mut self, request: Self::Request) -> Self::Response {
-		// request.set_root_ui();
+	async fn handle(&mut self, mut request: Self::Request) -> Self::Response {
+		request.set_root_ui(ThemeManager::new(get_theme(), Label::new().text("Hello, world")));
 
 		Ok(request.into_response())
 	}

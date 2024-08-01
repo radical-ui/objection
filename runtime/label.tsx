@@ -17,12 +17,12 @@ import { FlatLoader } from './flat_loader.tsx'
  * @component
  */
 export interface Label {
-	color: Color
+	color?: Color
 	editEvent?: EventKey<string>
-	isBold: boolean
-	isItalic: boolean
+	isBold?: boolean
+	isItalic?: boolean
 	placeholder?: string
-	text: string
+	text?: string
 }
 
 export function LabelRender(props: Label) {
@@ -30,8 +30,8 @@ export function LabelRender(props: Label) {
 	const inputRef = React.useRef<HTMLTextAreaElement | null>(null)
 
 	const [isEditing, setIsEditing] = React.useState(false)
-	const [value, setValue] = React.useState(props.text)
-	const [dirtyValue, setDirtyValue] = React.useState(props.text)
+	const [value, setValue] = React.useState(props.text || '')
+	const [dirtyValue, setDirtyValue] = React.useState(props.text || '')
 	const { dispatch, isDisabled, isLoading } = useDispatcher(props.editEvent ?? null)
 
 	const isSkeleton = useSkeletonDetection()
@@ -41,7 +41,7 @@ export function LabelRender(props: Label) {
 
 	const canEdit = !!props.editEvent && !isDisabled
 	const isItalic = props.isItalic || showPlaceholder && !isEditing
-	const color = showPlaceholder ? { kind: props.color.kind, opacity: 30 } : props.color
+	const color = showPlaceholder ? { kind: props.color?.kind || 'Fore', opacity: 30 } : props.color ?? { kind: 'Fore', opacity: 80 }
 
 	const textStyleClasses = `
 		${props.isBold ? 'font-semibold' : ''}
@@ -53,6 +53,10 @@ export function LabelRender(props: Label) {
 		${props.color ? `text-${getColor(color)}` : ''}
 		${canEdit ? 'px-5 py-2 border  transition-colors rounded' : ''}
 	`
+
+	React.useEffect(() => {
+		setDirtyValue(props.text || '')
+	}, [props.text])
 
 	React.useEffect(() => {
 		const input = inputRef.current
