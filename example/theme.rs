@@ -10,7 +10,7 @@ pub fn get_theme() -> Theme {
 		dark_palette: ColorPalette {
 			primary: ColorDefinition::new(56.0, 189.0, 249.0),
 			secondary: ColorDefinition::new(251.0, 72.0, 94.0),
-			base: ColorDefinition::new(33.0, 37.0, 43.0),
+			base: ColorDefinition::new(40.0, 40.0, 40.0),
 			fore: ColorDefinition::new(255.0, 255.0, 255.0),
 			decoration_fore: ColorDefinition::new(33.0, 37.0, 43.0),
 			success: ColorDefinition::new(68.0, 208.0, 138.0),

@@ -1,6 +1,6 @@
 use anyhow::{bail, Error, Result};
 use axum::{extract::State, routing::post, Json, Router};
-use bindings::{Component, Label, ThemeManager};
+use bindings::{Label, ThemeManager};
 use log::{debug, info};
 use objection::{handle_request, RootUi, UiResponse};
 use serde_json::Value;
