@@ -113,8 +113,9 @@ impl RootUi {
 		})
 	}
 
-	pub fn set_root_ui(&mut self, ui: impl ComponentIndex) {
-		self.actions.push(json!({ "key": { "actionPath": ["root_mount"] }, "data": ui.to_value() }));
+	pub fn set_root_ui(&mut self, ui: impl IntoComponentIndex) {
+		self.actions
+			.push(json!({ "key": { "actionPath": ["root_mount"] }, "data": ui.into().to_value() }));
 	}
 
 	pub fn into_response(self) -> UiResponse {
@@ -333,9 +334,26 @@ pub trait EventSymbol: Sized + Serialize + for<'de> Deserialize<'de> {
 	}
 }
 
+pub trait IntoComponentIndex
+where
+	Self: Sized,
+{
+	type Index: ComponentIndex;
+
+	fn into(self) -> Self::Index;
+}
+
 pub trait ComponentIndex
 where
 	Self: Sized,
 {
 	fn to_value(self) -> Value;
+}
+
+impl<Index: ComponentIndex> IntoComponentIndex for Index {
+	type Index = Index;
+
+	fn into(self) -> Index {
+		self
+	}
 }

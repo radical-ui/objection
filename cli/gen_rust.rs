@@ -139,9 +139,11 @@ impl RustGen<'_> {
 			}));
 
 			self.tokens.extend(iter::once(quote! {
-				impl From<#name_ident> for #index_ident {
-					fn from(component: #name_ident) -> #index_ident {
-						#index_ident::#name_ident(Box::new(component))
+				impl objection::IntoComponentIndex for #name_ident {
+					type Index = #index_ident;
+
+					fn into(self) -> #index_ident {
+						#index_ident::#name_ident(Box::new(self))
 					}
 				}
 			}));
@@ -211,7 +213,9 @@ impl RustGen<'_> {
 					KindContext::Type | KindContext::ConstructorKey {} => inner.into_token_stream(),
 					KindContext::CallSignature => {
 						if name == self.index_name {
-							quote! { impl Into<#inner> }
+							let index_ident = format_ident!("{}", self.index_name);
+
+							quote! { impl objection::IntoComponentIndex<Index = #index_ident> }
 						} else {
 							inner.into_token_stream()
 						}
