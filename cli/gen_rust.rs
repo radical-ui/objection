@@ -1,8 +1,9 @@
+use anyhow::{anyhow, bail, Result};
 use inflector::Inflector;
-use log::{debug, error};
+use log::debug;
 use prettyplease::unparse;
 use proc_macro2::TokenStream;
-use quote::{format_ident, quote};
+use quote::{format_ident, quote, ToTokens};
 use std::{collections::HashSet, iter};
 use syn::parse2;
 
@@ -22,25 +23,48 @@ struct GetConstructorInfoParams<'a> {
 struct ConstructorInfo {
 	construction_body_tokens: TokenStream,
 	argument_tokens: TokenStream,
-	comment: String,
+	comment: Option<String>,
+}
+
+#[derive(Debug, Clone)]
+enum KindContext {
+	/// This is a type in a struct
+	Type,
+	/// This is a type in a value
+	CallSignature,
+	/// This is not a type, but the start of a construction. For example, `StructName` in `StructName { ... properties ... }`.
+	/// `existing_value_expression` is
+	ConstructorKey,
+	/// The value representation of the kind. Generally this is just `existing_value_representation`, but if
+	Value { existing_value_expression: TokenStream },
 }
 
 pub struct RustGen<'a> {
 	collection: &'a Collection,
 	names_generated: HashSet<String>,
+	index_name: &'a str,
 	tokens: TokenStream,
 }
 
 impl RustGen<'_> {
-	pub fn new<'a>(collection: &'a Collection) -> RustGen<'a> {
-		RustGen {
+	pub fn new<'a>(collection: &'a Collection) -> Result<RustGen<'a>> {
+		let index_name = collection
+			.get_component_info()
+			.iter()
+			.find_map(|(name, info)| if info.is_index { Some(*name) } else { None })
+			.ok_or(anyhow!(
+				"No component index was found during rust code gen. This indicates a failure in the checking step"
+			))?;
+
+		Ok(RustGen {
 			collection,
+			index_name,
 			names_generated: HashSet::new(),
 			tokens: TokenStream::new(),
-		}
+		})
 	}
 
-	pub fn gen(&mut self) {
+	pub fn gen(&mut self) -> Result<()> {
 		self.gen_index();
 
 		for def in self.collection.get_kinds() {
@@ -61,7 +85,7 @@ impl RustGen<'_> {
 					let name = format_ident!("{}", &def.name);
 
 					if !self.has_item(&def.name) {
-						let anon_item = self.gen_kind(def.name, None, def.kind);
+						let anon_item = self.gen_kind(def.name, None, def.kind, KindContext::Type)?;
 						let item = quote! {
 							#[doc = #comment]
 							pub type #name = #anon_item;
@@ -71,10 +95,12 @@ impl RustGen<'_> {
 					}
 				}
 				Kind::StringEnum { .. } | Kind::KeyedEnum { .. } | Kind::Object { .. } => {
-					self.gen_kind(def.name, def.comment, def.kind);
+					self.gen_kind(def.name, def.comment, def.kind, KindContext::Type)?;
 				}
 			};
 		}
+
+		Ok(())
 	}
 
 	pub fn get_output(self) -> String {
@@ -96,65 +122,130 @@ impl RustGen<'_> {
 	}
 
 	fn gen_index(&mut self) {
-		let mut index_ident = None;
+		let index_ident = format_ident!("{}", self.index_name);
 		let mut inner_tokens = TokenStream::new();
 
 		for (name, info) in self.collection.get_component_info() {
-			let name_ident = format_ident!("{name}");
-
 			if info.is_index {
-				index_ident = Some(name_ident);
 				continue;
 			}
 
-			inner_tokens.extend(iter::once(quote! { #name_ident(#name_ident), }));
-		}
+			let comment = self.collection.get_comment(name).map(|comment| quote! { #[doc = #comment] });
+			let name_ident = format_ident!("{name}");
 
-		if index_ident.is_none() {
-			error!("No component index was found during rust code gen. This indicates a failure in the checking step");
+			inner_tokens.extend(iter::once(quote! {
+				#comment
+				#name_ident(Box<#name_ident>),
+			}));
+
+			self.tokens.extend(iter::once(quote! {
+				impl From<#name_ident> for #index_ident {
+					fn from(component: #name_ident) -> #index_ident {
+						#index_ident::#name_ident(Box::new(component))
+					}
+				}
+			}));
 		}
 
 		self.tokens.extend(iter::once(quote! {
+			#[derive(Debug, serde::Serialize, serde::Deserialize)]
+			#[serde(tag = "type", content = "def")]
 			pub enum #index_ident {
 				#inner_tokens
+			}
+
+			impl objection::ComponentIndex for #index_ident {
+				fn to_value(self) -> serde_json::Value {
+					serde_json::to_value(self).unwrap()
+				}
 			}
 		}));
 	}
 
-	fn gen_kind(&mut self, context_name: &str, comment: Option<&str>, kind: &Kind) -> TokenStream {
-		match kind {
-			Kind::Dynamic => quote! { serde_json::Value },
-			Kind::String => quote! { String },
-			Kind::Number => quote! { f64 },
-			Kind::Bool => quote! { bool },
+	fn gen_kind(&mut self, context_name: &str, comment: Option<&str>, kind: &Kind, context: KindContext) -> Result<TokenStream> {
+		Ok(match kind {
+			Kind::Dynamic => match context {
+				KindContext::Type | KindContext::CallSignature => quote! { serde_json::Value },
+				KindContext::ConstructorKey => bail!("A dynamic value cannot be constructed via a key"),
+				KindContext::Value { existing_value_expression } => existing_value_expression,
+			},
+			Kind::String => match context {
+				KindContext::Type => quote! { String },
+				KindContext::CallSignature => quote! { impl Into<String> },
+				KindContext::ConstructorKey => bail!("A string cannot be constructed via a key"),
+				KindContext::Value { existing_value_expression } => quote! { #existing_value_expression.into() },
+			},
+			Kind::Number => match context {
+				KindContext::Type | KindContext::CallSignature => quote! { f64 },
+				KindContext::ConstructorKey => bail!("A number cannot be constructed via a key"),
+				KindContext::Value { existing_value_expression } => existing_value_expression,
+			},
+			Kind::Bool => match context {
+				KindContext::Type | KindContext::CallSignature => quote! { bool },
+				KindContext::ConstructorKey => bail!("A boolean cannot be constructed via a key"),
+				KindContext::Value { existing_value_expression } => existing_value_expression,
+			},
 			Kind::Null => quote! { () },
 			Kind::ActionKey { data_type } => {
-				let inner = self.gen_kind(&format!("{context_name}ActionData"), None, &data_type);
+				let inner = self.gen_kind(&format!("{context_name}ActionData"), None, &data_type, KindContext::Type)?;
 
-				quote! { objection::ActionKey<#inner> }
+				match context {
+					KindContext::Type | KindContext::CallSignature => quote! { objection::ActionKey<#inner> },
+					KindContext::ConstructorKey => bail!("An event key cannot be constructed via a key"),
+					KindContext::Value { existing_value_expression } => existing_value_expression,
+				}
 			}
 			Kind::EventKey { data_type } => {
-				let inner = self.gen_kind(&format!("{context_name}EventData"), None, &data_type);
+				let inner = self.gen_kind(&format!("{context_name}EventData"), None, &data_type, KindContext::Type)?;
 
-				quote! { objection::EventKey<#inner> }
+				match context {
+					KindContext::Type | KindContext::CallSignature => quote! { objection::EventKey<#inner> },
+					KindContext::ConstructorKey => bail!("An event key cannot be constructed via a key"),
+					KindContext::Value { existing_value_expression } => existing_value_expression,
+				}
 			}
 			Kind::Ref { name } => {
 				let inner = format_ident!("{}", name);
 
-				quote! { #inner }
+				match context {
+					KindContext::Type | KindContext::ConstructorKey {} => inner.into_token_stream(),
+					KindContext::CallSignature => {
+						if name == self.index_name {
+							quote! { impl Into<#inner> }
+						} else {
+							inner.into_token_stream()
+						}
+					}
+					KindContext::Value { existing_value_expression } => {
+						if name == self.index_name {
+							quote! { #existing_value_expression.into() }
+						} else {
+							existing_value_expression
+						}
+					}
+				}
 			}
 			Kind::List { of } => {
-				let inner = self.gen_kind(&format!("{context_name}Item"), None, &of);
+				let inner = self.gen_kind(&format!("{context_name}Item"), None, &of, KindContext::Type)?;
 
-				quote! { Vec<#inner> }
+				match context {
+					KindContext::Type | KindContext::CallSignature => quote! { Vec<#inner> },
+					KindContext::ConstructorKey => bail!("A list cannot be constructed via a key"),
+					KindContext::Value { existing_value_expression } => existing_value_expression,
+				}
 			}
 			Kind::Tuple { items } => {
 				let inner = items
 					.iter()
 					.enumerate()
-					.map(|(index, kind)| self.gen_kind(&format!("{context_name}Item{index}"), None, kind));
+					.map(|(index, kind)| self.gen_kind(&format!("{context_name}Item{index}"), None, kind, context.clone()))
+					.collect::<Result<Vec<_>>>()?;
 
-				quote! { ( #( #inner ),* ) }
+				match context {
+					KindContext::Type | KindContext::CallSignature => quote! { ( #( #inner ),* ) },
+					KindContext::ConstructorKey => bail!("A tuple cannot be constructed via a key"),
+					KindContext::Value { existing_value_expression } => existing_value_expression,
+				}
 			}
 			Kind::StringEnum { variants } => {
 				let name_ident = format_ident!("{context_name}");
@@ -173,27 +264,39 @@ impl RustGen<'_> {
 					self.add_item(context_name, item);
 				}
 
-				quote! { #name_ident }
+				match context {
+					KindContext::Type | KindContext::CallSignature => quote! { #name_ident },
+					KindContext::ConstructorKey => bail!("A string enum cannot be constructed via a key"),
+					KindContext::Value { existing_value_expression } => existing_value_expression,
+				}
 			}
 			Kind::KeyedEnum { variants } => {
 				let name_ident = format_ident!("{context_name}");
 
 				if !self.has_item(context_name) {
-					self.gen_keyed_enum(context_name, comment, &variants)
+					self.gen_keyed_enum(context_name, comment, &variants)?
 				}
 
-				quote! { #name_ident }
+				match context {
+					KindContext::Type | KindContext::CallSignature => quote! { quote! { #name_ident } },
+					KindContext::ConstructorKey => bail!("A keyed enum cannot be constructed via a key"),
+					KindContext::Value { existing_value_expression } => existing_value_expression,
+				}
 			}
 			Kind::Object { properties } => {
 				let name_ident = format_ident!("{context_name}");
 
-				if !self.has_item(context_name) {
-					self.gen_struct(context_name, comment, &properties);
+				if !self.has_item(context_name) && self.index_name != context_name {
+					self.gen_struct(context_name, comment, &properties)?;
 				}
 
-				quote! { #name_ident }
+				match context {
+					KindContext::Type | KindContext::CallSignature => quote! { #name_ident },
+					KindContext::ConstructorKey => bail!("An object cannot be constructed via a key"),
+					KindContext::Value { existing_value_expression } => existing_value_expression,
+				}
 			}
-		}
+		})
 	}
 
 	fn has_item(&self, name: &str) -> bool {
@@ -205,7 +308,7 @@ impl RustGen<'_> {
 		self.tokens.extend(iter::once(tokens));
 	}
 
-	fn gen_keyed_enum(&mut self, context_name: &str, comment: Option<&str>, variants: &[EnumProperty]) {
+	fn gen_keyed_enum(&mut self, context_name: &str, comment: Option<&str>, variants: &[EnumProperty]) -> Result<()> {
 		let name_ident = format_ident!("{context_name}");
 		let mut variant_def_tokens = Vec::new();
 
@@ -218,7 +321,8 @@ impl RustGen<'_> {
 				&get_keyed_enum_variant_context_name(context_name, &variant.name),
 				variant.comment.as_deref(),
 				&variant.kind,
-			);
+				KindContext::Type,
+			)?;
 
 			variant_def_tokens.push(quote! { #name_ident(#kind_tokens) });
 		}
@@ -227,6 +331,7 @@ impl RustGen<'_> {
 		let item = quote! {
 			#[doc = #comment_str]
 			#[derive(Debug, serde::Serialize, serde::Deserialize)]
+			#[serde(tag = "type", content = "def")]
 			pub enum #name_ident {
 				#( #variant_def_tokens, )*
 			}
@@ -237,9 +342,11 @@ impl RustGen<'_> {
 		};
 
 		self.add_item(context_name, item);
+
+		Ok(())
 	}
 
-	fn gen_struct(&mut self, context_name: &str, comment: Option<&str>, properties: &[ObjectProperty]) {
+	fn gen_struct(&mut self, context_name: &str, comment: Option<&str>, properties: &[ObjectProperty]) -> Result<()> {
 		let name_ident = format_ident!("{context_name}");
 		let mut property_def_tokens = TokenStream::new();
 		let mut methods = TokenStream::new();
@@ -250,7 +357,7 @@ impl RustGen<'_> {
 				argument_prefix: None,
 				properties,
 				limit: 3,
-			});
+			})?;
 
 			info.map(
 				|ConstructorInfo {
@@ -258,7 +365,11 @@ impl RustGen<'_> {
 				     argument_tokens,
 				     comment,
 				 }| {
-					let full_comment = format!("Construct a new {context_name}.\n\n{comment}");
+					let mut full_comment = format!("Construct a new {context_name}.");
+
+					if let Some(comment) = comment {
+						full_comment.push_str(&format!("\n\n{comment}"));
+					}
 
 					quote! {
 						#[doc = #full_comment]
@@ -274,41 +385,60 @@ impl RustGen<'_> {
 			let snake_property_name = property.name.to_snake_case();
 			let snake_property_ident = format_ident!("{}", &snake_property_name);
 			let comment_tokens = property.comment.as_deref().map(|text| quote! { #[doc = #text] });
-			let (resolved_kind, _) = self.collection.resolve_kind(&property.kind);
+			let (resolved_kind, resolved_name) = self.collection.resolve_kind(&property.kind);
+			let property_context_name = get_struct_property_context_name(context_name, &property.name);
 
-			let bare_kind_tokens = self.gen_kind(
-				&get_struct_property_context_name(context_name, &property.name),
-				property.comment.as_deref(),
-				&property.kind,
+			let kind_type_tokens = optional_type_if(
+				property.is_optional,
+				self.gen_kind(&property_context_name, property.comment.as_deref(), &property.kind, KindContext::Type)?,
+			);
+			let kind_call_signature_tokens = self.gen_kind(&property_context_name, property.comment.as_deref(), &property.kind, KindContext::CallSignature)?;
+			let kind_value_tokens = optional_value_if(
+				property.is_optional,
+				self.gen_kind(
+					&property_context_name,
+					property.comment.as_deref(),
+					&property.kind,
+					KindContext::Value {
+						existing_value_expression: snake_property_ident.to_token_stream(),
+					},
+				)?,
 			);
 
-			let kind_tokens_type = if property.is_optional {
-				let clone = bare_kind_tokens.clone();
-				quote! { Option<#clone> }
-			} else {
-				bare_kind_tokens.clone()
-			};
-
 			let default_method = quote! {
-				pub fn #snake_property_ident(mut self, #snake_property_ident: #kind_tokens_type) -> #name_ident {
-					self.#snake_property_ident = #snake_property_ident;
+				pub fn #snake_property_ident(mut self, #snake_property_ident: #kind_call_signature_tokens) -> #name_ident {
+					self.#snake_property_ident = #kind_value_tokens;
 
 					self
 				}
 			};
 
-			methods.extend(iter::once(if let Kind::Bool = resolved_kind {
+			methods.extend(iter::once(if resolved_name == Some(self.index_name) {
+				default_method
+			} else if let Kind::Bool = resolved_kind {
 				let property_if_ident = format_ident!("{snake_property_name}_if");
+
+				let kind_value_tokens_default = optional_value_if(
+					property.is_optional,
+					self.gen_kind(
+						&property_context_name,
+						property.comment.as_deref(),
+						&property.kind,
+						KindContext::Value {
+							existing_value_expression: quote! { true },
+						},
+					)?,
+				);
 
 				quote! {
 					pub fn #snake_property_ident(mut self) -> #name_ident {
-						self.#snake_property_ident = true;
+						self.#snake_property_ident = #kind_value_tokens_default;
 
 						self
 					}
 
-					pub fn #property_if_ident(mut self, #snake_property_ident: #kind_tokens_type) -> #name_ident {
-						self.#snake_property_ident = #snake_property_ident;
+					pub fn #property_if_ident(mut self, #snake_property_ident: #kind_call_signature_tokens) -> #name_ident {
+						self.#snake_property_ident = #kind_value_tokens;
 
 						self
 					}
@@ -319,44 +449,40 @@ impl RustGen<'_> {
 					argument_prefix: Some(&snake_property_name),
 					properties,
 					limit: 3,
-				})
+				})?
 				.map(
 					|ConstructorInfo {
 					     construction_body_tokens,
 					     argument_tokens,
 					     comment,
-					 }| {
+					 }|
+					 -> Result<_> {
+						let kind_constructor_key_tokens =
+							self.gen_kind(&property_context_name, property.comment.as_deref(), &property.kind, KindContext::ConstructorKey)?;
+
 						let full_name_ident = format_ident!("{snake_property_ident}_full");
-						let option_wrapped_construction_tokens = if property.is_optional {
-							quote! { Some(#bare_kind_tokens { #construction_body_tokens }) }
-						} else {
-							quote! { #bare_kind_tokens { #construction_body_tokens } }
-						};
-						let option_wrapped_snake_property = if property.is_optional {
-							quote! {
-								Some(#snake_property_ident)
-							}
-						} else {
-							quote! { #snake_property_ident }
-						};
+						let wrapped_construction_tokens =
+							optional_value_if(property.is_optional, quote! { #kind_constructor_key_tokens { #construction_body_tokens } });
+						let comment_tokens = comment.map(|comment| quote! { #[doc = #comment] });
 
-						// TODO comments
-						quote! {
+						Ok(quote! {
+							#comment_tokens
 							pub fn #snake_property_ident(mut self, #argument_tokens) -> #name_ident {
-								// TODO these kind tokens here may not work when there is a level of indirection with aliases
-								self.#snake_property_ident = #option_wrapped_construction_tokens;
+								self.#snake_property_ident = #wrapped_construction_tokens;
 
 								self
 							}
 
-							pub fn #full_name_ident(mut self, #snake_property_ident: #bare_kind_tokens) -> #name_ident {
-								self.#snake_property_ident = #option_wrapped_snake_property;
+							#comment_tokens
+							pub fn #full_name_ident(mut self, #snake_property_ident: #kind_call_signature_tokens) -> #name_ident {
+								self.#snake_property_ident = #kind_value_tokens;
 
 								self
 							}
-						}
+						})
 					},
 				)
+				.transpose()?
 				.unwrap_or(default_method)
 			} else {
 				default_method
@@ -364,7 +490,7 @@ impl RustGen<'_> {
 
 			let def_tokens = quote! {
 				#comment_tokens
-				pub #snake_property_ident: #kind_tokens_type,
+				pub #snake_property_ident: #kind_type_tokens,
 			};
 
 			property_def_tokens.extend(iter::once(def_tokens));
@@ -385,10 +511,12 @@ impl RustGen<'_> {
 			}
 		};
 
-		self.add_item(context_name, item)
+		self.add_item(context_name, item);
+
+		Ok(())
 	}
 
-	fn get_constructor_info(&mut self, params: GetConstructorInfoParams<'_>) -> Option<ConstructorInfo> {
+	fn get_constructor_info(&mut self, params: GetConstructorInfoParams<'_>) -> Result<Option<ConstructorInfo>> {
 		let GetConstructorInfoParams {
 			struct_name,
 			argument_prefix,
@@ -403,6 +531,7 @@ impl RustGen<'_> {
 
 		for property in properties {
 			let property_name_ident = format_ident!("{}", &property.name.to_snake_case());
+			let property_context_name = get_struct_property_context_name(struct_name, &property.name);
 
 			if property.is_optional {
 				construction_body_tokens.extend(iter::once(quote! { #property_name_ident: None, }));
@@ -411,7 +540,7 @@ impl RustGen<'_> {
 			}
 
 			if arguments_so_far == limit {
-				return None;
+				return Ok(None);
 			}
 
 			let argument_name_ident = match argument_prefix {
@@ -419,14 +548,18 @@ impl RustGen<'_> {
 				None => format_ident!("{}", &property.name.to_snake_case()),
 			};
 
-			let type_ = self.gen_kind(
-				&get_struct_property_context_name(struct_name, &property.name),
+			let call_signature_tokens = self.gen_kind(&property_context_name, property.comment.as_deref(), &property.kind, KindContext::CallSignature)?;
+			let value_tokens = self.gen_kind(
+				&property_context_name,
 				property.comment.as_deref(),
 				&property.kind,
-			);
+				KindContext::Value {
+					existing_value_expression: argument_name_ident.to_token_stream(),
+				},
+			)?;
 
-			construction_body_tokens.extend(iter::once(quote! { #property_name_ident: #argument_name_ident, }));
-			argument_tokens.extend(iter::once(quote! { #argument_name_ident: #type_, }));
+			construction_body_tokens.extend(iter::once(quote! { #property_name_ident: #value_tokens, }));
+			argument_tokens.extend(iter::once(quote! { #argument_name_ident: #call_signature_tokens, }));
 
 			if let Some(property_comment) = &property.comment {
 				comment.push_str(&format!("Argument `{}`: {property_comment}\n\n", &property.name));
@@ -435,11 +568,11 @@ impl RustGen<'_> {
 			arguments_so_far += 1;
 		}
 
-		Some(ConstructorInfo {
+		Ok(Some(ConstructorInfo {
 			construction_body_tokens,
 			argument_tokens,
-			comment,
-		})
+			comment: if comment.is_empty() { None } else { Some(comment) },
+		}))
 	}
 }
 
@@ -451,4 +584,20 @@ fn get_struct_property_context_name(struct_context_name: &str, property_name: &s
 fn get_keyed_enum_variant_context_name(enum_context_name: &str, variant_name: &str) -> String {
 	// all variant names must be pascal case, so nothing to do here
 	format!("{enum_context_name}{variant_name}")
+}
+
+fn optional_type_if(condition: bool, inner: TokenStream) -> TokenStream {
+	if condition {
+		quote! { Option<#inner> }
+	} else {
+		inner
+	}
+}
+
+fn optional_value_if(condition: bool, inner: TokenStream) -> TokenStream {
+	if condition {
+		quote! { Some(#inner) }
+	} else {
+		inner
+	}
 }

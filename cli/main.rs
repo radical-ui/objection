@@ -51,17 +51,17 @@ enum Engine {
 }
 
 impl Engine {
-	fn get_bindings(&self, collection: &Collection) -> String {
+	fn get_bindings(&self, collection: &Collection) -> Result<String> {
 		match self {
 			Self::Rust => {
-				let mut gen = RustGen::new(collection);
+				let mut gen = RustGen::new(collection)?;
 				gen.gen();
 				info!("Generated rust engine bindings");
 
 				let output = gen.get_output();
 				info!("Formatted rust engine bindings");
 
-				output
+				Ok(output)
 			}
 		}
 	}
@@ -197,7 +197,7 @@ async fn main_async() -> Result<()> {
 
 	info!("Wrote runtime platform to target/bundle.js");
 
-	let bindings = args.engine.get_bindings(&collection);
+	let bindings = args.engine.get_bindings(&collection)?;
 	write(&args.bindings_path, bindings).await?;
 
 	info!("Wrote rust engine bindings to {}", args.bindings_path.into_os_string().into_string().unwrap());

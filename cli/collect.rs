@@ -287,6 +287,10 @@ impl Collection {
 		}
 	}
 
+	pub fn get_comment(&self, kind_name: &str) -> Option<&str> {
+		self.kinds.get(kind_name).map(|item| item.comment.as_deref()).flatten()
+	}
+
 	pub fn get_component_info(&self) -> Vec<(&str, &ComponentInfo)> {
 		self.components.iter().map(|(name, info)| (name.as_str(), info)).collect()
 	}
