@@ -1,6 +1,6 @@
-/target
-/www/icons
-/www/build.js
-/.helix
-/example/bindings.rs
+target
+example/bindings.rs
+
+.helix
+*.bck
 .DS_Store
