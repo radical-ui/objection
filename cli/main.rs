@@ -8,7 +8,7 @@ mod inspect;
 mod module_loader;
 
 use anstyle::{AnsiColor, Color as AnsColor, Style};
-use anyhow::{bail, Context, Result};
+use anyhow::{bail, Result};
 use bundle::Bundler;
 use clap::{builder::Styles, Parser, Subcommand, ValueEnum};
 use collect::Collection;
@@ -21,7 +21,7 @@ use gen_rust::RustGen;
 use inspect::Inspector;
 use log::{error, info, Level};
 use module_loader::load_modules;
-use std::{env::current_dir, io::Write, path::PathBuf, process::exit};
+use std::{io::Write, path::PathBuf, process::exit};
 use tokio::{
 	fs::{read_to_string, write},
 	runtime::Builder,
@@ -30,13 +30,14 @@ use url::Url;
 
 #[derive(Debug, ValueEnum, Clone, Default)]
 enum Platform {
-	Ios,
-	Android,
-	Macos,
-	Linux,
-	Windows,
+	/// Generates a static, client-side web app. To run, start a static web server that treats `index.html` as the `/` route.
 	#[default]
-	Web,
+	WebStatic,
+	/// Generates a Deno script that, when started, serves an html file at `/`. Static assets will also be served.
+	/// NOTE: Currently, SSR support is limited in the fact that it does not generate html, but instead just embeds
+	/// the engine-provided initial component tree, resulting in an immediate meaningful paint as soon as the JS loads.
+	/// However, that the Deno script returns a full rendering of the initial component tree in html is a planned feature.
+	WebSSR,
 }
 
 impl ToString for Platform {
@@ -55,7 +56,7 @@ impl Engine {
 		match self {
 			Self::Rust => {
 				let mut gen = RustGen::new(collection)?;
-				gen.gen();
+				gen.gen()?;
 				info!("Generated rust engine bindings");
 
 				let output = gen.get_output();
@@ -70,9 +71,9 @@ impl Engine {
 #[derive(Parser, Debug, Clone)]
 #[command(styles = get_styles())]
 struct Command {
-	/// The runtime to use. Can be a path or a full url
-	#[arg(long)]
-	runtime: String,
+	/// The runtime to use. Must be a url.
+	#[arg(long, default_value_t = Url::parse("https://raw.githubusercontent.com/radical-ui/svelte-toolbox/new-take/runtime/mod.tsx").unwrap())]
+	runtime: Url,
 
 	/// The platform to build for. Defaults to `web`.
 	#[arg(long, default_value_t = Default::default())]
@@ -87,7 +88,7 @@ struct Command {
 	bindings_path: PathBuf,
 
 	/// The url that the engine will be running at. Can be a websocket or http url.
-	#[arg(long, default_value_t = Url::parse("http://localhost:5000").unwrap())]
+	#[arg(long)]
 	engine_url: Url,
 
 	/// The type of operation to run
@@ -98,21 +99,21 @@ struct Command {
 #[derive(Subcommand, Debug, Clone)]
 enum Operation {
 	/// Run the application using the configured runtime (see --runtime) and platform (see --platform). Engine is expected to be
-	/// already running at the configured engine url
+	/// already running at the configured engine url (see --engine-url)
 	Run {
-		/// Watch the runtime code and reload application if it is updated. Should only be necessary if you are working on the
+		/// Watch the runtime code and reload application if it is updated. Really only useful if you are developing the
 		/// runtime.
 		#[arg(long)]
 		watch_runtime: bool,
 
-		/// Watch the engine and reload if it is restarted.
+		/// Watch the engine and reload the generated client if it is restarted.
 		#[arg(long)]
 		reload: bool,
 	},
 	/// Build the configured runtime (see --runtime) for the configured platform (see --platform), which, when run, will access the
-	/// engine at the configured engine url (see --engine-url). Each platform and runtime will be nested inside the folder.
-	// For example, if you set this to "out", a build with "--runtime=preact --platform=web" would be written to `out/web_preact`
+	/// engine at the configured engine url (see --engine-url). Code will be written to the configured output dir (see --out-dir).
 	Build {
+		/// The directory to where the generated client code will be written
 		#[arg(long, default_value_t = String::from("target"))]
 		out_dir: String,
 	},
@@ -151,17 +152,15 @@ fn main() {
 
 async fn main_async() -> Result<()> {
 	let args = Command::parse();
-	let base_url = Url::from_directory_path(current_dir().context("Failed to get the current working directory")?).unwrap();
-	let runtime_url = base_url.join(&args.runtime).context("Failed to resolve runtime entry")?;
 	let mut diagnostic_list = DiagnosticList::new();
 	let mut memory_loader = MemoryLoader::default();
 	let mut bundler = Bundler::default();
 	let mut collection = Collection::default();
 
-	load_modules(&runtime_url, &mut memory_loader, &mut bundler).await?;
+	load_modules(&args.runtime, &mut memory_loader, &mut bundler).await?;
 	info!("Loaded runtime");
 
-	collection.collect(&runtime_url, &memory_loader).await?;
+	collection.collect(&args.runtime, &memory_loader).await?;
 	collection.check_components();
 
 	let errors = collection.get_errors();
@@ -187,7 +186,7 @@ async fn main_async() -> Result<()> {
 	diagnostic_list.flush("validate runtime")?;
 	info!("Validated runtime");
 
-	let response = bundler.bundle(gen_js_entry(&runtime_url, &args.engine_url, &collection)?).await?;
+	let response = bundler.bundle(gen_js_entry(&args.runtime, &args.engine_url, &collection)?).await?;
 	info!("Bundled runtime");
 
 	write("target/web/index.html", read_to_string("platform/web/index.html").await.unwrap())
