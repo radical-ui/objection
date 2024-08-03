@@ -73,3 +73,16 @@ Then, start up the example project:
 ```sh
 runner dev
 ```
+
+## TODO for MVP
+
+- `runtime_test` instead of `example`
+- Runtime `start` fn should only accept a single `initialState` argument. The rest should be handled by `runtime_lib`
+- Go support (potentially find another language instead, but this seems best to me)
+- `objection new` and the associated `rust_example` and `go_example` subprojects
+- Actual support for web-static platform instead of just building
+- `objection run` should run, not build. Additionally, `objection build` should respect `--out-dir`
+- Support for `web-ssr`
+- Brew formule for installing
+- CI to generate releases on github
+- "bring your own runtime" docs
