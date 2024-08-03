@@ -1,7 +1,8 @@
 use anyhow::{anyhow, Error, Result};
 use async_worker::{Queue, QueueBuilder, Worker};
 use axum::{extract::State, routing::post, Json, Router};
-use bindings::{Label, ThemeManager};
+use basic_ui::get_basic_ui;
+use bindings::ThemeManager;
 use log::info;
 use objection::{handle_request, RootUi, UiResponse};
 use serde_json::Value;
@@ -9,6 +10,7 @@ use theme::get_theme;
 use tokio::net::TcpListener;
 use tower_http::cors::CorsLayer;
 
+mod basic_ui;
 mod bindings;
 mod theme;
 
@@ -25,7 +27,9 @@ impl Worker for Session {
 	}
 
 	async fn handle(&mut self, mut request: Self::Request) -> Self::Response {
-		request.set_root_ui(ThemeManager::new(get_theme(), Label::new().text("Hello, world")));
+		let body = get_basic_ui(request.get_client().ui());
+
+		request.set_root_ui(ThemeManager::new(get_theme(), body));
 
 		Ok(request.into_response())
 	}

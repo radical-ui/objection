@@ -102,7 +102,7 @@ export function EventBlockerRender(props: EventBlocker) {
 
 	return (
 		<DisabledContext.Provider value={props.block || currentContext}>
-			<ComponentRender {...props.body} />
+			{props.body && <ComponentRender {...props.body} />}
 		</DisabledContext.Provider>
 	)
 }

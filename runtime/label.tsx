@@ -17,12 +17,13 @@ import { FlatLoader } from './flat_loader.tsx'
  * @component
  */
 export interface Label {
+	text: string
+
 	color?: Color
 	editEvent?: EventKey<string>
-	isBold?: boolean
-	isItalic?: boolean
+	bold?: boolean
+	italic?: boolean
 	placeholder?: string
-	text?: string
 }
 
 export function LabelRender(props: Label) {
@@ -40,11 +41,11 @@ export function LabelRender(props: Label) {
 	const placeholder = props.placeholder ?? 'No content'
 
 	const canEdit = !!props.editEvent && !isDisabled
-	const isItalic = props.isItalic || showPlaceholder && !isEditing
-	const color = showPlaceholder ? { kind: props.color?.kind || 'Fore', opacity: 30 } : props.color ?? { kind: 'Fore', opacity: 80 }
+	const isItalic = props.italic || showPlaceholder && !isEditing
+	const color = showPlaceholder ? { type: props.color?.type || 'Fore', def: 30 } : props.color ?? { type: 'Fore', def: 80 }
 
 	const textStyleClasses = `
-		${props.isBold ? 'font-semibold' : ''}
+		${props.bold ? 'font-semibold' : ''}
 		${isItalic ? 'italic' : ''}
 	`
 	const styleClasses = `
@@ -89,7 +90,7 @@ export function LabelRender(props: Label) {
 				ref={divRef}
 				class={`
 					${styleClasses}
-					${hideStaticLabel ? `opacity-0 pointer-events-none` : ''}
+					${hideStaticLabel ? `def-0 pointer-events-none` : ''}
 					${canEdit ? 'border-transparent hover:border-fore-10' : ''}
 					min-h-24 min-w-1
 					whitespace-pre-wrap
@@ -140,7 +141,7 @@ export function LabelRender(props: Label) {
 
 			{isLoading && (
 				<div class='absolute left-5 right-5 bottom-0 height-2 overflow-hidden'>
-					<FlatLoader color={{ kind: 'Primary', opacity: 100 }} size={2} />
+					<FlatLoader color={{ type: 'Primary', def: 100 }} size={2} />
 				</div>
 			)}
 		</div>

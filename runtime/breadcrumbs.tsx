@@ -23,17 +23,19 @@ export interface Crumb {
  */
 export interface Breadcrumbs {
 	body?: Component
-	crumbs: Crumb[]
+	crumbs?: Crumb[]
 	current?: string
 }
 
 export function BreadcrumbsRender(props: Breadcrumbs) {
+	const crumbs = props.crumbs || []
+
 	return (
 		<div class='h-full flex flex-col gap-10'>
 			<div class='flex gap-5 items-center'>
-				{props.crumbs.map((crumb) => <Crumb {...crumb} />)}
+				{crumbs.map((crumb) => <Crumb {...crumb} />)}
 
-				{props.current && <LabelRender color={{ kind: 'Fore', opacity: 50 }} isBold={true} isItalic={false} text={props.current} />}
+				{props.current && <LabelRender color={{ type: 'Fore', def: 50 }} isBold={true} isItalic={false} text={props.current} />}
 			</div>
 
 			{props.body && (
@@ -52,19 +54,19 @@ function Crumb(props: Crumb) {
 		<>
 			<button
 				disabled={isLoading || isDisabled}
-				class={`relative transition-opacity ${isLoading ? 'opacity-80 cursor-not-allowed' : 'cursor-pointer hover:opacity-80'}`}
+				class={`relative transition-def ${isLoading ? 'def-80 cursor-not-allowed' : 'cursor-pointer hover:def-80'}`}
 				onClick={() => dispatch(null)}
 			>
-				<LabelRender color={{ kind: 'Primary', opacity: 100 }} isBold={true} isItalic={false} text={props.text} />
+				<LabelRender color={{ type: 'Primary', def: 100 }} isBold={true} isItalic={false} text={props.text} />
 
 				{isLoading && (
 					<div class='absolute -bottom-4 left-0 right-0 overflow-hidden'>
-						<FlatLoader color={{ kind: 'Primary', opacity: 100 }} size={4} />
+						<FlatLoader color={{ type: 'Primary', def: 100 }} size={4} />
 					</div>
 				)}
 			</button>
 
-			<IconRender color={{ kind: 'Fore', opacity: 10 }} name='mdi-chevron-right' size={20} />
+			<IconRender color={{ type: 'Fore', def: 10 }} name='mdi-chevron-right' size={20} />
 		</>
 	)
 }

@@ -1,7 +1,7 @@
 import { useDispatcher } from './event.tsx'
 import { ComponentRender } from './component.tsx'
 import { Component, EventKey, React } from './deps.ts'
-import { IconName, IconRender } from './icon.tsx'
+import { IconRender } from './icon.tsx'
 import { Image, ImageRender } from './image.tsx'
 import { getEventId } from '../runtime_lib/mod.ts'
 
@@ -19,26 +19,34 @@ import { getEventId } from '../runtime_lib/mod.ts'
  * @component
  */
 export interface SidebarLayout {
-	eventItems: SidebarItem[]
+	title: string
+
+	eventItems?: SidebarItem[]
 	body?: Component
 	footer?: Component
-	groups: SidebarGroup[]
+	groups?: SidebarGroup[]
 	initialEvent?: EventKey<null>
 	logo?: Image
-	title: string
 	titleEvent?: EventKey<null>
 }
+
 export interface SidebarItem {
-	event?: EventKey<null>
-	icon?: IconName
 	title: string
+
+	event?: EventKey<null>
+	icon?: string
 }
+
 export interface SidebarGroup {
-	items: SidebarItem[]
 	name: string
+
+	items?: SidebarItem[]
 }
 
 export function SidebarLayoutRender(props: SidebarLayout) {
+	const eventItems = props.eventItems || []
+	const groups = props.groups || []
+
 	const [selectedKey, setSelectedKey] = React.useState(props.initialEvent ? getEventId(props.initialEvent) : null)
 
 	const setItem = (key: EventKey<null>) => setSelectedKey(getEventId(key))
@@ -59,9 +67,9 @@ export function SidebarLayoutRender(props: SidebarLayout) {
 						<div class='text-xl font-bold'>{props.title}</div>
 					</button>
 
-					{props.eventItems.length > 0 && (
+					{eventItems.length > 0 && (
 						<div class='flex flex-col gap-10'>
-							{props.eventItems.map((item) => (
+							{eventItems.map((item) => (
 								<Item
 									onSelected={() => {
 										if (!item.event) return
@@ -76,12 +84,14 @@ export function SidebarLayoutRender(props: SidebarLayout) {
 					)}
 
 					<div class='flex flex-col gap-30'>
-						{props.groups.map((group) => {
+						{groups.map((group) => {
+							const items = group.items || []
+
 							return (
 								<>
 									<div class='flex flex-col gap-10'>
 										<div class='uppercase text-sm text-fore-30 font-semibold pl-14'>{group.name}</div>
-										{group.items.map((item) => {
+										{items.map((item) => {
 											return (
 												<Item
 													onSelected={() => {
@@ -137,7 +147,7 @@ function Item(props: SidebarItem & { isSelected: boolean; onSelected(): void }) 
 			{props.icon && (
 				<IconRender
 					name={props.icon}
-					color={{ kind: props.isSelected ? 'Primary' : 'Fore', opacity: props.isSelected ? 100 : 40 }}
+					color={{ type: props.isSelected ? 'Primary' : 'Fore', def: props.isSelected ? 100 : 40 }}
 					size={20}
 				/>
 			)}

@@ -1,12 +1,12 @@
 import { Color } from './theme.tsx'
 
-export function getColor(color: Color, opacityOverride: number | null = null) {
-	const opacity = opacityOverride !== null
-		? opacityOverride < 0 ? Math.max(color.opacity + opacityOverride, 5) : opacityOverride
-		: color.opacity
-	const type = color.kind === 'DecorationFore' ? 'decoration-fore' : color.kind.toLowerCase()
+export function getColor(color: Color, defOverride: number | null = null) {
+	const def = defOverride !== null
+		? defOverride < 0 ? Math.max(color.def + defOverride, 5) : defOverride
+		: color.def
+	const type = color.type === 'DecorationFore' ? 'decoration-fore' : color.type.toLowerCase()
 
-	return `${type}-${opacity}`
+	return `${type}-${def}`
 }
 
 export function makeDebounce<P>(fn: (param: P) => void, ms: number): (param: P) => void {

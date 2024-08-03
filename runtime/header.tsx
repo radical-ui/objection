@@ -1,5 +1,5 @@
 import { EventKey, React } from './deps.ts'
-import { IconButtonRender, IconName } from './icon.tsx'
+import { IconButtonRender } from './icon.tsx'
 import { LabelRender } from './label.tsx'
 
 const getIconSize = (size: HeaderSize) => {
@@ -20,7 +20,7 @@ export type HeaderSize = 'Large' | 'Medium' | 'Small'
 
 export interface HeaderActionItem {
 	event: EventKey<null>
-	icon: IconName
+	icon: string
 	label: string
 }
 
@@ -36,23 +36,27 @@ export interface HeaderActionItem {
  * @component
  */
 export interface Header {
-	eventItems: HeaderActionItem[]
-	size: HeaderSize
+	title: string
+
+	eventItems?: HeaderActionItem[]
+	size?: HeaderSize
 	subtitle?: string
 	subtitleEditEvent?: EventKey<string>
 	subtitlePlaceholder?: string
-	title: string
 	titleEditEvent?: EventKey<string>
 	titlePlaceholder?: string
 }
 
 export function HeaderRender(props: Header) {
+	const eventItems = props.eventItems || []
+	const size = props.size || 'Medium'
+
 	return (
 		<div class='flex-1 flex flex-col gap-5'>
 			<div class='flex gap-5 items-center'>
-				<h1 class={`flex-1 text-primary flex text-${getTextSize(props.size)}`}>
+				<h1 class={`flex-1 text-primary flex text-${getTextSize(size)}`}>
 					<LabelRender
-						color={{ kind: 'Fore', opacity: 90 }}
+						color={{ type: 'Fore', def: 90 }}
 						isBold
 						isItalic={false}
 						text={props.title}
@@ -60,12 +64,12 @@ export function HeaderRender(props: Header) {
 						placeholder={props.titlePlaceholder}
 					/>
 				</h1>
-				{props.eventItems.map((item) => (
+				{eventItems.map((item) => (
 					<div class='h-0 flex items-center'>
 						<IconButtonRender
-							color={{ kind: 'Primary', opacity: 100 }}
+							color={{ type: 'Primary', def: 100 }}
 							name={item.icon}
-							size={getIconSize(props.size)}
+							size={getIconSize(size)}
 							event={item.event}
 							title={item.label}
 						/>
@@ -78,7 +82,7 @@ export function HeaderRender(props: Header) {
 						text={props.subtitle}
 						isBold={false}
 						isItalic={false}
-						color={{ kind: 'Fore', opacity: 30 }}
+						color={{ type: 'Fore', def: 30 }}
 						editEvent={props.subtitleEditEvent}
 						placeholder={props.subtitlePlaceholder}
 					/>

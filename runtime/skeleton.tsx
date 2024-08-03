@@ -1,6 +1,6 @@
 import { useDispatcher } from './event.tsx'
 import { ComponentRender } from './component.tsx'
-import { AnyEvent, Component, React } from './deps.ts'
+import { Component, React } from './deps.ts'
 
 const SkeletonContext = React.createContext(false)
 
@@ -16,16 +16,16 @@ const SkeletonContext = React.createContext(false)
  * @component
  */
 export interface Skeleton {
-	body: Component
-	linkedEvent: AnyEvent
+	linkedEventSymbols?: string[]
+	body?: Component
 }
 
 export function SkeletonRender(props: Skeleton) {
-	const { isLoading } = useDispatcher(props.linkedEvent)
+	const { isLoading } = useDispatcher(props.linkedEventSymbols ? { eventPath: props.linkedEventSymbols } : null)
 
 	return (
 		<SkeletonContext.Provider value={isLoading}>
-			<ComponentRender {...props.body} />
+			{props.body && <ComponentRender {...props.body} />}
 		</SkeletonContext.Provider>
 	)
 }

@@ -19,13 +19,14 @@ export type DividerDistinction = 'Profound' | 'Medium' | 'Slight'
  * @component
  */
 export interface Divider {
-	direction: DividerDirection
-	distinction: DividerDistinction
+	direction?: DividerDirection
+	distinction?: DividerDistinction
 }
 
 export function DividerRender(props: Divider) {
-	const mainLetter = props.direction === 'Horizontal' ? 'w' : 'h'
-	const crossLetter = props.direction === 'Vertical' ? 'w' : 'h'
+	const direction = props.direction ?? 'Horizontal'
+	const mainLetter = direction === 'Horizontal' ? 'w' : 'h'
+	const crossLetter = direction === 'Vertical' ? 'w' : 'h'
 
-	return <div class={`${mainLetter}-full ${crossLetter}-${getBreadth(props.distinction)} bg-fore-10`} />
+	return <div class={`${mainLetter}-full ${crossLetter}-${getBreadth(props.distinction ?? 'Medium')} bg-fore-10`} />
 }

@@ -142,7 +142,7 @@ impl RustGen<'_> {
 				impl objection::IntoComponentIndex for #name_ident {
 					type Index = #index_ident;
 
-					fn into(self) -> #index_ident {
+					fn into_index(self) -> #index_ident {
 						#index_ident::#name_ident(Box::new(self))
 					}
 				}
@@ -178,9 +178,10 @@ impl RustGen<'_> {
 				KindContext::Value { existing_value_expression } => quote! { #existing_value_expression.into() },
 			},
 			Kind::Number => match context {
-				KindContext::Type | KindContext::CallSignature => quote! { f64 },
+				KindContext::Type => quote! { f64 },
+				KindContext::CallSignature => quote! { impl Into<f64> },
 				KindContext::ConstructorKey => bail!("A number cannot be constructed via a key"),
-				KindContext::Value { existing_value_expression } => existing_value_expression,
+				KindContext::Value { existing_value_expression } => quote! { #existing_value_expression.into() },
 			},
 			Kind::Bool => match context {
 				KindContext::Type | KindContext::CallSignature => quote! { bool },
@@ -222,7 +223,7 @@ impl RustGen<'_> {
 					}
 					KindContext::Value { existing_value_expression } => {
 						if name == self.index_name {
-							quote! { #existing_value_expression.into() }
+							quote! { #existing_value_expression.into_index() }
 						} else {
 							existing_value_expression
 						}
@@ -489,6 +490,105 @@ impl RustGen<'_> {
 				)
 				.transpose()?
 				.unwrap_or(default_method)
+			} else if let Kind::List { of } = resolved_kind {
+				let mut pusher = None;
+				let singular_name = snake_property_name.to_singular();
+
+				if property.name != singular_name {
+					let (inner_kind, _) = self.collection.resolve_kind(of);
+					let singular_name_ident = format_ident!("{singular_name}");
+					let inner_call_signature_tokens = self.gen_kind(&property_context_name, None, of, KindContext::CallSignature)?;
+					let inner_value_tokens = self.gen_kind(
+						&property_context_name,
+						None,
+						of,
+						KindContext::Value {
+							existing_value_expression: singular_name_ident.to_token_stream(),
+						},
+					)?;
+
+					let object_constructor = if let Kind::Object { properties } = inner_kind {
+						self.get_constructor_info(GetConstructorInfoParams {
+							struct_name: context_name,
+							argument_prefix: None,
+							properties,
+							limit: 3,
+						})?
+						.map(
+							|ConstructorInfo {
+							     construction_body_tokens,
+							     argument_tokens,
+							     comment,
+							 }|
+							 -> Result<_> {
+								let key = self.gen_kind(&property_context_name, None, of, KindContext::ConstructorKey)?;
+								let comment_tokens = comment.map(|comment| quote! { #[doc = #comment] });
+
+								let setter = if property.is_optional {
+									quote! {
+										if let Some(vec) = &mut self.#snake_property_ident {
+											vec.push(#key { #construction_body_tokens });
+										} else {
+											self.#snake_property_ident = Some(Vec::from([#key { #construction_body_tokens }]));
+										}
+									}
+								} else {
+									quote! {
+										self.#snake_property_ident.push(#key { #construction_body_tokens });
+									}
+								};
+
+								Ok(quote! {
+									#comment_tokens
+									pub fn #singular_name_ident(mut self, #argument_tokens) -> #name_ident {
+										#setter
+
+										self
+									}
+								})
+							},
+						)
+						.transpose()?
+					} else {
+						None
+					};
+
+					let setter = if property.is_optional {
+						quote! {
+							if let Some(vec) = &mut self.#snake_property_ident {
+								vec.push(#inner_value_tokens);
+							} else {
+								self.#snake_property_ident = Some(Vec::from([#inner_value_tokens]));
+							}
+						}
+					} else {
+						quote! {
+							self.#snake_property_ident.push(#inner_value_tokens);
+						}
+					};
+
+					let full_method_name = if object_constructor.is_some() {
+						format_ident!("{singular_name}_full")
+					} else {
+						singular_name_ident.clone()
+					};
+
+					pusher = Some(quote! {
+						#object_constructor
+
+						pub fn #full_method_name(mut self, #singular_name_ident: #inner_call_signature_tokens) -> #name_ident {
+							#setter
+
+							self
+						}
+					});
+				}
+
+				quote! {
+					#default_method
+
+					#pusher
+				}
 			} else {
 				default_method
 			}));

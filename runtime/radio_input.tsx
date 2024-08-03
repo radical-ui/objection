@@ -18,7 +18,7 @@ import { LabelRender } from './label.tsx'
 export interface RadioInput {
 	event?: EventKey<number>
 	initialValue?: number
-	items: RadioItem[]
+	items?: RadioItem[]
 }
 export interface RadioItem {
 	description?: Component
@@ -27,22 +27,24 @@ export interface RadioItem {
 }
 
 export function RadioInputRender(props: RadioInput) {
+	const items = props.items ?? []
+
 	const { dispatch, isDisabled } = useDispatcher(props.event ?? null)
 	const [selectedId, setSelectedId] = React.useState<number | null>(props.initialValue ?? null)
 
-	const someoneHasDescription = !!props.items.find((item) => item.description)
-	const goVertical = someoneHasDescription || props.items.length > 4
+	const someoneHasDescription = !!items.find((item) => item.description)
+	const goVertical = someoneHasDescription || items.length > 4
 
 	return (
 		<div class={`flex gap-${goVertical ? 10 : 20} ${goVertical ? 'flex-col' : ''}`}>
-			{props.items.map((item) => {
+			{items.map((item) => {
 				const isSelected = item.id === selectedId
 
 				return (
 					<button
 						class={`
-							text-left flex flex-col transition-opacity 
-							${isDisabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:opacity-90'}
+							text-left flex flex-col transition-def 
+							${isDisabled ? 'def-50 cursor-not-allowed' : 'cursor-pointer hover:def-90'}
 						`}
 						disabled={isDisabled}
 						onClick={() => {
@@ -53,9 +55,9 @@ export function RadioInputRender(props: RadioInput) {
 							<IconRender
 								name={isSelected ? 'mdi-radiobox-marked' : 'mdi-radiobox-blank'}
 								size={20}
-								color={isSelected ? { opacity: 100, kind: 'Primary' } : { opacity: 50, kind: 'Fore' }}
+								color={isSelected ? { def: 100, type: 'Primary' } : { def: 50, type: 'Fore' }}
 							/>
-							<LabelRender color={{ kind: 'Fore', opacity: 50 }} isBold isItalic={false} text={item.title} />
+							<LabelRender color={{ type: 'Fore', def: 50 }} bold italic={false} text={item.title} />
 						</div>
 						{item.description && (
 							<div class='text-fore-40 pl-25'>

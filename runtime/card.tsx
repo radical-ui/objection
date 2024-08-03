@@ -17,11 +17,12 @@ import { getColor } from './utils.ts'
  */
 export interface Card {
 	body?: Component
-	color: ColorType
+	color?: ColorType
 }
 
 export function CardRender(props: Card) {
 	const isSkeleton = useSkeletonDetection()
+	const color = props.color ?? 'Fore'
 
 	if (isSkeleton) {
 		return (
@@ -39,7 +40,7 @@ export function CardRender(props: Card) {
 		<div
 			class={`
 				w-full h-full border rounded-md
-				border-${getColor({ kind: props.color, opacity: 10 })} bg-${getColor({ kind: props.color, opacity: 5 })}
+				border-${getColor({ type: color, def: 10 })} bg-${getColor({ type: color, def: 5 })}
 			`}
 		>
 			{props.body && <ComponentRender {...props.body} />}

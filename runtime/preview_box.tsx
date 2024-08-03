@@ -10,8 +10,8 @@ const svg =
  * @component
  */
 export interface PreviewBox {
-	child: Component
 	title: string
+	child: Component
 }
 
 export function PreviewBoxRender(params: PreviewBox) {
@@ -20,7 +20,7 @@ export function PreviewBoxRender(params: PreviewBox) {
 			<div class='px-15 py-5 bg-fore-5 font-semibold text-fore-40'>{params.title}</div>
 			<div class='h-2 bg-fore-10' />
 			<div class='flex-1 bg-base min-h-0' style={`background-image: url("data:image/svg+xml,${encodeURIComponent(svg)}")`}>
-				{<ComponentRender {...params.child} />}
+				{params.child && <ComponentRender {...params.child} />}
 			</div>
 		</div>
 	)

@@ -7,8 +7,8 @@ import { GlobalCss } from './utils.ts'
 
 const css = new GlobalCss(`
 	@keyframes modal-fade-in {
-		from { opacity: 0 }
-		to { opacity: 1 }
+		from { def: 0 }
+		to { def: 1 }
 	}
 
 	@keyframes modal-slide-down {
@@ -77,7 +77,7 @@ export function ModalRender(props: Modal) {
 				<div class={`pointer-events-auto rounded shadow-lg bg-base p-30 ${getSizeClasses(props.size)} flex flex-col gap-10`}>
 					<div class='flex gap-10 items-center'>
 						<h2 class='text-2xl font-semibold text-fore-60 flex-1'>{props.title}</h2>
-						<IconButtonRender color={{ kind: 'Fore', opacity: 60 }} name='mdi-close' size={30} event={props.cancelEvent} />
+						<IconButtonRender color={{ type: 'Fore', def: 60 }} name='mdi-close' size={30} event={props.cancelEvent} />
 					</div>
 
 					<p class='text-fore-40'>{props.description}</p>
@@ -90,7 +90,7 @@ export function ModalRender(props: Modal) {
 
 							{props.cancelEvent && (
 								<ButtonRender
-									color={{ kind: 'Fore', opacity: 30 }}
+									color={{ type: 'Fore', def: 30 }}
 									full={false}
 									label={props.cancelEventLabel || 'Cancel'}
 									outline={false}
@@ -101,7 +101,7 @@ export function ModalRender(props: Modal) {
 
 							{props.cancelEvent && (
 								<ButtonRender
-									color={{ kind: 'Primary', opacity: 100 }}
+									color={{ type: 'Primary', def: 100 }}
 									full={false}
 									label={props.finishEventLabel || 'Ok'}
 									outline={false}

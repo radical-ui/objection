@@ -18,25 +18,29 @@ export type FlexJustify =
  * @component
  */
 export interface Flex {
-	align: FlexAlign
-	gap: number
-	items: FlexItem[]
-	justify: FlexJustify
+	align?: FlexAlign
+	gap?: number
+	items?: FlexItem[]
+	justify?: FlexJustify
 	kind: FlexKind
 }
 
 export interface FlexItem {
-	component: Component
 	growth: FlexGrowth
+	component: Component
 }
 
 export function FlexRender(params: Flex) {
+	const align = params.align || 'Stretch'
+	const justify = params.justify || 'Start'
+	const items = params.items || []
+
 	return (
 		<div
 			class={`w-full h-full flex ${params.kind === 'Column' ? 'flex-col' : ''} gap-${params.gap}`}
-			style={{ alignItems: alignment(params.align), justifyContent: justify(params.justify) }}
+			style={{ alignItems: alignment(align), justifyContent: justification(justify) }}
 		>
-			{params.items.map((item) => {
+			{items.map((item) => {
 				return (
 					<div class={`${item.growth === 'Expand' ? 'flex-1' : ''} min-${params.kind === 'Column' ? 'h' : 'w'}-0`}>
 						<ComponentRender {...item.component} />
@@ -59,7 +63,7 @@ const alignment = (input: FlexAlign) => {
 	return 'stretch'
 }
 
-const justify = (input: FlexJustify) => {
+const justification = (input: FlexJustify) => {
 	if (input === 'Center') return 'center'
 	if (input === 'End') return 'end'
 	if (input === 'Start') return 'start'

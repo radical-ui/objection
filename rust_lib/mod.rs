@@ -1,3 +1,4 @@
+use log::error;
 use rand::random;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use serde_json::{from_value, json, to_value, Value};
@@ -9,41 +10,55 @@ enum EventScope<'a> {
 	Borrowed(&'a str),
 }
 
-pub struct Ui<'a> {
+pub struct Client<'a> {
+	current_event_scope: Vec<EventScope<'a>>,
+
 	event_path: &'a [String],
-	event_path_pointer: usize,
 	event_data: &'a mut Option<Value>,
 	actions: &'a mut Vec<Value>,
+}
+
+pub struct Ui<'a> {
 	current_event_scope: Vec<EventScope<'a>>,
 }
 
 impl<'a> Ui<'a> {
-	pub fn scope(&'a mut self, symbol: impl EventSymbol) -> Ui<'a> {
-		let mut current_event_scope = self
-			.current_event_scope
-			.iter()
-			.map(|item| match item {
-				EventScope::Owned(string) => EventScope::Borrowed(string.as_str()),
-				EventScope::Borrowed(str) => EventScope::Borrowed(str),
-			})
-			.collect::<Vec<_>>();
-
-		current_event_scope.push(EventScope::Owned(symbol.to_string()));
-
-		Ui {
-			event_path: self.event_path,
-			event_path_pointer: self.event_path_pointer + 1,
-			event_data: self.event_data,
-			actions: self.actions,
-			current_event_scope,
+	pub fn event_key<T>(&self) -> EventKey<T> {
+		EventKey {
+			event_path: self
+				.current_event_scope
+				.iter()
+				.map(|scope| match scope {
+					EventScope::Owned(symbol) => symbol.to_string(),
+					EventScope::Borrowed(scope) => scope.to_string(),
+				})
+				.collect(),
+			debug_symbol: None,
+			_marker: PhantomData,
 		}
 	}
 
-	fn take_current_event_symbol(&mut self) -> Option<&str> {
-		let data = self.event_path.get(self.event_path_pointer)?;
-		self.event_path_pointer += 1;
+	pub fn scope(&'a self, symbol: impl EventSymbol) -> Ui<'a> {
+		let mut current_event_scope = borrow_scope(&self.current_event_scope);
 
-		Some(data)
+		current_event_scope.push(EventScope::Owned(symbol.to_string()));
+
+		Ui { current_event_scope }
+	}
+
+	// fn take_current_event_symbol(&mut self) -> Option<&str> {
+	// 	let data = self.event_path.get(self.event_path_pointer)?;
+	// 	self.event_path_pointer += 1;
+
+	// 	Some(data)
+	// }
+}
+
+impl<'a> Client<'a> {
+	pub fn ui(&'a self) -> Ui<'a> {
+		Ui {
+			current_event_scope: borrow_scope(&self.current_event_scope),
+		}
 	}
 
 	fn take_current_event_data(&mut self) -> Option<Value> {
@@ -89,13 +104,13 @@ impl RootUi {
 		}
 	}
 
-	pub fn scope_main(&mut self) -> Ui {
-		Ui {
+	pub fn get_client(&mut self) -> Client {
+		Client {
+			current_event_scope: Vec::from([EventScope::Owned("main".into())]),
+
 			event_path: &self.event_path,
-			event_path_pointer: 1,
 			event_data: &mut self.event_data,
 			actions: &mut self.actions,
-			current_event_scope: Vec::from([EventScope::Owned("main".into())]),
 		}
 	}
 
@@ -115,7 +130,7 @@ impl RootUi {
 
 	pub fn set_root_ui(&mut self, ui: impl IntoComponentIndex) {
 		self.actions
-			.push(json!({ "key": { "actionPath": ["root_mount"] }, "data": ui.into().to_value() }));
+			.push(json!({ "key": { "actionPath": ["root_mount"] }, "data": ui.into_index().to_value() }));
 	}
 
 	pub fn into_response(self) -> UiResponse {
@@ -202,6 +217,12 @@ pub struct EventKey<T> {
 	_marker: PhantomData<T>,
 }
 
+impl<T> EventKey<T> {
+	pub fn get_dynamic_symbols(&self) -> Vec<String> {
+		self.event_path.clone()
+	}
+}
+
 #[derive(Debug, Error)]
 pub enum TakeDataError {
 	#[error(
@@ -219,26 +240,29 @@ pub enum TakeDataError {
 }
 
 impl<T: DeserializeOwned> EventKey<T> {
-	pub fn take_data(&self, ui: &mut Ui) -> Result<T, TakeDataError> {
-		if self.event_path.len() != ui.event_path.len() {
+	pub fn take_data(&self, client: &mut Client) -> Result<T, TakeDataError> {
+		if self.event_path.len() != client.event_path.len() {
 			return Err(TakeDataError::DifferingEventPaths {
 				existing: self.event_path.clone(),
-				incomming: ui.event_path.to_vec(),
+				incomming: client.event_path.to_vec(),
 			});
 		}
 
 		for (index, symbol) in self.event_path.iter().enumerate() {
-			let expected_symbol = ui.event_path.get(index).expect("this should never happen because of the length check above");
+			let expected_symbol = client
+				.event_path
+				.get(index)
+				.expect("this should never happen because of the length check above");
 
 			if expected_symbol != symbol {
 				return Err(TakeDataError::DifferingEventPaths {
 					existing: self.event_path.clone(),
-					incomming: ui.event_path.to_vec(),
+					incomming: client.event_path.to_vec(),
 				});
 			}
 		}
 
-		let raw_data = ui.take_current_event_data().ok_or(TakeDataError::DataAlreadyTaken)?;
+		let raw_data = client.take_current_event_data().ok_or(TakeDataError::DataAlreadyTaken)?;
 
 		let data = from_value(raw_data).map_err(|inner| TakeDataError::FailedToDeserialize {
 			serde_error: inner.to_string(),
@@ -273,8 +297,8 @@ impl<T: Serialize + Clone> ActionKey<T> {
 		self
 	}
 
-	pub fn emit(&self, data: T, ui: &mut Ui) {
-		ui.push_action(Action { key: self.to_owned(), data });
+	pub fn emit(&self, data: T, client: &mut Client) {
+		client.push_action(Action { key: self.to_owned(), data });
 	}
 }
 
@@ -326,12 +350,6 @@ pub trait EventSymbol: Sized + Serialize + for<'de> Deserialize<'de> {
 			serde_error: inner.to_string(),
 		})
 	}
-
-	fn parse(ui: &mut Ui) -> Result<Self, ParseError> {
-		let symbol = ui.take_current_event_symbol().ok_or(ParseError::NoSymbolsLeft)?;
-
-		Self::from_string(symbol).map_err(|inner| ParseError::FromStringError(inner))
-	}
 }
 
 pub trait IntoComponentIndex
@@ -340,7 +358,7 @@ where
 {
 	type Index: ComponentIndex;
 
-	fn into(self) -> Self::Index;
+	fn into_index(self) -> Self::Index;
 }
 
 pub trait ComponentIndex
@@ -353,7 +371,17 @@ where
 impl<Index: ComponentIndex> IntoComponentIndex for Index {
 	type Index = Index;
 
-	fn into(self) -> Index {
+	fn into_index(self) -> Index {
 		self
 	}
+}
+
+fn borrow_scope<'a>(scope: &'a Vec<EventScope<'a>>) -> Vec<EventScope<'a>> {
+	scope
+		.iter()
+		.map(|item| match item {
+			EventScope::Owned(string) => EventScope::Borrowed(string.as_str()),
+			EventScope::Borrowed(str) => EventScope::Borrowed(str),
+		})
+		.collect::<Vec<_>>()
 }

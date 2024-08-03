@@ -1,10 +1,14 @@
 import { ComponentRender } from './component.tsx'
 import { Component, frontier, React } from './deps.ts'
 
-export interface Color {
-	opacity: number
-	kind: ColorType
-}
+export type Color =
+	| { type: 'Primary'; def: number }
+	| { type: 'Fore'; def: number }
+	| { type: 'DecorationFore'; def: number }
+	| { type: 'Base'; def: number }
+	| { type: 'Danger'; def: number }
+	| { type: 'Warn'; def: number }
+	| { type: 'Success'; def: number }
 
 export type ColorType = 'Primary' | 'Fore' | 'DecorationFore' | 'Base' | 'Danger' | 'Warn' | 'Success'
 export type SelectionMode = 'OptIn' | 'OptOut'
@@ -32,9 +36,9 @@ export interface ColorPalette {
 }
 
 export interface ColorDefinition {
-	blue: number
-	green: number
 	red: number
+	green: number
+	blue: number
 }
 
 /**

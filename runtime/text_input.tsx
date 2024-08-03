@@ -1,7 +1,7 @@
 import { useDispatcher } from './event.tsx'
 import { Color } from './theme.tsx'
 import { ActionKey, EventKey, React } from './deps.ts'
-import { IconName, IconRender } from './icon.tsx'
+import { IconRender } from './icon.tsx'
 import { getColor, isOk, makeDebounce } from './utils.ts'
 import { FlatLoader } from './flat_loader.tsx'
 import { JustTheCheckbox } from './checkbox_input.tsx'
@@ -48,12 +48,6 @@ export type TextInputHook = number
  *
  * `allow_multiple_options` has no effect if an `option_selected_option` is not supplied. If it is, more that one option can be selected.
  *
- * **Example**
- *
- * ```rust #[derive(HasActionKey, Serialize, Deserialize)] enum Event { InputChanged, InputBlurred, OptionSelected, Submit }
- *
- * Padding::all(30).body( Flex::new(FlexKind::Column) .gap(20) .auto_item(TextInput::new("Username").change_event(Event::InputChanged).submit_event(Event::Submit)) .auto_item(TextInput::new("Password").role(TextInputRole::Password).blur_event(Event::InputBlurred).submit_event(Event::Submit)) .auto_item(TextInput::new("With Initial Value").initial_value("Hello there!").blur_event(Event::InputBlurred).submit_event(Event::Submit)) .auto_item(TextInput::new("Email (disabled)").submit_event(Event::Submit).role(TextInputRole::Email).leading_icon("mdi-ab-testing")) .auto_item( TextInput::new("Dropdown with client filtering") .role(TextInputRole::Email) .blur_event(Event::InputBlurred) .submit_event(Event::Submit) .initial_dropdown_options(Vec::from([ DropdownOption::new(Uuid::new_v4(), "Option 1"), DropdownOption::new(Uuid::new_v4(), "Option 2"), DropdownOption::new(Uuid::new_v4(), "Option 3"), DropdownOption::new(Uuid::new_v4(), "Option 4"), DropdownOption::new(Uuid::new_v4(), "Option 5"), ])) ) .auto_item( TextInput::new("Dropdown with server filtering") .role(TextInputRole::Email) .change_event(Event::InputChanged) .submit_event(Event::Submit) .initial_dropdown_options(Vec::from([ DropdownOption::new(Uuid::new_v4(), "Option 1"), DropdownOption::new(Uuid::new_v4(), "Option 2"), DropdownOption::new(Uuid::new_v4(), "Option 3").is_disabled(), DropdownOption::new(Uuid::new_v4(), "Option 4"), DropdownOption::new(Uuid::new_v4(), "Option 5"), ])) ) .auto_item( TextInput::new("Dropdown without free text and client filtering") .role(TextInputRole::Email) .option_selected_event(Event::OptionSelected) .submit_event(Event::Submit) .initial_dropdown_options(Vec::from([ DropdownOption::new(Uuid::new_v4(), "Option 1"), DropdownOption::new(Uuid::new_v4(), "Option 2"), DropdownOption::new(Uuid::new_v4(), "Option 3"), DropdownOption::new(Uuid::new_v4(), "Option 4"), DropdownOption::new(Uuid::new_v4(), "Option 5"), ])) ) .auto_item( TextInput::new("Dropdown without free text and client filtering and multiple") .role(TextInputRole::Email) .option_selected_event(Event::OptionSelected) .submit_event(Event::Submit) .multiple() .initial_dropdown_options(Vec::from([ DropdownOption::new(Uuid::new_v4(), "Option 1"), DropdownOption::new(Uuid::new_v4(), "Option 2"), DropdownOption::new(Uuid::new_v4(), "Option 3"), DropdownOption::new(Uuid::new_v4(), "Option 4"), DropdownOption::new(Uuid::new_v4(), "Option 5"), ])) ) ) ```
- *
  * @component
  */
 export interface TextInput {
@@ -63,12 +57,12 @@ export interface TextInput {
 	initialSelectedOptions?: string[]
 	initialValue?: string
 	label: string
-	leadingIcon?: IconName
-	multiple: boolean
+	leadingIcon?: string
+	multiple?: boolean
 	optionSelectedEvent?: EventKey<string[]>
-	role: TextInputRole
+	role?: TextInputRole
 	submitEvent?: EventKey<null>
-	trailingIcon?: IconName
+	trailingIcon?: string
 	defaultValidity?: InputValidity
 	setOptionsAction?: ActionKey<DropdownOption[]>
 	setValidityAction?: ActionKey<InputValidity>
@@ -77,11 +71,12 @@ export interface DropdownOption {
 	description?: string
 	id: string
 	informative?: string
-	isDisabled: boolean
+	isDisabled?: boolean
 	title: string
 }
 
 export function TextInputRender(props: TextInput) {
+	const role = props.role || 'Plain'
 	const initialOptions = props.initialSelectedOptions && props.initialDropdownOptions
 		? props.initialDropdownOptions.filter((option) => props.initialSelectedOptions!.includes(option.id)).map((option) => ({
 			id: option.id,
@@ -112,8 +107,8 @@ export function TextInputRender(props: TextInput) {
 		setConceal(props.role === 'Password')
 	}, [props.role])
 
-	const isDisabled = submitIsLoading || changeIsDisabled || blurIsDisabled || dropdownSelectionIsDisabled ||
-		submitIsDisabled
+	const isDisabled = submitIsLoading || changeIsDisabled && blurIsDisabled && dropdownSelectionIsDisabled &&
+			submitIsDisabled
 
 	// if the server doesn't listen for dropdown selection events, the text field is considered free.
 	const isFreeText = !props.optionSelectedEvent
@@ -121,14 +116,14 @@ export function TextInputRender(props: TextInput) {
 	const isLoading = changeIsLoading || blurIsLoading || dropdownSelectionIsLoading
 	const showDropdown = isFocused && dropdownOptions.length > 0
 	const focusColor: Color = {
-		kind: validity.level === 'Invalid' ? 'Danger' : validity.level === 'Valid' ? 'Success' : 'Primary',
-		opacity: 100,
+		type: validity.level === 'Invalid' ? 'Danger' : validity.level === 'Valid' ? 'Success' : 'Primary',
+		def: 100,
 	}
 	const normalColor = validity.level === 'Invalid' ? 'danger' : validity.level === 'Valid' ? 'success' : 'fore'
 	const isActive = text.trim().length > 0 || selectedOptions.length > 0
 	const labelBaseClasses = ['scale-75', 'translate-y-[-25%]', 'translate-x-[-12.5%]', `text-${getColor(focusColor)}`]
 	const labelClasses = isActive ? labelBaseClasses : labelBaseClasses.map((c) => `group-focus-within:${c}`)
-	const trailingIcon = props.trailingIcon ?? getTrailingIcon(props.role, conceal)
+	const trailingIcon = props.trailingIcon ?? getTrailingIcon(role, conceal)
 	const swapIcon = props.role === 'Password' && !props.trailingIcon
 
 	React.useEffect(() => {
@@ -253,7 +248,7 @@ export function TextInputRender(props: TextInput) {
 		if (selectedOptions.length) removeDropdownOption(selectedOptions[selectedOptions.length - 1].id)
 	}
 
-	const iconColor: Color = { kind: 'Fore', opacity: 60 }
+	const iconColor: Color = { type: 'Fore', def: 60 }
 	const leadingIconNode = props.leadingIcon && <IconRender name={props.leadingIcon} size={20} color={iconColor} />
 	const trailingIconNode = trailingIcon && <IconRender name={trailingIcon} size={20} color={iconColor} />
 	const reducedTrailingIconNode = swapIcon
@@ -266,7 +261,7 @@ export function TextInputRender(props: TextInput) {
 				relative group flex gap-10 items-center cursor-text w-full border border-${normalColor}-10
 				focus-within:ring-4 ring-${getColor(focusColor)}-40 focus-within:bg-${getColor(focusColor)}-10
 				bg-${normalColor}-5 rounded px-14 transition-colors
-				${isDisabled ? 'opacity-50' : ''}
+				${isDisabled ? 'def-50' : ''}
 			`}
 			// we don't want clicking around to repetitively blur and refocus the input
 			onMouseDown={(event) => {
@@ -337,7 +332,7 @@ export function TextInputRender(props: TextInput) {
 							}
 						}}
 						onFocus={() => setIsFocused(true)}
-						inputMode={getInputMode(props.role)}
+						inputMode={getInputMode(role)}
 						type={conceal ? 'password' : 'text'}
 					/>
 				</div>
@@ -371,7 +366,7 @@ export function TextInputRender(props: TextInput) {
 							<DropdownItem
 								onSelected={() => selectDropdownOption(item)}
 								isActive={activeDropdownOptionIndex === index}
-								showCheckbox={props.multiple}
+								showCheckbox={props.multiple || false}
 								isSelected={!!selectedOptions.find((selectedOption) => selectedOption.id === item.id)}
 								{...item}
 							/>
@@ -415,7 +410,7 @@ function DropdownItem(props: DropdownOption & ExtraDropdownItemProps) {
 			disabled={props.isDisabled}
 			class={`
 				flex gap-15 items-center px-14
-				${props.isDisabled ? 'cursor-not-allowed opacity-50' : props.isActive ? 'bg-primary-10' : 'bg-transparent hover:bg-fore-5'}
+				${props.isDisabled ? 'cursor-not-allowed def-50' : props.isActive ? 'bg-primary-10' : 'bg-transparent hover:bg-fore-5'}
 			`}
 			onClick={(event) => {
 				event.preventDefault() // we don't want to refocus the input in the case where it was
@@ -456,7 +451,7 @@ function SelectedOptionChip(props: SelectedOptionChip) {
 				class='cursor-pointer rounded-full h-24 w-24 bg-transparent hover:bg-fore-10 transition-colors flex items-center justify-center'
 				onClick={() => props.onClear()}
 			>
-				<IconRender color={{ kind: 'Fore', opacity: 80 }} name='mdi-close-thick' size={15} />
+				<IconRender color={{ type: 'Fore', def: 80 }} name='mdi-close-thick' size={15} />
 			</div>
 			<div>{props.title}</div>
 		</div>

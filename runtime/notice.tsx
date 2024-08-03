@@ -92,7 +92,7 @@ function SingleNotice(props: Notice & { dismiss(): void }) {
 			>
 				<IconRender
 					name={props.style === 'Success' ? 'mdi-check-bold' : 'mdi-close-thick'}
-					color={{ kind: props.style === 'Success' ? 'Success' : 'Danger', opacity: 100 }}
+					color={{ type: props.style === 'Success' ? 'Success' : 'Danger', def: 100 }}
 					size={20}
 				/>
 				<div>{props.message}</div>

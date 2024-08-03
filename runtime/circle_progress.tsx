@@ -12,12 +12,14 @@ import { Label, LabelRender } from './label.tsx'
  */
 export interface CircleProgress {
 	label: Label
-	size: number
 	value: number
+
+	size?: number
 }
 
 export function CircleProgressRender(props: CircleProgress) {
-	const circleSize = props.size - 10
+	const size = props.size ?? 100
+	const circleSize = size - 10
 	const circumference = Math.PI * circleSize
 	const [fillAmount, setFillAmount] = React.useState(0)
 
@@ -26,18 +28,18 @@ export function CircleProgressRender(props: CircleProgress) {
 	}, [])
 
 	return (
-		<div class={`relative w-${props.size} h-${props.size}`}>
+		<div class={`relative w-${size} h-${size}`}>
 			<svg
-				width={props.size}
-				height={props.size}
+				width={size}
+				height={size}
 				xmlns='http://www.w3.org/2000/svg'
 				style='transform:rotate(-90deg)'
 			>
 				<circle
 					class='stroke-fore-10'
 					r={circleSize / 2}
-					cx={props.size / 2}
-					cy={props.size / 2}
+					cx={size / 2}
+					cy={size / 2}
 					fill='transparent'
 					stroke-width='6'
 					stroke-dashoffset='0'
@@ -46,8 +48,8 @@ export function CircleProgressRender(props: CircleProgress) {
 				<circle
 					class='stroke-primary transition-all delay-1000 duration-1000 ease-in-out'
 					r={circleSize / 2}
-					cx={props.size / 2}
-					cy={props.size / 2}
+					cx={size / 2}
+					cy={size / 2}
 					stroke-width='8'
 					stroke-linecap='round'
 					stroke-dashoffset={`${circumference - fillAmount * circumference}px`}

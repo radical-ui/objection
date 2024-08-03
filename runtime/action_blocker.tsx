@@ -1,5 +1,5 @@
-import { Component, ComponentRender } from './component.tsx'
-import { React } from './deps.ts'
+import { ComponentRender } from './component.tsx'
+import { Component, React } from './deps.ts'
 import { ManyMap } from './utils.ts'
 
 export type ActionKey = string

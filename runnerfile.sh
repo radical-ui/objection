@@ -19,6 +19,6 @@ task_build() {
   cargo run -p objection_cli --\
     --runtime file://$(pwd)/runtime/mod.tsx \
     --engine rust \
-    --bindings-path example/bindings.rs \
+    --bindings-path runtime_test/bindings.rs \
     --engine-url http://localhost:8000/ui run
 }

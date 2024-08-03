@@ -11,16 +11,19 @@ import { Component, React } from './deps.ts'
  * @component
  */
 export interface Table {
-	columns: TableColumn[]
-	rows: Component[][]
+	columns?: TableColumn[]
+	rows?: Component[][]
 }
 export interface TableColumn {
-	expand: boolean
 	name: string
+	expand?: boolean
 }
 
 export function TableRender(props: Table) {
-	const columnStyles = props.columns.map((col) => {
+	const columns = props.columns || []
+	const rows = props.rows || []
+
+	const columnStyles = columns.map((col) => {
 		return col.expand ? '1fr' : 'auto'
 	})
 
@@ -28,7 +31,7 @@ export function TableRender(props: Table) {
 		<div class='rounded border border-fore-10'>
 			<div class='bg-fore-10 rounded overflow-hidden'>
 				<div class='grid gap-2' style={{ gridTemplateColumns: columnStyles.join(' ') }}>
-					{props.columns.map((col) => {
+					{columns.map((col) => {
 						return (
 							<div class='bg-base'>
 								<div
@@ -41,9 +44,9 @@ export function TableRender(props: Table) {
 							</div>
 						)
 					})}
-					{props.rows.map((row) =>
+					{rows.map((row) =>
 						row.map((cell, index) => (
-							<div class={`bg-base py-8 px-14 flex items-center ${!props.columns[index]?.expand ? 'justify-center' : ''}`}>
+							<div class={`bg-base py-8 px-14 flex items-center ${!props.columns?.[index]?.expand ? 'justify-center' : ''}`}>
 								<ComponentRender {...cell} />
 							</div>
 						))

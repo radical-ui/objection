@@ -1,7 +1,7 @@
 import { useDispatcher } from './event.tsx'
 import { doBubble } from './bubble.ts'
 import { EventKey, React } from './deps.ts'
-import { IconName, IconRender } from './icon.tsx'
+import { IconRender } from './icon.tsx'
 import { Spinner } from './spinner.tsx'
 import { getColor } from './utils.ts'
 import { Color } from './theme.tsx'
@@ -21,33 +21,36 @@ export type ButtonSize = 'Small' | 'Medium' | 'Large'
  */
 export interface Button {
 	event?: EventKey<null>
-	color: Color
-	full: boolean
+	color?: Color
+	full?: boolean
 	label: string
-	leadingIcon?: IconName
-	outline: boolean
-	size: ButtonSize
-	trailingIcon?: IconName
+	leadingIcon?: string
+	outline?: boolean
+	size?: ButtonSize
+	trailingIcon?: string
 }
 
 export function ButtonRender(props: Button) {
+	const color = props.color || { type: 'Primary', def: 100 }
+	const size = props.size || 'Medium'
+
 	const { isLoading, dispatch, isDisabled: isActionDisabled } = useDispatcher(props.event ?? null)
 
-	const scale = props.size === 'Large' ? 1 : props.size === 'Small' ? 0.6 : 0.8
+	const scale = size === 'Large' ? 1 : size === 'Small' ? 0.6 : 0.8
 	const isDisabled = isActionDisabled || isLoading
 
 	const innerColor: Color = props.outline
-		? props.color
-		: props.color.kind === 'Base' || props.color.kind === 'Fore'
-		? { kind: 'Fore', opacity: 100 }
-		: { kind: 'DecorationFore', opacity: 100 }
+		? color
+		: color.type === 'Base' || color.type === 'Fore'
+		? { type: 'Fore', def: 100 }
+		: { type: 'DecorationFore', def: 100 }
 
 	const textColor = `text-${getColor(innerColor, 100)}`
 
 	const backgroundStyles = props.outline
 		? `bg-transparent ${!isDisabled ? 'hover:bg-fore-10' : ''}`
-		: `bg-${getColor(props.color)} ${!isDisabled ? `hover:bg-${getColor(props.color, -10)}` : ''} transition-colors`
-	const borderStyles = props.outline ? `border border-${getColor(props.color)}` : ''
+		: `bg-${getColor(color)} ${!isDisabled ? `hover:bg-${getColor(color, -10)}` : ''} transition-colors`
+	const borderStyles = props.outline ? `border border-${getColor(color)}` : ''
 
 	return (
 		<button
@@ -55,10 +58,10 @@ export function ButtonRender(props: Button) {
 				px-${Math.round(scale * 14)} py-${Math.round(scale * 8)} rounded
 				${backgroundStyles} ${borderStyles} transition-colors
 				uppercase font-semibold relative overflow-hidden
-				focus:ring-4 ring-${getColor(props.color, 40)}
+				focus:ring-4 ring-${getColor(color, 40)}
 				${textColor}
 				${props.full ? 'w-full' : ''}
-				${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}
+				${isDisabled ? 'def-50 cursor-not-allowed' : ''}
 			`}
 			type='button'
 			disabled={isDisabled}
@@ -71,18 +74,18 @@ export function ButtonRender(props: Button) {
 		>
 			<div
 				class={`
-					flex gap-${Math.round(scale * 8)} items-center ${isLoading ? `opacity-0` : ''}
+					flex gap-${Math.round(scale * 8)} items-center ${isLoading ? `def-0` : ''}
 					${props.full ? 'w-full justify-center' : ''}`}
 			>
 				{props.leadingIcon && <IconRender name={props.leadingIcon} size={Math.round(scale * 18)} color={innerColor} />}
-				<div class={`${props.size === 'Large' ? 'text-lg' : ''} ${props.size === 'Small' ? 'text-sm' : ''}`}>{props.label}</div>
+				<div class={`${size === 'Large' ? 'text-lg' : ''} ${size === 'Small' ? 'text-sm' : ''}`}>{props.label}</div>
 				{props.trailingIcon && <IconRender name={props.trailingIcon} size={Math.round(scale * 18)} color={innerColor} />}
 			</div>
 
 			{isLoading
 				? (
 					<div class='inset-0 absolute flex justify-center items-center '>
-						<Spinner color={innerColor} size={props.size === 'Large' ? 30 : props.size === 'Medium' ? 25 : 20} />
+						<Spinner color={innerColor} size={size === 'Large' ? 30 : size === 'Medium' ? 25 : 20} />
 					</div>
 				)
 				: <></>}

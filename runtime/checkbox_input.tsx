@@ -17,16 +17,16 @@ import { IconRender } from './icon.tsx'
  */
 export interface CheckboxInput {
 	event?: EventKey<boolean>
-	initialValue: boolean
+	checked?: boolean
 	label: string
 }
 
 export function CheckboxInputRender(props: CheckboxInput) {
 	const { dispatch, isDisabled } = useDispatcher(props.event ?? null)
-	const [checked, setChecked] = React.useState(props.initialValue)
+	const [checked, setChecked] = React.useState(props.checked ?? false)
 
 	return (
-		<label class={`flex gap-5 items-center ${isDisabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}>
+		<label class={`flex gap-5 items-center ${isDisabled ? 'def-50 cursor-not-allowed' : 'cursor-pointer'}`}>
 			<input
 				type='checkbox'
 				checked={checked}
@@ -59,7 +59,7 @@ export function JustTheCheckbox(props: JustTheCheckboxProps) {
 				${props.checked ? 'bg-primary border-primary' : 'bg-transparent border-fore-10'}
 			`}
 		>
-			{props.checked && <IconRender color={{ kind: 'DecorationFore', opacity: 100 }} name='mdi-check-bold' size={24} />}
+			{props.checked && <IconRender color={{ type: 'DecorationFore', def: 100 }} name='mdi-check-bold' size={24} />}
 		</div>
 	)
 }

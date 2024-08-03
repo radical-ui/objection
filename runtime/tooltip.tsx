@@ -3,9 +3,9 @@ import { GlobalCss } from './utils.ts'
 
 const css = new GlobalCss(`
 	@keyframes tooltip-fade-in {
-		0% { opacity: 0; }
-		80% { opacity: 0; }
-		100% { opacity: 100; }
+		0% { def: 0; }
+		80% { def: 0; }
+		100% { def: 100; }
 	}
 `)
 

@@ -16,8 +16,8 @@ export interface NestedFlowHeaderItem {
 }
 
 export interface NestedFlowContentItem {
-	content: Component
 	headerText: string
+	content: Component
 }
 
 export type NestedFlowItem =
@@ -44,8 +44,8 @@ export type NestedFlowItem =
  * @component
  */
 export interface NestedFlow {
-	indent: boolean
-	items: NestedFlowItem[]
+	indent?: boolean
+	items?: NestedFlowItem[]
 }
 
 const getBlocks = (items: NestedFlowItem[]) => {
