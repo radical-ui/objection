@@ -61,7 +61,7 @@ export function ButtonRender(props: Button) {
 				focus:ring-4 ring-${getColor(color, 40)}
 				${textColor}
 				${props.full ? 'w-full' : ''}
-				${isDisabled ? 'def-50 cursor-not-allowed' : ''}
+				${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}
 			`}
 			type='button'
 			disabled={isDisabled}

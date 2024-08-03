@@ -148,6 +148,8 @@ export function TextInputRender(props: TextInput) {
 	}
 
 	const selectDropdownOption = (item: DropdownOption) => {
+		console.log('selecting item', item)
+
 		if (!isFreeText) {
 			// if multiple options are allowed, and we selected an item that is already selected, we will unselect it
 			if (props.multiple && selectedOptions.find((selectedOption) => selectedOption.id === item.id)) {
@@ -185,7 +187,7 @@ export function TextInputRender(props: TextInput) {
 	}
 
 	const selectActiveDropdownOption = () => {
-		if (activeDropdownOptionIndex && dropdownOptions[activeDropdownOptionIndex]) {
+		if (isOk(activeDropdownOptionIndex) && dropdownOptions[activeDropdownOptionIndex]) {
 			selectDropdownOption(dropdownOptions[activeDropdownOptionIndex])
 		}
 	}
@@ -345,7 +347,7 @@ export function TextInputRender(props: TextInput) {
 					`}
 				>
 					<div>{props.label}</div>
-					{validity.level && (
+					{validity.message && (
 						<>
 							<div>•</div>
 							<div>{validity.message}</div>

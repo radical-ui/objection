@@ -27,9 +27,11 @@ impl Worker for Session {
 	}
 
 	async fn handle(&mut self, mut request: Self::Request) -> Self::Response {
-		let body = get_basic_ui(request.get_client().ui());
+		if let Some(_) = request.take_mount_event()? {
+			let body = get_basic_ui(request.get_client().ui());
 
-		request.set_root_ui(ThemeManager::new(get_theme(), body));
+			request.set_root_ui(ThemeManager::new(get_theme(), body));
+		}
 
 		Ok(request.into_response())
 	}
