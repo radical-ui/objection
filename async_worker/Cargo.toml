@@ -1,0 +1,13 @@
+[package]
+name = "async_worker"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+path = "mod.rs"
+
+[dependencies]
+dashmap = { version = "6" }
+log = { version = "0.4" }
+thiserror = "1"
+tokio = { version = "1", features = ["full"] }

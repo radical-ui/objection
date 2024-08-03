@@ -8,6 +8,7 @@ name = "objection_example"
 path = "main.rs"
 
 [dependencies]
+async_worker = { path = "../async_worker" }
 serde = { version = "1", features = ["derive"] }
 objection = { path = "../rust_lib" }
 dashmap = { version = "6" }
