@@ -753,23 +753,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5443807d6dff69373d433ab9ef5378ad8df50ca6298caf15de6e52e24aaf54d5"
 
 [[package]]
-name = "example"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "async_worker",
- "axum",
- "dashmap 6.0.1",
- "env_logger",
- "log",
- "objection",
- "serde",
- "serde_json",
- "tokio",
- "tower-http",
-]
-
-[[package]]
 name = "fnv"
 version = "1.0.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1356,6 +1339,23 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.71",
+]
+
+[[package]]
+name = "objection_runtime_test"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async_worker",
+ "axum",
+ "dashmap 6.0.1",
+ "env_logger",
+ "log",
+ "objection",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tower-http",
 ]
 
 [[package]]

@@ -1,5 +1,3 @@
-S="/tmp/objection_dev_socket"
-
 task_dev() {
   watchexec --restart -- runner run
 }
@@ -9,7 +7,7 @@ task_serve_web() {
 }
 
 task_run_example() {
-  cargo run --package example
+  cargo run --package objection_runtime_test
 }
 
 task_run() {

@@ -1,10 +1,10 @@
 [package]
-name = "example"
+name = "objection_runtime_test"
 version = "0.1.0"
 edition = "2021"
 
 [[bin]]
-name = "objection_example"
+name = "objection_runtime_test"
 path = "main.rs"
 
 [dependencies]
