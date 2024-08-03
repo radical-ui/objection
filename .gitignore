@@ -1,5 +1,5 @@
 target
-example/bindings.rs
+runtime_test/bindings.rs
 
 .helix
 *.bck
