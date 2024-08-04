@@ -8,22 +8,26 @@ mod inspect;
 mod module_loader;
 
 use anstyle::{AnsiColor, Color as AnsColor, Style};
-use anyhow::{bail, Result};
+use anyhow::{anyhow, bail, Context, Result};
 use bundle::Bundler;
 use clap::{builder::Styles, Parser, Subcommand, ValueEnum};
 use collect::Collection;
 use colored::{Color, Colorize};
-use deno_graph::source::MemoryLoader;
+use deno_graph::{source::MemoryLoader, ReferrerImports};
 use diagnostic::DiagnosticList;
-use env_logger::Env;
+use env_logger::{Env, WriteStyle};
 use gen_js_entry::gen_js_entry;
 use gen_rust::RustGen;
 use inspect::Inspector;
 use log::{error, info, Level};
 use module_loader::load_modules;
-use std::{io::Write, path::PathBuf, process::exit};
+use std::{
+	io::Write,
+	path::{Path, PathBuf},
+	process::exit,
+};
 use tokio::{
-	fs::{read_to_string, write},
+	fs::{create_dir_all, read_to_string, write},
 	runtime::Builder,
 };
 use url::Url;
@@ -189,15 +193,18 @@ async fn main_async() -> Result<()> {
 	let response = bundler.bundle(gen_js_entry(&args.runtime, &args.engine_url, &collection)?).await?;
 	info!("Bundled runtime");
 
-	write("target/web/index.html", read_to_string("platform/web/index.html").await.unwrap())
+	robust_write("target/web/index.html", read_to_string("platform/web/index.html").await.unwrap())
 		.await
-		.unwrap();
-	write("target/web/bundle.js", response).await?;
+		.with_context(|| format!("failed to write index.html to target/web/index.html"))?;
+
+	robust_write("target/web/bundle.js", response)
+		.await
+		.with_context(|| format!("failed to write js bundle to target/web/bundle.js"))?;
 
 	info!("Wrote runtime platform to target/bundle.js");
 
 	let bindings = args.engine.get_bindings(&collection)?;
-	write(&args.bindings_path, bindings).await?;
+	robust_write(&args.bindings_path, bindings).await?;
 
 	info!("Wrote rust engine bindings to {}", args.bindings_path.into_os_string().into_string().unwrap());
 
@@ -213,4 +220,18 @@ fn get_styles() -> Styles {
 		.error(Style::new().bold().fg_color(Some(AnsColor::Ansi(AnsiColor::Red))))
 		.valid(Style::new().bold().underline().fg_color(Some(AnsColor::Ansi(AnsiColor::Green))))
 		.placeholder(Style::new().fg_color(Some(AnsColor::Ansi(AnsiColor::White))))
+}
+
+async fn robust_write(path: impl AsRef<Path>, data: impl AsRef<[u8]>) -> Result<()> {
+	let path_reference = path.as_ref();
+	let data_reference = data.as_ref();
+
+	if let Err(_) = write(path_reference, data_reference).await {
+		create_dir_all(path_reference.parent().ok_or(anyhow!("you shouldn't be writing files to /"))?).await?;
+		write(path_reference, data_reference)
+			.await
+			.context("failed to write, so tried to create parent directory, which succeeded. Then the next write failed")?;
+	}
+
+	Ok(())
 }

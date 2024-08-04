@@ -82,7 +82,7 @@ pub enum TakeMountEventError {
 
 #[derive(Debug, Deserialize)]
 pub struct MountEventData {
-	pub token: String,
+	pub token: Option<String>,
 }
 
 pub struct UiResponse {
