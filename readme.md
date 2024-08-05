@@ -4,6 +4,16 @@ Build server-first, highly-interactive, and beautiful web applications in Rust a
 
 ...because the current web-based application development trends are worth objecting to.
 
+## Installation
+
+```sh
+# MacOS
+brew install radical-ui/tap/objection
+
+# Linux / Windows
+cargo install --git https://github.com/radical-ui/objection.git --bin objection
+```
+
 ## Usage
 
 Objection works by generating a network bridge, allowing a series of typescript components (referred to as the runtime) to be managed by your
@@ -58,7 +68,7 @@ async fn main() {
 
 That should do it. After starting the engine, navigate to `http://localhost:3000`.
 
-## Deveopment
+## Development
 
 You'll want to make sure that you have development dependencies installed:
 
@@ -66,6 +76,8 @@ You'll want to make sure that you have development dependencies installed:
 - [Runner](https://github.com/stylemistake/runner)
 - [WatchExec](https://github.com/watchexec/watchexec)
 - [Deno](https://deno.com/)
+- [Ripgrep](https://github.com/BurntSushi/ripgrep)
+- [sd](https://github.com/chmln/sd)
 - [Static Web Server](https://github.com/static-web-server/static-web-server)
 
 Then, start up the example project:
@@ -78,11 +90,8 @@ runner dev
 
 - `runtime_test` instead of `example`
 - Runtime `start` fn should only accept a single `initialState` argument. The rest should be handled by `runtime_lib`
-- Go support (potentially find another language instead, but this seems best to me)
-- `objection new` and the associated `rust_example` and `go_example` subprojects
+- `objection new` and the associated `rust_example` subproject
 - Actual support for web-static platform instead of just building
 - `objection run` should run, not build. Additionally, `objection build` should respect `--out-dir`
 - Support for `web-ssr`
-- Brew formule for installing
-- CI to generate releases on github
 - "bring your own runtime" docs

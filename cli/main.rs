@@ -13,9 +13,9 @@ use bundle::Bundler;
 use clap::{builder::Styles, Parser, Subcommand, ValueEnum};
 use collect::Collection;
 use colored::{Color, Colorize};
-use deno_graph::{source::MemoryLoader, ReferrerImports};
+use deno_graph::source::MemoryLoader;
 use diagnostic::DiagnosticList;
-use env_logger::{Env, WriteStyle};
+use env_logger::Env;
 use gen_js_entry::gen_js_entry;
 use gen_rust::RustGen;
 use inspect::Inspector;
@@ -73,7 +73,7 @@ impl Engine {
 }
 
 #[derive(Parser, Debug, Clone)]
-#[command(styles = get_styles())]
+#[command(styles = get_styles(), version)]
 struct Command {
 	/// The runtime to use. Must be a url.
 	#[arg(long, default_value_t = Url::parse("https://raw.githubusercontent.com/radical-ui/svelte-toolbox/new-take/runtime/mod.tsx").unwrap())]
