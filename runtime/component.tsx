@@ -1,26 +1,8 @@
-import { Component, React } from './deps.ts'
-
-export type ComponentIndexRenderer = (component: Component) => React.ReactElement
-
-const Context = React.createContext<ComponentIndexRenderer | null>(null)
-
-export interface ProvideComponentIndexRendererProps {
-	renderer: ComponentIndexRenderer
-	children: React.ReactNode
-}
-
-export function ProvideComponentIndexRenderer(props: ProvideComponentIndexRendererProps) {
-	return <Context.Provider value={props.renderer}>{props.children}</Context.Provider>
-}
+import { Component, getComponentRenderer, React } from './deps.ts'
 
 export function ComponentRender(component: Component) {
-	const renderer = React.useContext(Context)
+	const { func: Func, params } = getComponentRenderer(component)
 
-	if (!renderer) {
-		throw new Error(
-			'No component index renderer was found in component hierarchy. <ProvideComponentIndexRenderer> must be above any instances of <Component>',
-		)
-	}
-
-	return renderer(component)
+	// @ts-ignore runtime_lib is intentionally runtime-agnostic
+	return <Func {...params} />
 }
