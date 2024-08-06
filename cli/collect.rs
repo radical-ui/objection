@@ -26,9 +26,6 @@ struct InternalKindDefinition {
 
 #[derive(Debug)]
 pub struct ComponentInfo {
-	/// If `true`, this component is the index. It's kind should not contain any properties and will be overritten by the engine
-	/// implementation of an enum of all the other components.
-	pub is_index: bool,
 	/// The name that the renderer has chosen to use to refer to the function that renders this component
 	pub render_name: String,
 }
@@ -37,6 +34,7 @@ pub struct ComponentInfo {
 pub struct Collection {
 	action_key_type_name: Option<String>,
 	event_key_type_name: Option<String>,
+	component_index_name: Option<String>,
 	kinds: HashMap<String, InternalKindDefinition>,
 	erroring_kinds: HashMap<String, Error>,
 	components: HashMap<String, ComponentInfo>,
@@ -226,6 +224,10 @@ impl Collection {
 		Ok(())
 	}
 
+	pub fn get_component_index_name(&self) -> Option<&str> {
+		self.component_index_name.as_deref()
+	}
+
 	pub fn check_components(&mut self) {
 		// TODO all of this should be in `Inspect`
 
@@ -251,14 +253,7 @@ impl Collection {
 			);
 		}
 
-		let mut found_index = false;
-
 		for (name, component) in &self.components {
-			if component.is_index {
-				debug!("Found `{name}` as the component index");
-				found_index = true;
-			}
-
 			if !self.functions.contains(&component.render_name) {
 				self.erroring_functions.insert(
 					component.render_name.clone(),
@@ -274,7 +269,9 @@ impl Collection {
 			}
 		}
 
-		if !found_index {
+		if let Some(name) = &self.component_index_name {
+			debug!("Found `{name}` as the component index");
+		} else {
 			self.other_diagnostics.push(
 				Diagnostic::start("No component index was specified")
 					.shift()
@@ -414,7 +411,6 @@ impl Collection {
 	}
 
 	fn consider_js_doc_tags(&mut self, node_name: &str, tags: &[JsDocTag]) {
-		let mut is_index = false;
 		let mut component = None;
 		let mut is_feature_action_key = false;
 		let mut is_feature_event_key = false;
@@ -432,7 +428,7 @@ impl Collection {
 				} else if value == "@feature_action_key" {
 					is_feature_action_key = true;
 				} else if value == "@feature_component_index" {
-					is_index = true;
+					self.component_index_name = Some(node_name.to_string());
 				}
 			}
 		}
@@ -446,7 +442,7 @@ impl Collection {
 		}
 
 		if let Some(render_name) = component {
-			self.components.insert(node_name.to_string(), ComponentInfo { render_name, is_index });
+			self.components.insert(node_name.to_string(), ComponentInfo { render_name });
 		}
 	}
 }

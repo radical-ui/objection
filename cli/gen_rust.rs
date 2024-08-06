@@ -48,13 +48,9 @@ pub struct RustGen<'a> {
 
 impl RustGen<'_> {
 	pub fn new<'a>(collection: &'a Collection) -> Result<RustGen<'a>> {
-		let index_name = collection
-			.get_component_info()
-			.iter()
-			.find_map(|(name, info)| if info.is_index { Some(*name) } else { None })
-			.ok_or(anyhow!(
-				"No component index was found during rust code gen. This indicates a failure in the checking step"
-			))?;
+		let index_name = collection.get_component_index_name().ok_or(anyhow!(
+			"No component index was found during rust code gen. This indicates a failure in the checking step"
+		))?;
 
 		Ok(RustGen {
 			collection,
@@ -125,11 +121,7 @@ impl RustGen<'_> {
 		let index_ident = format_ident!("{}", self.index_name);
 		let mut inner_tokens = TokenStream::new();
 
-		for (name, info) in self.collection.get_component_info() {
-			if info.is_index {
-				continue;
-			}
-
+		for (name, _) in self.collection.get_component_info() {
 			let comment = self.collection.get_comment(name).map(|comment| quote! { #[doc = #comment] });
 			let name_ident = format_ident!("{name}");
 

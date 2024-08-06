@@ -46,6 +46,7 @@ pub struct Inspector<'a> {
 	reserved_words: HashMap<&'static str, ReservationTarget>,
 }
 
+// TODO we should be passing a context along into these functions, so that errors like "type is a reserved word" show where the offensive property is located
 impl Inspector<'_> {
 	pub fn new<'a>(collection: &'a Collection) -> Inspector<'a> {
 		let mut reserved_words = HashMap::new();

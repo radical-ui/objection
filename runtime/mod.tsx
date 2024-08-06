@@ -1,5 +1,4 @@
-import { ComponentIndexRenderer, ProvideComponentIndexRenderer } from './component.tsx'
-import { Component, MOUNT_ACTION, React, READY_EVENT, sendEvent, setEndpoint, shouldSendReadyEvent } from './deps.ts'
+import { Component, MOUNT_ACTION, React, READY_EVENT, sendEvent, shouldSendReadyEvent } from './deps.ts'
 import { UpdateBoundaryRender } from './update_boundary.tsx'
 
 export type { ActionKey, AnyEvent, Component, EventKey } from './deps.ts'
@@ -33,28 +32,20 @@ export * from './notice.tsx'
 export * from './theme.tsx'
 export * from './title.tsx'
 
-export function start(syncUrl: URL, initialComponent: Component, componentRenderer: ComponentIndexRenderer) {
-	setEndpoint(syncUrl)
-
+export function start(initialComponent: Component) {
 	const rootElement = document.getElementById('root')
 	if (!rootElement) throw new Error('Expected to find a #root element')
 
 	React.render(
-		<ProvideComponentIndexRenderer renderer={componentRenderer}>
-			<UpdateBoundaryRender child={initialComponent} action={MOUNT_ACTION} />
-		</ProvideComponentIndexRenderer>,
+		<UpdateBoundaryRender child={initialComponent} action={MOUNT_ACTION} />,
 		rootElement,
 	)
 
 	if (shouldSendReadyEvent()) {
 		console.log('Sending ready event...')
 
-		sendEvent(READY_EVENT, {
-			token: localStorage.getItem('token'),
-		})
-			.then(() => {
-				console.log('Mounted.')
-			})
+		sendEvent(READY_EVENT, { token: localStorage.getItem('token') })
+			.then(() => console.log('Mounted.'))
 	}
 }
 
