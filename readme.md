@@ -16,8 +16,9 @@ cargo install --git https://github.com/radical-ui/objection.git --bin objection
 
 ## Usage
 
-Objection works by generating a network bridge, allowing a series of typescript components (referred to as the runtime) to be managed by your
-backend (referred to as the engine). In practice, it feels like a merge between Phenix Liveview and HTMX.
+Objection works by generating a network bridge, allowing a series of typescript components (referred to as the runtime)
+to be managed by your backend (referred to as the engine). In practice, it feels like a merge between Phenix Liveview
+and HTMX.
 
 The default runtime is located in the `runtime` folder, but you can create and use your own.
 
@@ -51,9 +52,9 @@ async fn main() {
 			"/ui",
 			post(move |State(queue): State<_>, Json(body): Json<Value>| async move {
 				Json(handle_request(body, |_, ui| async {
-          ui.set_root_ui(Label::new("Hello, world!"));
-          Ok(ui.into_reponse())
-        }).await)
+					ui.set_root_ui(Label::new("Hello, world!"));
+					Ok(ui.into_reponse())
+				}).await)
 			}),
 		)
 		.layer(CorsLayer::very_permissive())
@@ -88,7 +89,6 @@ runner dev
 
 ## TODO for MVP
 
-- `runtime_test` instead of `example`
 - Runtime `start` fn should only accept a single `initialState` argument. The rest should be handled by `runtime_lib`
 - `objection new` and the associated `rust_example` subproject
 - Actual support for web-static platform instead of just building
