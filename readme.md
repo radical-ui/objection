@@ -89,7 +89,6 @@ runner dev
 
 ## TODO for MVP
 
-- Runtime `start` fn should only accept a single `initialState` argument. The rest should be handled by `runtime_lib`
 - `objection new` and the associated `rust_example` subproject
 - Actual support for web-static platform instead of just building
 - `objection run` should run, not build. Additionally, `objection build` should respect `--out-dir`
