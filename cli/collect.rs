@@ -74,6 +74,9 @@ impl Collection {
 
 		let nodes = parser.parse_with_reexports(runtime_url)?;
 
+		// TODO print these as they outline missing dependencies and missing return types
+		let _diagnostics = parser.take_diagnostics();
+
 		for node in &nodes {
 			self.consider_js_doc_tags(&node.name, &node.js_doc.tags)
 		}
