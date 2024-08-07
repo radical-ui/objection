@@ -3,7 +3,7 @@ task_dev() {
 }
 
 task_serve_web() {
-	static-web-server --root target/web --port 3000
+	static-web-server --root target/objection_build --port 3000
 }
 
 task_run_example() {
@@ -20,7 +20,7 @@ task_build() {
 		--runtime file://$(pwd)/runtime/mod.tsx \
 		--engine rust \
 		--bindings-path runtime_test/bindings.rs \
-		--engine-url http://localhost:8000/ui run
+		--engine-url http://localhost:8000/ui build
 }
 
 task_release() {

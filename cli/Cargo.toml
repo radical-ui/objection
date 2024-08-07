@@ -2,6 +2,7 @@
 name = "objection_cli"
 version = "0.1.0"
 edition = "2021"
+build = false
 
 [[bin]]
 name = "objection"
@@ -16,6 +17,8 @@ deno_doc = { git = "ssh://git@github.com/radical-ui/deno_doc", rev = "4e99ed" }
 deno_graph = "0.80"
 env_logger = "0.11"
 log = "0.4"
+notify = "6"
+notify-debouncer-full = "0.3"
 prettyplease = "0.2"
 proc-macro2 = "1"
 quote = "1"
