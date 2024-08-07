@@ -1,26 +1,38 @@
+objection() {
+	cargo run -p objection_cli --\
+		--runtime file://$(pwd)/runtime/mod.tsx \
+		--engine rust \
+		--bindings-path runtime_test/bindings.rs \
+		--engine-url http://localhost:8000/ui $@
+}
+
 task_dev() {
-	watchexec --restart -- runner run
+	runner_parallel dev_engine dev_ui
+}
+
+task_dev_engine() {
+	watchexec --restart -- runner run_engine
+}
+
+task_run_engine() {
+	cargo run --package objection_runtime_test
+}
+
+task_dev_ui() {
+	objection run --reload
 }
 
 task_serve_web() {
 	static-web-server --root target/objection_build --port 3000
 }
 
-task_run_example() {
-	cargo run --package objection_runtime_test
+task_build() {
+	objection build
 }
 
-task_run() {
+task_preview() {
 	runner build
 	runner_parallel run_example serve_web
-}
-
-task_build() {
-	cargo run -p objection_cli --\
-		--runtime file://$(pwd)/runtime/mod.tsx \
-		--engine rust \
-		--bindings-path runtime_test/bindings.rs \
-		--engine-url http://localhost:8000/ui build
 }
 
 task_release() {

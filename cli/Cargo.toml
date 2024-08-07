@@ -11,6 +11,7 @@ path = "main.rs"
 [dependencies]
 anstyle = "1.0.7"
 anyhow = { version = "1", features = ["backtrace"] }
+axum = "0.7.5"
 clap = { version = "4", features = ["derive"] }
 colored = "2"
 deno_doc = { git = "ssh://git@github.com/radical-ui/deno_doc", rev = "4e99ed" }

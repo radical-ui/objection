@@ -1,5 +1,7 @@
-use anyhow::Result;
-use log::warn;
+use anyhow::{Context, Result};
+use axum::{http::HeaderMap, response::Html, routing::get, serve, Router};
+use log::info;
+use tokio::net::TcpListener;
 
 const STATIC_HTML: &str = include_str!("web_static_index.html");
 
@@ -21,7 +23,23 @@ pub async fn run_web_static(params: RunWebStaticParams<'_>) -> Result<()> {
 
 	params.bindings_writer.write(bindings).await?;
 
-	warn!("should be serving the bundle on port {}", params.web_port);
+	let app = Router::new().route("/", get(move || async { Html(STATIC_HTML) })).route(
+		"/bundle.js",
+		get(|| async {
+			let mut headers = HeaderMap::new();
+			headers.insert("content-type", "appliaction/json".parse().unwrap());
+
+			(headers, client_bundle)
+		}),
+	);
+
+	let listener = TcpListener::bind(("localhost", params.web_port))
+		.await
+		.with_context(|| format!("failed to bind to localhost:{}", params.web_port))?;
+
+	info!("Serving the static website at http://localhost:{}", params.web_port);
+
+	serve(listener, app).await.context("failed to serve the generated web static platform code")?;
 
 	Ok(())
 }

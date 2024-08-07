@@ -59,7 +59,6 @@ pub async fn build(options: BuildOptions<'_>) -> Result<Build> {
 	info!("Bundled runtime");
 
 	let bindings = options.engine.get_bindings(&collection)?;
-	info!("Generated {} bindings", options.engine);
 
 	Ok(Build { client_bundle, bindings })
 }

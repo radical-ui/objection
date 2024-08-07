@@ -1434,6 +1434,7 @@ version = "0.1.0"
 dependencies = [
  "anstyle",
  "anyhow",
+ "axum",
  "clap",
  "colored",
  "deno_doc",
