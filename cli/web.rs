@@ -164,7 +164,7 @@ pub async fn run_web_static(params: RunWebStaticParams<'_>) -> Result<()> {
 									info!("Dev connection ({id}) received from {user_agent}; total connections: {}", clients.len());
 								}
 								DevConnectionMessage::Disconnected(id) => {
-									info!("Dev connection ({id}) has been closed");
+									info!("Dev connection ({id}) has been closed; total connections: {}", clients.len());
 									clients.remove(&id);
 								}
 							};

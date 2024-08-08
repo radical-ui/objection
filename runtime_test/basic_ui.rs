@@ -35,7 +35,7 @@ pub fn get_basic_ui(ui: Ui) -> Component {
 							Breadcrumbs::new()
 								.crumb(ui.scope(Event::Foo).event_key(), "Hi")
 								.crumb(ui.scope(Event::Bar).event_key(), "Bye")
-								.crumb(ui.scope(Event::Bin).event_key(), "Bock")
+								.crumb(ui.scope(Event::Bin).event_key(), "Rock")
 								.current("This")
 								.body(Label::new("Some Body"))
 						}),

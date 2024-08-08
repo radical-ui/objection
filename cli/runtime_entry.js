@@ -12,6 +12,7 @@ namespace.selectComponentRenderer = (component) => {
 
 const safeJoin = (path) =>
 	path.map((item) => item.replaceAll(":", "\\:")).join("::");
+
 namespace.getActionId = (actionKey) => safeJoin(actionKey.actionPath);
 namespace.getEventId = (eventKey) => safeJoin(eventKey.eventPath);
 
@@ -48,7 +49,7 @@ namespace.sendEvent = async (key, data) => {
 	if (!response) {
 		console.error("You appear to be offline. Retrying in 1s");
 		await new Promise((resolve) => setTimeout(resolve, 1000));
-		return await sendEvent(key, data);
+		return await namespace.sendEvent(key, data);
 	}
 	if (!response.ok) throw new Error(await response.text());
 
