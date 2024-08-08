@@ -90,7 +90,6 @@ runner dev
 ## TODO for MVP
 
 - `objection new` and the associated `rust_example` subproject
-- Actual support for web-static platform instead of just building
-- `objection run` hot reloading
 - Support for `web-ssr`
 - "bring your own runtime" docs
+- runtime assets
