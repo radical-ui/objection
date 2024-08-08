@@ -4,7 +4,6 @@ mod collect;
 mod convert;
 mod diagnostic;
 mod engine;
-mod gen_js_entry;
 mod gen_rust;
 mod inspect;
 mod module_loader;
@@ -59,14 +58,16 @@ struct Command {
 enum Operation {
 	/// Run the application using the configured runtime (see --runtime) and platform (see --platform). Engine is expected to be
 	/// already running at the configured engine url (see --engine-url)
+	///
+	/// If the engine is restarted, the generated client will hot-reload with the changes.
 	Run {
 		/// What port to use for when running the web and web-ssr platforms
 		#[arg(long, default_value_t = 3000)]
 		web_port: u16,
 
-		/// Watch the engine and reload the generated client if it is restarted.
+		/// Do not hot-reload the generated client if the engine is restarted.
 		#[arg(long)]
-		reload: bool,
+		no_reload: bool,
 	},
 	/// Build the configured runtime (see --runtime) for the configured platform (see --platform), which, when run, will access the
 	/// engine at the configured engine url (see --engine-url). Code will be written to the configured output dir (see --out-dir).
@@ -118,12 +119,12 @@ async fn main_async() -> Result<()> {
 	let bindings_writer = Writer::new(current_dir().context("failed to get the current working directory")?).into_file_writer(args.bindings_path);
 
 	match args.operation {
-		Operation::Run { web_port, reload } => {
+		Operation::Run { web_port, no_reload } => {
 			args.platform
 				.run(RunParams {
 					build_options,
 					web_port,
-					reload,
+					reload: !no_reload,
 					bindings_writer: &bindings_writer,
 				})
 				.await

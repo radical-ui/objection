@@ -1,5 +1,5 @@
-import { Component, MOUNT_ACTION, React, READY_EVENT, sendEvent, shouldSendReadyEvent } from './deps.ts'
-import { UpdateBoundaryRender } from './update_boundary.tsx'
+import { ComponentRender } from './component.tsx'
+import { Component, React } from './deps.ts'
 
 export type { ActionKey, AnyEvent, Component, EventKey } from './deps.ts'
 
@@ -32,21 +32,30 @@ export * from './notice.tsx'
 export * from './theme.tsx'
 export * from './title.tsx'
 
-export function start(initialComponent: Component) {
+export function createStarter() {
 	const rootElement = document.getElementById('root')
 	if (!rootElement) throw new Error('Expected to find a #root element')
 
-	React.render(
-		<UpdateBoundaryRender child={initialComponent} action={MOUNT_ACTION} />,
-		rootElement,
-	)
-
-	if (shouldSendReadyEvent()) {
-		console.log('Sending ready event...')
-
-		sendEvent(READY_EVENT, { token: localStorage.getItem('token') })
-			.then(() => console.log('Mounted.'))
+	let componentSetter = (component: Component) => {
+		console.error('Not set:', component)
 	}
+
+	const StartComponent = () => {
+		const [component, setComponent] = React.useState<Component | null>(null)
+
+		React.useEffect(() => {
+			componentSetter = (component) => setComponent(component)
+
+			return () => componentSetter = () => console.error('Component setter is not set')
+		}, [])
+
+		if (component) return <ComponentRender {...component} />
+		return <></>
+	}
+
+	React.render(<StartComponent />, rootElement)
+
+	return (component: Component) => componentSetter(component)
 }
 
 /**

@@ -9,9 +9,10 @@ name = "objection"
 path = "main.rs"
 
 [dependencies]
-anstyle = "1.0.7"
+aho-corasick = "1"
+anstyle = "1"
 anyhow = { version = "1", features = ["backtrace"] }
-axum = "0.7.5"
+axum = { version = "0.7", features = ["ws"] }
 clap = { version = "4", features = ["derive"] }
 colored = "2"
 deno_doc = { git = "ssh://git@github.com/radical-ui/deno_doc", rev = "4e99ed" }
@@ -30,3 +31,6 @@ str_inflector = "0.12"
 syn = "2"
 tokio = { version = "1", features = ["full"] }
 url = "2"
+crossbeam-channel = "0.5"
+axum-extra = { version = "0.9", features = ["typed-header"] }
+headers = "0.4"

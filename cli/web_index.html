@@ -7,14 +7,17 @@
   <meta name="description" content="">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <script>window.objectionShouldSignalApplicationReady = true</script>
+  <script>
+    window.OBJECTION = { engineUrl: new URL("ENGINE_URL") }
 
-  <script id="initial-state" type="application/json">{ "type": "Label", "def": { "text": "Loading..."} }</script>
+    "DEV_SCRIPT"
+  </script>
+
   <script defer src="/bundle.js"></script>
 </head>
 
 <body>
-  <div id="root"></div>
+  <div id="root">Loading...</div>
 </body>
 
 </html>

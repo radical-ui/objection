@@ -242,14 +242,14 @@ impl Collection {
 		self.prune_names(unreachable_names.iter().map(|item| item.as_str()));
 		self.meet_all_dependencies();
 
-		if !self.functions.contains("start") {
+		if !self.functions.contains("createStarter") {
 			self.erroring_functions.insert(
-				"start".to_string(),
+				"createStarter".to_string(),
 				Diagnostic::start("Missing function")
-					.inline_code("start")
+					.inline_code("createStarter")
 					.shift()
 					.text("All renderers must export a")
-					.inline_code("start")
+					.inline_code("createStarter")
 					.text("function")
 					.build()
 					.error(),

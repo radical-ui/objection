@@ -19,7 +19,7 @@ task_run_engine() {
 }
 
 task_dev_ui() {
-	objection run --reload
+	objection run
 }
 
 task_serve_web() {

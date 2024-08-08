@@ -7,18 +7,8 @@ export interface Component {
 	aUniqueKeyToHelpPreventThisTypeFromBeingAny: number
 }
 
-export function getComponentRenderer<Params, Return>(
-	component: Component,
-): { func: () => Return; params: Params } {
-	// @ts-ignore check is below
-	const select = globalThis.window.objectionSelectComponentRenderer
-	if (typeof select !== 'function') {
-		throw new Error(
-			"Failed to find the objection component renderer. Perhaps you didn't built this project with the objection CLI?",
-		)
-	}
-
-	return select(component)
+export function getComponentRenderer<Params, Return>(component: Component): { func: () => Return; params: Params } {
+	return getNamespace().selectComponentRenderer(component)
 }
 
 /**
@@ -54,86 +44,26 @@ export const READY_EVENT: EventKey<{ token: string | null }> = {
 	debugSymbol: 'Application is ready to be mounted',
 }
 
-export type EngineRequest = { key: EventKey<unknown>; data: unknown }[]
-export type EngineResponse = { key: ActionKey<unknown>; data: unknown }[]
-
-const actionListeners = new Map<string, (d: unknown) => void>()
-let sessionId: string | null = null
-
 export async function sendEvent<T>(key: EventKey<T>, data: T) {
-	if (!sessionId) sessionId = crypto.randomUUID()
-	const endpoint = getEndpoint()
-
-	if (endpoint.protocol !== 'http:' && endpoint.protocol !== 'https:') {
-		throw new Error(`'${endpoint.protocol}' endpoints are not supported`)
-	}
-
-	const response = await fetch(endpoint, {
-		method: 'POST',
-		body: JSON.stringify({ sessionId, events: [{ key, data }] }),
-		headers: { 'content-type': 'application/json' },
-	})
-		.catch(() => null)
-
-	if (!response) throw new Error('You appear to be offline')
-	if (!response.ok) throw new Error(await response.text())
-
-	const actions = await response.json() as {
-		key: ActionKey<unknown>
-		data: unknown
-	}[]
-
-	for (const action of actions) {
-		const listener = actionListeners.get(getActionId(action.key))
-		if (!listener) {
-			throw new Error(
-				`No action listener was specified for action: ${JSON.stringify(action, null, '\t')}`,
-			)
-		}
-
-		listener(action.data)
-	}
+	return await getNamespace().sendEvent(key, data)
 }
 
-export function registerActionListener<T>(
-	key: ActionKey<T>,
-	listener: (data: T) => void,
-) {
-	const joinedKey = getActionId(key)
-
-	// @ts-ignore at our best, we have to home that something isn't seriously borked up and trust that the key will always match the data
-	actionListeners.set(joinedKey, listener)
-
-	return () => {
-		actionListeners.delete(joinedKey)
-	}
+export function registerActionListener<T>(key: ActionKey<T>, listener: (data: T) => void) {
+	return getNamespace().registerActionListener(key, listener)
 }
 
-export function getActionId(actionKey: ActionKey<unknown>) {
-	return safeJoin(actionKey.actionPath)
+export function getEventId<T>(event: EventKey<T>): string {
+	return getNamespace().getEventId(event)
 }
 
-export function getEventId(eventKey: EventKey<unknown>) {
-	return safeJoin(eventKey.eventPath)
-}
-
-export function shouldSendReadyEvent() {
-	// @ts-ignore no harm can come from reading the value if it doesn't exist
-	return !!globalThis.window.objectionShouldSignalApplicationReady
-}
-
-function safeJoin(path: string[]) {
-	return path.map((item) => item.replaceAll(':', '\\:')).join('::')
-}
-
-function getEndpoint(): URL {
-	// @ts-ignore no harm can come from reading the value if it doesn't exist
-	const endpoint = globalThis.window.objectionEndpoint
-	if (!endpoint) {
+function getNamespace() {
+	// @ts-ignore no real good way to test this. Additionally, runtime_lib should be going away soon, so we won't have to do this TS/JS integration anymore
+	const namespace = globalThis.window.OBJECTION
+	if (!namespace || typeof namespace !== 'object') {
 		throw new Error(
-			"Failed to find the embedded objection endpoint. Perhaps you didn't build this project with the objection CLI?",
+			"Could not find the necessary objection runtime setup. Perhaps you didn't build this project with the objection CLI?",
 		)
 	}
 
-	return endpoint
+	return namespace
 }

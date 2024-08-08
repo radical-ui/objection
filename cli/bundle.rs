@@ -1,9 +1,14 @@
+use aho_corasick::AhoCorasick;
 use anyhow::Result;
 use serde::Serialize;
 use serde_json::to_string;
-use std::{collections::HashMap, env, path::PathBuf, process::Stdio};
+use std::{collections::HashMap, env, fmt::Write, path::PathBuf, process::Stdio};
 use tokio::{io::AsyncWriteExt, process::Command};
 use url::Url;
+
+use crate::collect::Collection;
+
+const RUNTIME_ENTRY: &str = include_str!("runtime_entry.js");
 
 #[derive(Debug, Serialize, Default)]
 struct BundleManifest {
@@ -31,7 +36,43 @@ impl Bundler {
 		self.manifest.source_files.insert(source.into(), file.into());
 	}
 
-	pub async fn bundle(self, entry_code: impl Into<String>) -> Result<String> {
+	pub async fn bundle(self, runtime_url: &Url, collection: &Collection) -> Result<String> {
+		let imports = {
+			let mut js = String::new();
+
+			write!(js, "import {{ createStarter, ")?;
+
+			for (_, info) in collection.get_component_info() {
+				write!(js, "{}, ", info.render_name)?;
+			}
+
+			write!(js, " }} from '{runtime_url}'")?;
+
+			js
+		};
+
+		let component_cases = {
+			let mut js = String::new();
+
+			for (name, info) in collection.get_component_info() {
+				write!(
+					js,
+					"\tif (component.type === '{}') return {{ func: {}, params: component.def }}\n",
+					name, &info.render_name
+				)?;
+			}
+
+			write!(js, "\tthrow new Error('Unknown component type: ' + component.type)\n")?;
+
+			js
+		};
+
+		let entry = AhoCorasick::new(&["\"IMPORTS\"", "\"COMPONENT_CASES\""])?.replace_all(RUNTIME_ENTRY, &[imports, component_cases]);
+
+		self.run_bundle_command(entry).await
+	}
+
+	async fn run_bundle_command(self, entry_code: impl Into<String>) -> Result<String> {
 		let mut command = Command::new("deno");
 
 		command
