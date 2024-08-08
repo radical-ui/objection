@@ -122,6 +122,8 @@ pub async fn run_web_static(params: RunWebStaticParams<'_>) -> Result<()> {
 
 	if params.reload {
 		if let Some(port) = params.build_options.engine_url.port() {
+			let url_text = params.build_options.engine_url.to_string();
+
 			tokio::spawn(async move {
 				let mut watcher = TcpWatcher::new(port);
 				let mut clients = HashMap::<u64, mpsc::Sender<DevRefreshMessage>>::new();
@@ -135,7 +137,7 @@ pub async fn run_web_static(params: RunWebStaticParams<'_>) -> Result<()> {
 							};
 
 							match change {
-								TcpState::Connected => info!("Engine is online"),
+								TcpState::Connected => info!("Engine is online at {url_text}"),
 								TcpState::Disconnected => (),
 								TcpState::Reconnected => {
 									info!("Engine has restarted. Triggering a hot-reload in {} client{}", clients.len(), if clients.len() == 1 { "" } else { "s" });
