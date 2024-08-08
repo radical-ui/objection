@@ -83,13 +83,12 @@ pub async fn run_web_static(params: RunWebStaticParams<'_>) -> Result<()> {
 									None => break,
 								},
 								message = socket.recv() => match message {
-									Some(Ok(Message::Close(_))) => {
-										break;
-									},
-									_ => {
+									Some(Ok(Message::Close(_))) => break,
+									Some(_) => {
 										warn!("Recieved invalid message from client over dev socket: {message:?}");
 										continue;
 									}
+									None => break
 								}
 							};
 
