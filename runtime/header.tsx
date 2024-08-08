@@ -57,8 +57,8 @@ export function HeaderRender(props: Header) {
 				<h1 class={`flex-1 text-primary flex text-${getTextSize(size)}`}>
 					<LabelRender
 						color={{ type: 'Fore', def: 90 }}
-						isBold
-						isItalic={false}
+						bold
+						italic={false}
 						text={props.title}
 						editEvent={props.titleEditEvent}
 						placeholder={props.titlePlaceholder}
@@ -80,8 +80,8 @@ export function HeaderRender(props: Header) {
 				<h3 class='text-fore-30 flex'>
 					<LabelRender
 						text={props.subtitle}
-						isBold={false}
-						isItalic={false}
+						bold={false}
+						italic={false}
 						color={{ type: 'Fore', def: 30 }}
 						editEvent={props.subtitleEditEvent}
 						placeholder={props.subtitlePlaceholder}

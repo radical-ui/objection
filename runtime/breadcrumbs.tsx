@@ -35,7 +35,7 @@ export function BreadcrumbsRender(props: Breadcrumbs) {
 			<div class='flex gap-5 items-center'>
 				{crumbs.map((crumb) => <Crumb {...crumb} />)}
 
-				{props.current && <LabelRender color={{ type: 'Fore', def: 50 }} isBold={true} isItalic={false} text={props.current} />}
+				{props.current && <LabelRender color={{ type: 'Fore', def: 50 }} bold={true} italic={false} text={props.current} />}
 			</div>
 
 			{props.body && (
@@ -57,7 +57,7 @@ function Crumb(props: Crumb) {
 				class={`relative transition-def ${isLoading ? 'def-80 cursor-not-allowed' : 'cursor-pointer hover:def-80'}`}
 				onClick={() => dispatch(null)}
 			>
-				<LabelRender color={{ type: 'Primary', def: 100 }} isBold={true} isItalic={false} text={props.text} />
+				<LabelRender color={{ type: 'Primary', def: 100 }} bold={true} italic={false} text={props.text} />
 
 				{isLoading && (
 					<div class='absolute -bottom-4 left-0 right-0 overflow-hidden'>

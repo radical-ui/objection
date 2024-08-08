@@ -72,7 +72,7 @@ const getBlocks = (items: NestedFlowItem[]) => {
 
 export function NestedFlowRender(props: NestedFlow) {
 	const defaultIndentAmount = props.indent ? 40 : 0
-	const blocks = getBlocks(props.items)
+	const blocks = props.items ? getBlocks(props.items) : []
 
 	return (
 		<div class={`pl-${defaultIndentAmount} flex flex-col gap-40`}>
