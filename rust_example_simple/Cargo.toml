@@ -1,0 +1,15 @@
+[package]
+name = "rust_example_simple"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "rust_example_simple"
+path = "main.rs"
+
+[dependencies]
+objection = { path = "../rust_lib" }
+tokio = { version = "1", features = ["full"] }
+axum = "0.7"
+tower-http = { version = "0.5", features = ["cors"] }
+serde_json = "1"
