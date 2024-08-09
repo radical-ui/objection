@@ -14,6 +14,7 @@ const ICONS_CACHE = new Map<string, string>()
  * TODO
  *
  * @component
+ * @assets icon_index.json
  */
 export interface Icon {
 	name: string
