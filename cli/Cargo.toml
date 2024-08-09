@@ -34,3 +34,6 @@ url = "2"
 crossbeam-channel = "0.5"
 axum-extra = { version = "0.9", features = ["typed-header"] }
 headers = "0.4"
+hex = "0.4"
+sha2 = "0.10"
+reqwest = "0.12"

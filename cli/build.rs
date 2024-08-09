@@ -1,9 +1,12 @@
-use anyhow::{bail, Result};
+use anyhow::{bail, Context, Result};
 use deno_graph::source::MemoryLoader;
 use log::{error, info};
 use url::Url;
 
-use crate::{bundle::Bundler, collect::Collection, diagnostic::DiagnosticList, engine::Engine, inspect::Inspector, module_loader::load_modules};
+use crate::{
+	asset_loader::AssetsLoader, bundle::Bundler, collect::Collection, diagnostic::DiagnosticList, engine::Engine, inspect::Inspector,
+	module_loader::load_modules,
+};
 
 #[derive(Debug, Clone, Copy)]
 pub struct BuildOptions<'a> {
@@ -15,6 +18,7 @@ pub struct BuildOptions<'a> {
 pub struct Build {
 	pub client_bundle: String,
 	pub bindings: String,
+	pub assets_loader: AssetsLoader,
 }
 
 pub async fn build(options: BuildOptions<'_>) -> Result<Build> {
@@ -57,5 +61,14 @@ pub async fn build(options: BuildOptions<'_>) -> Result<Build> {
 
 	let bindings = options.engine.get_bindings(&collection)?;
 
-	Ok(Build { client_bundle, bindings })
+	let mut assets_loader = collection.finish();
+	assets_loader.load(&mut diagnostic_list).await.context("Failed to load assets")?;
+	diagnostic_list.flush("load assets")?;
+	info!("Loaded assets");
+
+	Ok(Build {
+		client_bundle,
+		bindings,
+		assets_loader,
+	})
 }

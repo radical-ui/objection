@@ -1,3 +1,4 @@
+mod asset_loader;
 mod build;
 mod bundle;
 mod collect;

@@ -18,6 +18,10 @@ impl DiagnosticList {
 		self.diagnostics.push(diagnostic)
 	}
 
+	pub fn add_error(&mut self, error: Error) {
+		self.diagnostics.push(Diagnostic::from_error(error))
+	}
+
 	pub fn flush(&mut self, operation: impl Display) -> Result<()> {
 		let error_count = self.diagnostics.len();
 
@@ -43,6 +47,21 @@ impl DiagnosticList {
 pub struct Diagnostic(String);
 
 impl Diagnostic {
+	pub fn from_error(error: Error) -> Diagnostic {
+		let mut string = String::new();
+		let _ = write!(&mut string, "{:?}", error);
+
+		let newline_index = string.find('\n');
+		if let Some(newline_index) = newline_index {
+			let mut new_string = String::new();
+			let _ = write!(new_string, "{FORE_STYLE}{}{FORE_STYLE:#}{}", &string[..newline_index], &string[newline_index..]);
+
+			string = new_string;
+		}
+
+		Diagnostic(string)
+	}
+
 	pub fn start(initial_message: impl Display) -> DiagnosticBuilder {
 		DiagnosticBuilder::new(Diagnostic(String::new())).text(initial_message)
 	}

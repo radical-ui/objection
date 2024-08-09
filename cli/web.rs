@@ -15,7 +15,9 @@ use tokio::{net::TcpListener, select, sync::mpsc};
 use url::Url;
 
 use crate::{
+	asset_loader::AssetKind,
 	build::{build, Build, BuildOptions},
+	diagnostic::DiagnosticList,
 	tcp_watcher::{TcpState, TcpWatcher},
 	writer::{FileWriter, Writer},
 };
@@ -45,7 +47,11 @@ pub struct RunWebStaticParams<'a> {
 }
 
 pub async fn run_web_static(params: RunWebStaticParams<'_>) -> Result<()> {
-	let Build { client_bundle, bindings } = build(params.build_options).await?;
+	let Build {
+		client_bundle,
+		bindings,
+		assets_loader,
+	} = build(params.build_options).await?;
 	let index = get_index_html(params.build_options.engine_url, true);
 	let (dev_connection_sender, mut dev_connection_receiver) = mpsc::channel(10);
 
@@ -191,7 +197,12 @@ pub struct BuildWebStaticParams<'a> {
 }
 
 pub async fn build_web_static(params: BuildWebStaticParams<'_>) -> Result<()> {
-	let Build { client_bundle, bindings } = build(params.build_options).await?;
+	let mut diagnostic_list = DiagnosticList::new();
+	let Build {
+		client_bundle,
+		bindings,
+		assets_loader,
+	} = build(params.build_options).await?;
 
 	params.bindings_writer.write(bindings).await?;
 	params
@@ -199,6 +210,9 @@ pub async fn build_web_static(params: BuildWebStaticParams<'_>) -> Result<()> {
 		.write_file("index.html", get_index_html(params.build_options.engine_url, false))
 		.await?;
 	params.output_writer.write_file("bundle.js", client_bundle).await?;
+
+	assets_loader.write(params.output_writer, AssetKind::All, &mut diagnostic_list).await?;
+	diagnostic_list.flush("write assets")?;
 
 	Ok(())
 }

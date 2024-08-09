@@ -1,13 +1,15 @@
-use anyhow::{anyhow, Error, Result};
-use deno_doc::{js_doc::JsDocTag, DocNodeKind, DocParser, DocParserOptions};
+use anyhow::{anyhow, Context, Error, Result};
+use deno_doc::{js_doc::JsDocTag, DocNodeKind, DocParser, DocParserOptions, Location};
 use deno_graph::{source::MemoryLoader, BuildOptions, CapturingModuleAnalyzer, GraphKind, ModuleGraph};
 use log::{debug, trace};
 use std::collections::{HashMap, HashSet};
 use url::Url;
 
 use crate::{
+	asset_loader::{AssetKind, AssetsLoader},
 	convert::{convert_interface, convert_ts_type, Conversion, ConvertInterfaceParams, ConvertTsTypeParams, Kind},
-	diagnostic::Diagnostic,
+	diagnostic::{Diagnostic, DiagnosticList},
+	writer::Writer,
 };
 
 #[derive(Debug)]
@@ -32,6 +34,7 @@ pub struct ComponentInfo {
 
 #[derive(Debug, Default)]
 pub struct Collection {
+	assets_loader: AssetsLoader,
 	action_key_type_name: Option<String>,
 	event_key_type_name: Option<String>,
 	component_index_name: Option<String>,
@@ -78,7 +81,12 @@ impl Collection {
 		let _diagnostics = parser.take_diagnostics();
 
 		for node in &nodes {
-			self.consider_js_doc_tags(&node.name, &node.js_doc.tags)
+			self.consider_js_doc_tags(&node.name, &node.js_doc.tags, &node.location).with_context(|| {
+				Diagnostic::start("Encountered an issue while analyzing jsdoc tags")
+					.shift()
+					.location(&node.location)
+					.build()
+			})?;
 		}
 
 		if let None = &self.event_key_type_name {
@@ -413,7 +421,11 @@ impl Collection {
 		kinds
 	}
 
-	fn consider_js_doc_tags(&mut self, node_name: &str, tags: &[JsDocTag]) {
+	pub fn finish(self) -> AssetsLoader {
+		self.assets_loader
+	}
+
+	fn consider_js_doc_tags(&mut self, node_name: &str, tags: &[JsDocTag], location: &Location) -> Result<()> {
 		let mut component = None;
 		let mut is_feature_action_key = false;
 		let mut is_feature_event_key = false;
@@ -426,12 +438,23 @@ impl Collection {
 
 				if label == "@component" {
 					component = Some(context.map(|inner| inner.to_string()).unwrap_or(format!("{node_name}Render")));
-				} else if value == "@feature_event_key" {
+				} else if label == "@feature_event_key" {
 					is_feature_event_key = true;
-				} else if value == "@feature_action_key" {
+				} else if label == "@feature_action_key" {
 					is_feature_action_key = true;
-				} else if value == "@feature_component_index" {
+				} else if label == "@feature_component_index" {
 					self.component_index_name = Some(node_name.to_string());
+				} else if label == "@assets" {
+					let specifier = context.ok_or(anyhow!(
+						"Found a @assets jsdoc tag, which expects a file specifier as the second argument. However, no file specifier was provided."
+					))?;
+
+					let url = Url::parse(&location.filename)
+						.with_context(|| format!("expected deno_doc to give a full url as a filename, but got {}", location.filename))?
+						.join(specifier)
+						.with_context(|| format!("failed to join file specifier '{specifier}' onto filename '{}'", location.filename))?;
+
+					self.assets_loader.register_index_url(url);
 				}
 			}
 		}
@@ -447,5 +470,7 @@ impl Collection {
 		if let Some(render_name) = component {
 			self.components.insert(node_name.to_string(), ComponentInfo { render_name });
 		}
+
+		Ok(())
 	}
 }
