@@ -142,7 +142,7 @@ fn normalize_web_path(path: &str) -> String {
 	} else if path.ends_with("/") {
 		normalize_web_path(&path[..path.len() - 1])
 	} else {
-		path.to_string()
+		format!("/{path}")
 	}
 }
 
