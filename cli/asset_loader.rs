@@ -1,7 +1,8 @@
 use anyhow::{anyhow, bail, Context, Result};
 use serde::{Deserialize, Serialize};
 use serde_json::{from_str, from_value, Value};
-use std::collections::HashSet;
+use sha2::{Digest, Sha256};
+use std::collections::{HashMap, HashSet};
 use tokio::fs::read_to_string;
 use url::Url;
 
@@ -39,10 +40,11 @@ impl Asset {
 	}
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum AssetKind {
 	Remote,
 	Local,
+	#[default]
 	All,
 }
 
@@ -53,13 +55,19 @@ pub struct AssetsLoader {
 	assets: Vec<Asset>,
 }
 
+#[derive(Debug, Default)]
+pub struct AssetsLoaderWriteOptions {
+	pub kind: AssetKind,
+	pub hash_url: bool,
+}
+
 impl AssetsLoader {
 	pub fn register_index_url(&mut self, url: impl Into<Url>) {
 		self.indexes.push(url.into());
 	}
 
 	pub async fn load(&mut self, diagnostic_list: &mut DiagnosticList) -> Result<()> {
-		for index_url in self.indexes.drain(..) {
+		for index_url in &self.indexes {
 			let mut assets = match load_index(&index_url).await {
 				Ok(assets) => assets,
 				Err(error) => {
@@ -91,12 +99,21 @@ impl AssetsLoader {
 		Ok(())
 	}
 
-	pub async fn write(&self, writer: &Writer, kind: AssetKind, diagnostic_list: &mut DiagnosticList) -> Result<()> {
-		let allow_all_schemes = kind == AssetKind::All;
-		let allow_file_scheme = allow_all_schemes || kind == AssetKind::Local;
-		let allow_other_schemes = allow_all_schemes || kind == AssetKind::Remote;
+	pub async fn write(&self, writer: &Writer, diagnostic_list: &mut DiagnosticList, options: AssetsLoaderWriteOptions) -> Result<()> {
+		let allow_all_schemes = options.kind == AssetKind::All;
+		let allow_file_scheme = allow_all_schemes || options.kind == AssetKind::Local;
+		let allow_other_schemes = allow_all_schemes || options.kind == AssetKind::Remote;
 
 		for asset in &self.assets {
+			let path = if options.hash_url {
+				let mut sha = Sha256::new();
+				sha.update(asset.url.to_string().as_bytes());
+
+				hex::encode(sha.finalize())
+			} else {
+				asset.url.to_string()
+			};
+
 			if asset.url.scheme() == "file" && !allow_file_scheme {
 				continue;
 			}
@@ -105,13 +122,13 @@ impl AssetsLoader {
 				continue;
 			}
 
-			if let Ok(actual_sha) = writer.get_sha256(&asset.web_path).await {
-				if asset.sha256 == actual_sha {
+			if let Ok(actual_sha) = writer.get_sha256(&path).await {
+				if &asset.sha256 == &actual_sha {
 					continue;
 				}
 			}
 
-			let download_res = writer.download_file(&asset.web_path, &asset.url).await;
+			let download_res = writer.download_file(&path, &asset.url).await;
 
 			let downloaded_hash = match download_res {
 				Ok(hash) => hash,
@@ -133,6 +150,50 @@ impl AssetsLoader {
 		}
 
 		Ok(())
+	}
+
+	pub async fn download(self, cache_writer: &Writer, diagnostic_list: &mut DiagnosticList) -> Result<AccessibleAssets> {
+		self.write(
+			cache_writer,
+			diagnostic_list,
+			AssetsLoaderWriteOptions {
+				kind: AssetKind::Remote,
+				hash_url: true,
+			},
+		)
+		.await?;
+
+		let index = self
+			.assets
+			.iter()
+			.map(|asset| {
+				(asset.web_path.to_string(), {
+					if asset.url.scheme() == "file" {
+						asset.url.path().to_string()
+					} else {
+						let path = {
+							let mut hasher = Sha256::new();
+							hasher.update(asset.url.to_string());
+							hex::encode(hasher.finalize())
+						};
+						cache_writer.get_full_path(path).into_os_string().into_string().unwrap()
+					}
+				})
+			})
+			.collect();
+
+		Ok(AccessibleAssets { index })
+	}
+}
+
+#[derive(Debug, Clone)]
+pub struct AccessibleAssets {
+	index: HashMap<String, String>,
+}
+
+impl AccessibleAssets {
+	pub fn get_local_path(&self, web_path: &str) -> Option<&str> {
+		self.index.get(web_path).map(|inner| inner.as_str())
 	}
 }
 
