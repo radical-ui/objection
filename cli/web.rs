@@ -34,7 +34,6 @@ enum DevConnectionMessage {
 
 #[derive(Debug, Clone, Copy)]
 enum DevRefreshMessage {
-	FullReload,
 	HotReload,
 }
 
@@ -101,7 +100,6 @@ pub async fn run_web_static(params: RunWebStaticParams<'_>) -> Result<()> {
 							};
 
 							let notification = match message {
-								DevRefreshMessage::FullReload => "reload",
 								DevRefreshMessage::HotReload => "remount",
 							};
 
