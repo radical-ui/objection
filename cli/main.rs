@@ -22,7 +22,12 @@ use engine::Engine;
 use env_logger::Env;
 use log::{error, Level};
 use platform::{BuildParams, Platform, RunParams};
-use std::{env::current_dir, io::Write, path::PathBuf, process::exit};
+use std::{
+	env::{self, current_dir},
+	io::Write,
+	path::PathBuf,
+	process::exit,
+};
 use tokio::runtime::Builder;
 use url::Url;
 use writer::Writer;
@@ -118,6 +123,8 @@ async fn main_async() -> Result<()> {
 		engine: args.engine,
 	};
 	let bindings_writer = Writer::new(current_dir().context("failed to get the current working directory")?).into_file_writer(args.bindings_path);
+	let home = PathBuf::from(env::var("HOME").context("Failed to find the HOME env variable")?).join(".cache/objection");
+	let cache_writer = Writer::new(home);
 
 	match args.operation {
 		Operation::Run { web_port, no_reload } => {
@@ -127,6 +134,7 @@ async fn main_async() -> Result<()> {
 					web_port,
 					reload: !no_reload,
 					bindings_writer: &bindings_writer,
+					cache_writer: &cache_writer,
 				})
 				.await
 		}
@@ -136,6 +144,7 @@ async fn main_async() -> Result<()> {
 					build_options,
 					bindings_writer: &bindings_writer,
 					output_writer: &Writer::new(out_dir),
+					cache_writer: &cache_writer,
 				})
 				.await
 		}

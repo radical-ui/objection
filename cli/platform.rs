@@ -13,6 +13,7 @@ pub struct RunParams<'a> {
 	pub web_port: u16,
 	pub reload: bool,
 	pub bindings_writer: &'a FileWriter,
+	pub cache_writer: &'a Writer,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -20,6 +21,7 @@ pub struct BuildParams<'a> {
 	pub build_options: BuildOptions<'a>,
 	pub bindings_writer: &'a FileWriter,
 	pub output_writer: &'a Writer,
+	pub cache_writer: &'a Writer,
 }
 
 #[derive(Debug, ValueEnum, Clone, Default)]
@@ -49,6 +51,7 @@ impl Platform {
 					web_port: params.web_port,
 					reload: params.reload,
 					bindings_writer: params.bindings_writer,
+					cache_writer: params.cache_writer,
 				})
 				.await
 			}

@@ -1,21 +1,23 @@
 use aho_corasick::AhoCorasick;
 use anyhow::{Context, Result};
 use axum::{
-	extract::{ws::Message, WebSocketUpgrade},
+	extract::{ws::Message, Request, WebSocketUpgrade},
 	http::HeaderMap,
-	response::Html,
+	response::{Html, IntoResponse},
 	routing::get,
 	serve, Router,
 };
 use axum_extra::TypedHeader;
 use log::{debug, info, warn};
 use rand::random;
-use std::collections::HashMap;
+use reqwest::StatusCode;
+use std::{collections::HashMap, sync::Arc};
 use tokio::{net::TcpListener, select, sync::mpsc};
+use tower::ServiceExt;
+use tower_http::services::ServeFile;
 use url::Url;
 
 use crate::{
-	asset_loader::AssetKind,
 	build::{build, Build, BuildOptions},
 	diagnostic::DiagnosticList,
 	tcp_watcher::{TcpState, TcpWatcher},
@@ -43,6 +45,7 @@ pub struct RunWebStaticParams<'a> {
 	pub web_port: u16,
 	pub reload: bool,
 	pub bindings_writer: &'a FileWriter,
+	pub cache_writer: &'a Writer,
 }
 
 pub async fn run_web_static(params: RunWebStaticParams<'_>) -> Result<()> {
@@ -55,6 +58,9 @@ pub async fn run_web_static(params: RunWebStaticParams<'_>) -> Result<()> {
 
 	let index = get_index_html(params.build_options.engine_url, true);
 	let (dev_connection_sender, mut dev_connection_receiver) = mpsc::channel(10);
+
+	let accessible_assets = Arc::new(assets_loader.download(params.cache_writer, &mut diagnostic_list).await?);
+	diagnostic_list.flush("download assets")?;
 
 	params.bindings_writer.write(bindings).await?;
 
@@ -118,7 +124,15 @@ pub async fn run_web_static(params: RunWebStaticParams<'_>) -> Result<()> {
 					}
 				})
 			}),
-		);
+		)
+		.fallback(|request: Request| async move {
+			let local_path = accessible_assets.get_local_path(request.uri().path());
+
+			match local_path {
+				Some(local_path) => ServeFile::new(local_path).oneshot(request).await.into_response(),
+				None => StatusCode::NOT_FOUND.into_response(),
+			}
+		});
 
 	let listener = TcpListener::bind(("localhost", params.web_port))
 		.await
@@ -211,7 +225,9 @@ pub async fn build_web_static(params: BuildWebStaticParams<'_>) -> Result<()> {
 		.await?;
 	params.output_writer.write_file("bundle.js", client_bundle).await?;
 
-	assets_loader.write(params.output_writer, AssetKind::All, &mut diagnostic_list).await?;
+	assets_loader.write(params.output_writer, &mut diagnostic_list, Default::default()).await?;
+	info!("Wrote assets");
+
 	diagnostic_list.flush("write assets")?;
 
 	Ok(())
