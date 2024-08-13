@@ -82,7 +82,7 @@ impl TcpConnectionStatus {
 			.context("failed to read the `lsof` output. It seems to contain invalid utf8 characters")?
 			.split('\n')
 			.find(|line| line.ends_with("(LISTEN)"))
-			.map(|line| line.to_string())
+			.map(|line| line.replace(' ', "").to_string())
 			.unwrap_or("".to_string());
 
 		Ok(TcpConnectionStatus(string))
