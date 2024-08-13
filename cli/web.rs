@@ -47,11 +47,13 @@ pub struct RunWebStaticParams<'a> {
 }
 
 pub async fn run_web_static(params: RunWebStaticParams<'_>) -> Result<()> {
+	let mut diagnostic_list = DiagnosticList::new();
 	let Build {
 		client_bundle,
 		bindings,
 		assets_loader,
-	} = build(params.build_options).await?;
+	} = build(&mut diagnostic_list, params.build_options).await?;
+
 	let index = get_index_html(params.build_options.engine_url, true);
 	let (dev_connection_sender, mut dev_connection_receiver) = mpsc::channel(10);
 
@@ -202,7 +204,7 @@ pub async fn build_web_static(params: BuildWebStaticParams<'_>) -> Result<()> {
 		client_bundle,
 		bindings,
 		assets_loader,
-	} = build(params.build_options).await?;
+	} = build(&mut diagnostic_list, params.build_options).await?;
 
 	params.bindings_writer.write(bindings).await?;
 	params

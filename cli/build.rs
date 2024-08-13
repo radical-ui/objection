@@ -21,8 +21,7 @@ pub struct Build {
 	pub assets_loader: AssetsLoader,
 }
 
-pub async fn build(options: BuildOptions<'_>) -> Result<Build> {
-	let mut diagnostic_list = DiagnosticList::new();
+pub async fn build(diagnostic_list: &mut DiagnosticList, options: BuildOptions<'_>) -> Result<Build> {
 	let mut memory_loader = MemoryLoader::default();
 	let mut bundler = Bundler::default();
 	let mut collection = Collection::default();
@@ -51,7 +50,7 @@ pub async fn build(options: BuildOptions<'_>) -> Result<Build> {
 	info!("Mounted runtime");
 
 	let inspector = Inspector::new(&collection);
-	inspector.inspect(&mut diagnostic_list);
+	inspector.inspect(diagnostic_list);
 
 	diagnostic_list.flush("validate runtime")?;
 	info!("Validated runtime");
@@ -62,7 +61,7 @@ pub async fn build(options: BuildOptions<'_>) -> Result<Build> {
 	let bindings = options.engine.get_bindings(&collection)?;
 
 	let mut assets_loader = collection.finish();
-	assets_loader.load(&mut diagnostic_list).await.context("Failed to load assets")?;
+	assets_loader.load(diagnostic_list).await.context("Failed to load assets")?;
 	diagnostic_list.flush("load assets")?;
 	info!("Loaded assets");
 
