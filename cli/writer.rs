@@ -98,6 +98,10 @@ impl Writer {
 		Ok(hasher.finalize().to_vec())
 	}
 
+	pub fn get_full_path(&self, path: impl AsRef<Path>) -> PathBuf {
+		self.directory.join(path.as_ref())
+	}
+
 	pub fn into_file_writer(self, path: impl Into<PathBuf>) -> FileWriter {
 		FileWriter {
 			writer: self,
