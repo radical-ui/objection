@@ -25,7 +25,8 @@ impl DiagnosticList {
 	pub fn flush(&mut self, operation: impl Display) -> Result<()> {
 		let error_count = self.diagnostics.len();
 
-		for diagnostic in self.diagnostics.drain(..) {
+		for mut diagnostic in self.diagnostics.drain(..) {
+			diagnostic.0.push('\n');
 			diagnostic.print_error();
 		}
 
