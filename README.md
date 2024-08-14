@@ -1,6 +1,8 @@
-> No longer maintained
+> The purpose of this tool was always to reduce the complexity of building highly interactive and beautiful user interfaces. To that end I've rebranded this project under the name of Objection. It no longer uses Svelte for various technical reasons, but that shouldn't matter, should it?
+>
+> You can find more at the [`next` branch](https://github.com/radical-ui/objection/blob/next).
 
-##### [Chat on Discord](https://discord.gg/bWZnuvd) • [Documentation](#documentation) • [Changelog](./CHANGELOG.md) • [Component Status](#component-status)
+[Documentation](#documentation) • [Changelog](./CHANGELOG.md) • [Component Status](#component-status)
 
 # Svelte Toolbox ([demo](https://svelte.dev/repl/5cf847108884453cbedd5920e919b630?version=3.6.5))
 
