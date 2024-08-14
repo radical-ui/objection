@@ -68,5 +68,8 @@ task_release() {
 	git push
 	cd ../..
 
+	echo "Cleaning up..."
+	rm -rf target/tap
+
 	echo "Done!!"
 }
