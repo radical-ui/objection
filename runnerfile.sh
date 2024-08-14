@@ -53,8 +53,8 @@ task_release() {
 	git push origin tag $next_tag
 
 	echo "Creating a sha256 for the just-created tag..."
-	git archive -o target/archive.tar.gz $next_tag
-	sha256_hash="$(cat target/archive.tar.gz | sha256sum | sd "	-" "")"
+	curl -o target/archive.tar.gz -L "https://github.com/radical-ui/objection/archive/refs/tags/$next_tag.tar.gz"
+	sha256_hash="$(cat target/archive.tar.gz | sha256sum | sd " -" "")"
 
 	echo "Updating the homebrew formula..."
 	git clone git@github.com:radical-ui/homebrew-tap.git target/tap
