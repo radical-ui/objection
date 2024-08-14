@@ -1,6 +1,7 @@
 objection() {
 	cargo run -p objection_cli --\
-		--runtime file://$(pwd)/runtime/mod.tsx \
+		--runtime "file://$(pwd)/runtime/mod.tsx" \
+		--bundler "file://$(pwd)/bundle/main.ts" \
 		--engine rust \
 		--bindings-path runtime_test/bindings.rs \
 		--engine-url http://localhost:8000/ui $@

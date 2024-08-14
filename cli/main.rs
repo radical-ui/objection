@@ -32,8 +32,10 @@ use tokio::runtime::Builder;
 use url::Url;
 use writer::Writer;
 
+const VERSION: &str = "0.7.0";
+
 #[derive(Parser, Debug, Clone)]
-#[command(styles = get_styles(), version)]
+#[command(styles = get_styles(), version(VERSION))]
 struct Command {
 	/// The runtime to use. Must be a url.
 	#[arg(long, default_value_t = Url::parse("https://raw.githubusercontent.com/radical-ui/svelte-toolbox/new-take/runtime/mod.tsx").unwrap())]
@@ -58,6 +60,10 @@ struct Command {
 	/// The type of operation to run
 	#[command(subcommand)]
 	operation: Operation,
+
+	/// The deno script to use for bundling the runtime. Primarily useful if one wants to test a modified version of the default bundler.
+	#[arg(long, default_value_t = Url::parse(&format!("https://raw.githubusercontent.com/radical-ui/svelte-toolbox/blob/{VERSION}/bundle/mod.ts")).unwrap())]
+	bundler: Url,
 }
 
 #[derive(Subcommand, Debug, Clone)]
@@ -118,6 +124,7 @@ fn main() {
 async fn main_async() -> Result<()> {
 	let args = Command::parse();
 	let build_options = BuildOptions {
+		bundler: &args.bundler,
 		runtime: &args.runtime,
 		engine_url: &args.engine_url,
 		engine: args.engine,

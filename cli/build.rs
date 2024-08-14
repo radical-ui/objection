@@ -4,13 +4,19 @@ use log::{error, info};
 use url::Url;
 
 use crate::{
-	asset_loader::AssetsLoader, bundle::Bundler, collect::Collection, diagnostic::DiagnosticList, engine::Engine, inspect::Inspector,
+	asset_loader::AssetsLoader,
+	bundle::{BundleParams, Bundler},
+	collect::Collection,
+	diagnostic::DiagnosticList,
+	engine::Engine,
+	inspect::Inspector,
 	module_loader::load_modules,
 };
 
 #[derive(Debug, Clone, Copy)]
 pub struct BuildOptions<'a> {
 	pub runtime: &'a Url,
+	pub bundler: &'a Url,
 	pub engine_url: &'a Url,
 	pub engine: Engine,
 }
@@ -55,7 +61,13 @@ pub async fn build(diagnostic_list: &mut DiagnosticList, options: BuildOptions<'
 	diagnostic_list.flush("validate runtime")?;
 	info!("Validated runtime");
 
-	let client_bundle = bundler.bundle(options.runtime, &collection).await?;
+	let client_bundle = bundler
+		.bundle(BundleParams {
+			bundler_url: options.bundler,
+			runtime_url: options.runtime,
+			collection: &collection,
+		})
+		.await?;
 	info!("Bundled runtime");
 
 	let bindings = options.engine.get_bindings(&collection)?;

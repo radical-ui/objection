@@ -1,5 +1,5 @@
 use aho_corasick::AhoCorasick;
-use anyhow::Result;
+use anyhow::{bail, Result};
 use serde::Serialize;
 use serde_json::to_string;
 use std::{collections::HashMap, env, fmt::Write, path::PathBuf, process::Stdio};
@@ -14,6 +14,12 @@ const RUNTIME_ENTRY: &str = include_str!("runtime_entry.js");
 struct BundleManifest {
 	resolutions: HashMap<Url, HashMap<String, Url>>,
 	source_files: HashMap<Url, PathBuf>,
+}
+
+pub struct BundleParams<'a> {
+	pub bundler_url: &'a Url,
+	pub runtime_url: &'a Url,
+	pub collection: &'a Collection,
 }
 
 #[derive(Debug, Default)]
@@ -36,17 +42,17 @@ impl Bundler {
 		self.manifest.source_files.insert(source.into(), file.into());
 	}
 
-	pub async fn bundle(self, runtime_url: &Url, collection: &Collection) -> Result<String> {
+	pub async fn bundle(self, params: BundleParams<'_>) -> Result<String> {
 		let imports = {
 			let mut js = String::new();
 
 			write!(js, "import {{ createStarter, ")?;
 
-			for (_, info) in collection.get_component_info() {
+			for (_, info) in params.collection.get_component_info() {
 				write!(js, "{}, ", info.render_name)?;
 			}
 
-			write!(js, " }} from '{runtime_url}'")?;
+			write!(js, " }} from '{}'", params.runtime_url)?;
 
 			js
 		};
@@ -54,7 +60,7 @@ impl Bundler {
 		let component_cases = {
 			let mut js = String::new();
 
-			for (name, info) in collection.get_component_info() {
+			for (name, info) in params.collection.get_component_info() {
 				write!(
 					js,
 					"\tif (component.type === '{}') return {{ func: {}, params: component.def }}\n",
@@ -69,16 +75,16 @@ impl Bundler {
 
 		let entry = AhoCorasick::new(&["\"IMPORTS\"", "\"COMPONENT_CASES\""])?.replace_all(RUNTIME_ENTRY, &[imports, component_cases]);
 
-		self.run_bundle_command(entry).await
+		self.run_bundle_command(params.bundler_url, entry).await
 	}
 
-	async fn run_bundle_command(self, entry_code: impl Into<String>) -> Result<String> {
+	async fn run_bundle_command(self, bundler_url: &Url, entry_code: impl Into<String>) -> Result<String> {
 		let mut command = Command::new("deno");
 
 		command
 			.arg("run")
 			.arg("--allow-read")
-			.arg("bundle/main.ts")
+			.arg(bundler_url.as_str())
 			.stdin(Stdio::piped())
 			.stdout(Stdio::piped())
 			.stderr(Stdio::inherit())
@@ -93,6 +99,10 @@ impl Bundler {
 		drop(stdin);
 
 		let output = process.wait_with_output().await?;
+
+		if !output.status.success() {
+			bail!("Failed to bundle runtime")
+		}
 
 		Ok(String::from_utf8(output.stdout)?)
 	}
