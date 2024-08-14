@@ -9,6 +9,7 @@ class Objection < Formula
   depends_on "rust" => :build
 
   def install
+    ENV["CARGO_NET_GIT_FETCH_WITH_CLI"] = "true"
     system "cargo", "build", "--release", "--bin", "objection"
     bin.install "target/release/objection"
   end
