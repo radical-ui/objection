@@ -37,7 +37,7 @@ task_preview() {
 }
 
 task_release() {
-	last_tag="$(git describe --abbrev=0)"
+	last_tag="$(git describe --abbrev=0 --tags)"
 	next_tag="$(echo $1 | sed 's/--version=//')"
 
 	echo "Moving from $last_tag to $next_tag..."
