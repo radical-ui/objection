@@ -33,6 +33,7 @@ pub enum Platform {
 	/// NOTE: Currently, SSR support is limited in the fact that it does not generate html, but instead just embeds
 	/// the engine-provided initial component tree, resulting in an immediate meaningful paint as soon as the JS loads.
 	/// However, that the Deno script returns a full rendering of the initial component tree in html is a planned feature.
+	#[clap(name = "unstable-web-ssr")]
 	WebSSR,
 }
 
