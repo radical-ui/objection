@@ -38,7 +38,7 @@ const VERSION: &str = "0.7.0";
 #[command(styles = get_styles(), version(VERSION))]
 struct Command {
 	/// The runtime to use. Must be a url.
-	#[arg(long, default_value_t = Url::parse(&format!("https://raw.githubusercontent.com/radical-ui/svelte-toolbox/blob/{VERSION}/runtime/mod.tsx")).unwrap())]
+	#[arg(long, default_value_t = Url::parse(&format!("https://raw.githubusercontent.com/radical-ui/objection/blob/{VERSION}/runtime/mod.tsx")).unwrap())]
 	runtime: Url,
 
 	/// The platform to build for. Defaults to `web`.
@@ -62,7 +62,7 @@ struct Command {
 	operation: Operation,
 
 	/// The deno script to use for bundling the runtime. Primarily useful if one wants to test a modified version of the default bundler.
-	#[arg(long, default_value_t = Url::parse(&format!("https://raw.githubusercontent.com/radical-ui/svelte-toolbox/blob/{VERSION}/bundle/mod.ts")).unwrap())]
+	#[arg(long, default_value_t = Url::parse(&format!("https://raw.githubusercontent.com/radical-ui/objection/blob/{VERSION}/bundle/mod.ts")).unwrap())]
 	bundler: Url,
 }
 
