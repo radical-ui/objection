@@ -49,7 +49,7 @@ task_release() {
 	git push
 
 	echo "Creating and pushing a new tag..."
-	git tag $next_tag
+	git tag -a $next_tag
 	git push origin tag $next_tag
 
 	echo "Creating a sha256 for the just-created tag..."
