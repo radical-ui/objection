@@ -86,10 +86,3 @@ Then, start up the example project:
 ```sh
 runner dev
 ```
-
-## TODO for MVP
-
-- `objection new` and the associated `rust_example` subproject
-- Support for `web-ssr`
-- "bring your own runtime" docs
-- runtime assets
