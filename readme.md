@@ -1,6 +1,6 @@
 # Objection
 
-Build server-first, highly-interactive, and beautiful web applications in Rust and Go.
+Build server-first, highly-interactive, and beautiful web applications in Rust.
 
 ...because the current web-based application development trends are worth objecting to.
 
