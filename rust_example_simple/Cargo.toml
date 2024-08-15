@@ -8,6 +8,7 @@ name = "rust_example_simple"
 path = "main.rs"
 
 [dependencies]
+serde = { version = "1", features = ["derive"] }
 objection = { path = "../rust_lib" }
 tokio = { version = "1", features = ["full"] }
 axum = "0.7"
