@@ -43,7 +43,8 @@ task_release() {
 	echo "Moving from $last_tag to $next_tag..."
 
 	echo "Updating all versions..."
-	rg --fixed-strings --files-with-matches $last_tag | sd --fixed-strings $last_tag $next_tag
+	# we specify one file that may or may not have matches because if `rg` returns no files, sd will hang, waiting for input from stdin.
+	sd --fixed-strings $last_tag $next_tag cli/Cargo.toml cli/main.rs
 	git add -A
 	git commit -m "chore: $next_tag"
 	git push
