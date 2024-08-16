@@ -32,7 +32,7 @@ use tokio::runtime::Builder;
 use url::Url;
 use writer::Writer;
 
-const VERSION: &str = "0.7.0";
+const VERSION: &str = "0.7.1";
 
 #[derive(Parser, Debug, Clone)]
 #[command(styles = get_styles(), version(VERSION))]
