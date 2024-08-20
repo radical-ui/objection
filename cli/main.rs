@@ -64,6 +64,14 @@ struct Command {
 	/// The deno script to use for bundling the runtime. Primarily useful if one wants to test a modified version of the default bundler.
 	#[arg(long, default_value_t = Url::parse(&format!("https://raw.githubusercontent.com/radical-ui/objection/blob/{VERSION}/bundle/mod.ts")).unwrap())]
 	bundler: Url,
+
+	/// The directory that is used for caching incremental build artifacts and outputing platform-specific applications
+	#[arg(long, default_value = "target")]
+	target_dir: PathBuf,
+
+	/// The directory that is used for caching artifacts that are not project specific, such as resources downloaded
+	#[arg(long, default_value = get_default_cache_dir())]
+	cache_dir: PathBuf,
 }
 
 #[derive(Subcommand, Debug, Clone)]
@@ -83,11 +91,7 @@ enum Operation {
 	},
 	/// Build the configured runtime (see --runtime) for the configured platform (see --platform), which, when run, will access the
 	/// engine at the configured engine url (see --engine-url). Code will be written to the configured output dir (see --out-dir).
-	Build {
-		/// The directory to where the generated client code will be written
-		#[arg(long, default_value_t = String::from("target/objection_build"))]
-		out_dir: String,
-	},
+	Build,
 }
 
 fn main() {
@@ -130,8 +134,8 @@ async fn main_async() -> Result<()> {
 		engine: args.engine,
 	};
 	let bindings_writer = Writer::new(current_dir().context("failed to get the current working directory")?).into_file_writer(args.bindings_path);
-	let home = PathBuf::from(env::var("HOME").context("Failed to find the HOME env variable")?).join(".cache/objection");
-	let cache_writer = Writer::new(home);
+	let cache_writer = Writer::new(args.cache_dir);
+	let target_writer = Writer::new(args.target_dir);
 
 	match args.operation {
 		Operation::Run { web_port, no_reload } => {
@@ -141,16 +145,17 @@ async fn main_async() -> Result<()> {
 					web_port,
 					reload: !no_reload,
 					bindings_writer: &bindings_writer,
+					target_writer: &target_writer,
 					cache_writer: &cache_writer,
 				})
 				.await
 		}
-		Operation::Build { out_dir } => {
+		Operation::Build => {
 			args.platform
 				.build(BuildParams {
 					build_options,
 					bindings_writer: &bindings_writer,
-					output_writer: &Writer::new(out_dir),
+					target_writer: &target_writer,
 					cache_writer: &cache_writer,
 				})
 				.await
@@ -167,4 +172,15 @@ fn get_styles() -> Styles {
 		.error(Style::new().bold().fg_color(Some(AnsColor::Ansi(AnsiColor::Red))))
 		.valid(Style::new().bold().underline().fg_color(Some(AnsColor::Ansi(AnsiColor::Green))))
 		.placeholder(Style::new().fg_color(Some(AnsColor::Ansi(AnsiColor::White))))
+}
+
+fn get_default_cache_dir() -> String {
+	let home = env::var("HOME").expect("Failed to find the HOME env variable");
+	let segment = ".cache/objection";
+
+	if home.ends_with("/") {
+		format!("{home}{segment}")
+	} else {
+		format!("{home}/{segment}")
+	}
 }

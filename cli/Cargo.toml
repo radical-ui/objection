@@ -13,7 +13,7 @@ aho-corasick = "1"
 anstyle = "1"
 anyhow = { version = "1", features = ["backtrace"] }
 axum = { version = "0.7", features = ["ws"] }
-clap = { version = "4", features = ["derive"] }
+clap = { version = "4", features = ["derive", "string"] }
 colored = "2"
 deno_doc = { git = "ssh://git@github.com/radical-ui/deno_doc", rev = "4e99ed" }
 deno_graph = "0.80"
@@ -39,3 +39,5 @@ sha2 = "0.10"
 reqwest = "0.12"
 tower-http = { version = "0.5", features = ["fs"] }
 tower = { version = "0.4", features = ["util"] }
+futures = "0.3"
+bytes = { version = "1", features = ["serde"] }

@@ -12,6 +12,7 @@ pub struct RunParams<'a> {
 	pub build_options: BuildOptions<'a>,
 	pub web_port: u16,
 	pub reload: bool,
+	pub target_writer: &'a Writer,
 	pub bindings_writer: &'a FileWriter,
 	pub cache_writer: &'a Writer,
 }
@@ -20,7 +21,7 @@ pub struct RunParams<'a> {
 pub struct BuildParams<'a> {
 	pub build_options: BuildOptions<'a>,
 	pub bindings_writer: &'a FileWriter,
-	pub output_writer: &'a Writer,
+	pub target_writer: &'a Writer,
 	pub cache_writer: &'a Writer,
 }
 
@@ -66,7 +67,7 @@ impl Platform {
 				build_web_static(BuildWebStaticParams {
 					build_options: params.build_options,
 					bindings_writer: params.bindings_writer,
-					output_writer: params.output_writer,
+					target_writer: params.target_writer,
 				})
 				.await
 			}

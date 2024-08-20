@@ -8,6 +8,8 @@ use axum::{
 	serve, Router,
 };
 use axum_extra::TypedHeader;
+use bytes::Bytes;
+use futures::{future::ok, stream::once};
 use log::{debug, info, warn};
 use rand::random;
 use reqwest::StatusCode;
@@ -62,7 +64,7 @@ pub async fn run_web_static(params: RunWebStaticParams<'_>) -> Result<()> {
 	let accessible_assets = Arc::new(assets_loader.download(params.cache_writer, &mut diagnostic_list).await?);
 	diagnostic_list.flush("download assets")?;
 
-	params.bindings_writer.write(bindings).await?;
+	params.bindings_writer.write(once(ok(Bytes::from(bindings)))).await?;
 
 	let app = Router::new()
 		.route("/", get(move || async { Html(index) }))
@@ -207,7 +209,7 @@ pub async fn run_web_static(params: RunWebStaticParams<'_>) -> Result<()> {
 pub struct BuildWebStaticParams<'a> {
 	pub build_options: BuildOptions<'a>,
 	pub bindings_writer: &'a FileWriter,
-	pub output_writer: &'a Writer,
+	pub target_writer: &'a Writer,
 }
 
 pub async fn build_web_static(params: BuildWebStaticParams<'_>) -> Result<()> {
@@ -218,14 +220,16 @@ pub async fn build_web_static(params: BuildWebStaticParams<'_>) -> Result<()> {
 		assets_loader,
 	} = build(&mut diagnostic_list, params.build_options).await?;
 
-	params.bindings_writer.write(bindings).await?;
-	params
-		.output_writer
-		.write_file("index.html", get_index_html(params.build_options.engine_url, false))
-		.await?;
-	params.output_writer.write_file("bundle.js", client_bundle).await?;
+	let output_writer = params.target_writer.sub_dir("web_static");
 
-	assets_loader.write(params.output_writer, &mut diagnostic_list, Default::default()).await?;
+	params.bindings_writer.write(once(ok(Bytes::from(bindings)))).await?;
+	output_writer
+		.file("index.html")
+		.write(once(ok(Bytes::from(get_index_html(params.build_options.engine_url, false)))))
+		.await?;
+	output_writer.file("bundle.js").write(once(ok(Bytes::from(client_bundle)))).await?;
+
+	assets_loader.write(&output_writer, &mut diagnostic_list, Default::default()).await?;
 	info!("Wrote assets");
 
 	diagnostic_list.flush("write assets")?;

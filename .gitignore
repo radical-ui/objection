@@ -1,5 +1,6 @@
 target
 runtime_test/bindings.rs
+rust_example_simple/bindings.rs
 
 .helix
 *.bck
