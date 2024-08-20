@@ -4,7 +4,11 @@ Build server-first, highly-interactive, and beautiful web applications in Rust.
 
 ...because the current web-based application development trends are worth objecting to.
 
+> Due to an ongoing refactor, breaking changes are expected in the near future.
+
 ## Installation
+
+Unfortunately, [Deno](https://deno.com/) is a required runtime dependency. We aim to remove this dependency in the near future.
 
 ```sh
 # MacOS
@@ -45,29 +49,27 @@ mod bindings;
 
 #[tokio::main]
 async fn main() {
-	let port = 8000;
-
 	let app = Router::new()
 		.route(
 			"/ui",
-			post(move |State(queue): State<_>, Json(body): Json<Value>| async move {
+			post(move |Json(body): Json<Value>| async move {
 				Json(handle_request(body, |_, ui| async {
 					ui.set_root_ui(Label::new("Hello, world!"));
 					Ok(ui.into_reponse())
 				}).await)
 			}),
 		)
-		.layer(CorsLayer::very_permissive())
-		.with_state(queue);
+		.layer(CorsLayer::very_permissive());
 
-	let listener = TcpListener::bind(("localhost", 3000)).await.unwrap();
-	println!("listening at http://localhost:3000");
+	let listener = TcpListener::bind(("localhost", 8000)).await.unwrap();
+	println!("listening at http://localhost:8000");
 
 	axum::serve(listener, app).await.unwrap();
 }
 ```
 
-That should do it. After starting the engine, navigate to `http://localhost:3000`.
+That should do it. After starting the engine, navigate to the app server that objection will have started at `http://localhost:3000`.
+Behind the scenes, the app will connect to the engine at `http://localhost:8000` over the generated network bridge.
 
 ## Development
 
