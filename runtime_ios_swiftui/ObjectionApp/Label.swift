@@ -22,10 +22,9 @@ struct Label: View {
 
 #Preview {
     var model = LabelModel()
+    model.update(data: [
+        "text": "Hello, World!"
+    ])
     
-    return Label(model: model).onAppear {
-        model.update(data: [
-            "text": "Hello, World!"
-        ])
-    }
+    return Label(model: model)
 }

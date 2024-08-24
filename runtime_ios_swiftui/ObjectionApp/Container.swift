@@ -169,23 +169,22 @@ struct Container: View {
 
 #Preview {
     @State var model = ContainerModel()
+    model.update(data: [
+        "spacing": 23,
+        "alignment": "Center",
+        "color": [255, 10, 10, 255],
+        "padding_top": 10,
+        "padding_left": 5.5,
+        "corner_radius": 10,
+        "shadow_radius": 10,
+        "shadow_color": [0, 0, 0, 90],
+        "border_color": [0, 255, 0, 255],
+        "border_width": 4,
+        "children": [
+            [ "type": "Label", "def": [ "text": "Foo hoo" ] ],
+            [ "type": "Label", "def": [ "text": "Bar" ] ],
+        ]
+    ])
     
-    return Container(model: model).onAppear {
-        model.update(data: [
-            "spacing": 23,
-            "alignment": "Center",
-            "color": [255, 10, 10, 255],
-            "padding_top": 10,
-            "padding_left": 5.5,
-            "corner_radius": 10,
-            "shadow_radius": 10,
-            "shadow_color": [0, 0, 0, 90],
-            "border_color": [0, 255, 0, 255],
-            "border_width": 4,
-            "children": [
-                [ "type": "Label", "def": [ "text": "Foo hoo" ] ],
-                [ "type": "Label", "def": [ "text": "Bar" ] ],
-            ]
-        ])
-    }
+    return Container(model: model)
 }

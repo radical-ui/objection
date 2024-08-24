@@ -1,6 +1,7 @@
 mod component;
 mod container;
 mod label;
+mod space;
 
 use rand::random;
 use serde::{Deserialize, Serialize};
@@ -9,6 +10,7 @@ use serde_json::{json, to_value, Value};
 pub use component::*;
 pub use container::*;
 pub use label::*;
+pub use space::*;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ComponentId(String);

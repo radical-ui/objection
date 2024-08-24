@@ -3,6 +3,7 @@ import SwiftUI
 private enum ComponentInner {
     case label(LabelModel)
     case container(ContainerModel)
+    case space(SpaceModel)
     case fragment
 }
 
@@ -55,6 +56,15 @@ class ComponentModel: ObservableObject, Identifiable {
                 
                 self.inner = .container(model)
             }
+        } else if type == "Space" {
+            if case .space(let spaceModel) = inner {
+                spaceModel.update(data: defObject)
+            } else {
+                let model = SpaceModel()
+                model.update(data: defObject)
+                
+                self.inner = .space(model)
+            }
         }
     }
 }
@@ -65,10 +75,14 @@ private struct ComponentRender: View {
     var body: some View {
         if case .label(let model) = model.inner {
             Label(model: model)
-        }
-        
-        if case .container(let model) = model.inner {
+        } else if case .container(let model) = model.inner {
             Container(model: model)
+        } else if case .space(let model) = model.inner {
+            Space(model: model)
+        } else if case .fragment = model.inner {
+            EmptyView()
+        } else {
+            let _ = print("Unknown component")
         }
     }
 }
