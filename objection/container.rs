@@ -121,6 +121,8 @@ pub struct Container {
 	is_horizontal: bool,
 	alignment: Option<Alignment>,
 
+	disregard_safe_area: Option<bool>,
+
 	color: Option<Color>,
 
 	padding_top: Option<f64>,
@@ -164,6 +166,18 @@ impl Container {
 
 	pub fn spacing(mut self, spacing: f64) -> Container {
 		self.spacing = Some(spacing);
+
+		self
+	}
+
+	pub fn disregrard_safe_area(mut self) -> Container {
+		self.disregard_safe_area = Some(true);
+
+		self
+	}
+
+	pub fn disregard_safe_area_if(mut self, condition: bool) -> Container {
+		self.disregard_safe_area = Some(condition);
 
 		self
 	}

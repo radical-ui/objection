@@ -14,6 +14,8 @@ class ContainerModel: ObservableObject {
     
     @Published var color: Color?
     
+    @Published var disregardSafeArea = false
+    
     @Published var paddingTop: Double?
     @Published var paddingBottom: Double?
     @Published var paddingRight: Double?
@@ -41,6 +43,10 @@ class ContainerModel: ObservableObject {
         
         if let spacing = data["spacing"] {
             self.spacing = buildDouble(spacing)
+        }
+        
+        if let disregardSafeArea = data["disregard_safe_area"] as? Bool {
+            self.disregardSafeArea = disregardSafeArea
         }
         
         if let isHorizontal = data["is_horizontal"] as? Bool {
@@ -158,6 +164,7 @@ struct Container: View {
             )
         }
         .cornerRadius(model.cornerRadius ?? 0.0)
+        .ignoresSafeArea(.all, edges: model.disregardSafeArea ? [.top, .leading, .trailing, .bottom] : [])
         .shadow(
             color: model.shadowColor ?? Color.clear,
             radius: model.shadowRadius ?? 0.0,
@@ -174,7 +181,7 @@ struct Container: View {
         "alignment": "Center",
         "color": [255, 10, 10, 255],
         "padding_top": 10,
-        "padding_left": 5.5,
+        "padding_left": 40,
         "corner_radius": 10,
         "shadow_radius": 10,
         "shadow_color": [0, 0, 0, 90],
@@ -182,6 +189,30 @@ struct Container: View {
         "border_width": 4,
         "children": [
             [ "type": "Label", "def": [ "text": "Foo hoo" ] ],
+            [ "type": "Label", "def": [ "text": "Bar" ] ],
+        ]
+    ])
+    
+    return Container(model: model)
+}
+
+#Preview {
+    @State var model = ContainerModel()
+    model.update(data: [
+        "spacing": 23,
+        "alignment": "Center",
+        "color": [255, 10, 10, 255],
+        "padding_top": 100,
+        "padding_left": 0,
+        "corner_radius": 10,
+        "shadow_radius": 10,
+        "shadow_color": [0, 0, 0, 90],
+        "border_color": [0, 255, 0, 255],
+        "border_width": 4,
+        "disregard_safe_area": true,
+        "children": [
+            [ "type": "Label", "def": [ "text": "Foo hoo" ] ],
+            [ "type": "Space", "def": [:] ],
             [ "type": "Label", "def": [ "text": "Bar" ] ],
         ]
     ])
