@@ -1,14 +1,13 @@
 import SwiftUI
 
 class LabelModel: ObservableObject {
-    @Published var text = "nil"
-    
+    @Published var text = ""
+
     func update(data: [String: Any]) {
         if let text = data["text"] as? String {
             self.text = text
-            print("set text \(self.text)")
         } else {
-            print("nothing to update")
+            print("WARN: Label with nothing to update")
         }
     }
 }
@@ -22,5 +21,11 @@ struct Label: View {
 }
 
 #Preview {
-    Label()
+    var model = LabelModel()
+    
+    return Label(model: model).onAppear {
+        model.update(data: [
+            "text": "Hello, World!"
+        ])
+    }
 }

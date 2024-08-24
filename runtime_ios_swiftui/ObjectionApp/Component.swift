@@ -1,10 +1,16 @@
 import SwiftUI
 
+private enum ComponentInner {
+    case label(LabelModel)
+    case container(ContainerModel)
+    case fragment
+}
+
 class ComponentModel: ObservableObject, Identifiable {
-    var id: String?
+    var id = UUID()
+    var updateId: String?
     
-    @Published var label: LabelModel?
-    @Published var flex: FlexModel?
+    @Published fileprivate var inner: ComponentInner = .fragment
     
     func update(data: Any) {
         guard let object = data as? [String:Any] else {
@@ -27,16 +33,28 @@ class ComponentModel: ObservableObject, Identifiable {
             return
         }
         
-        if let id = defObject["_updateId"] as? String {
-            self.id = id
+        if let id = defObject["_update_id"] as? String {
+            self.updateId = id
         }
         
         if type == "Label" {
-            self.label = LabelModel()
-            self.label?.update(data: defObject)
-        } else if type == "Flex"{
-            self.flex = FlexModel()
-            self.flex?.update(data: defObject)
+            if case .label(let model) = self.inner {
+                model.update(data: defObject)
+            } else {
+                let model = LabelModel()
+                model.update(data: defObject)
+                
+                self.inner = .label(model)
+            }
+        } else if type == "Container" {
+            if case .container(let containerModel) = inner {
+                containerModel.update(data: defObject)
+            } else {
+                let model = ContainerModel()
+                model.update(data: defObject)
+                
+                self.inner = .container(model)
+            }
         }
     }
 }
@@ -45,12 +63,12 @@ private struct ComponentRender: View {
     @ObservedObject var model: ComponentModel
     
     var body: some View {
-        if let model = model.label {
+        if case .label(let model) = model.inner {
             Label(model: model)
         }
         
-        if let model = model.flex {
-            Flex(model: model)
+        if case .container(let model) = model.inner {
+            Container(model: model)
         }
     }
 }
@@ -59,7 +77,7 @@ struct Component: View {
     @ObservedObject var model: ComponentModel
     
     var body: some View {
-        if let id = self.model.id {
+        if let id = self.model.updateId {
             ComponentRender(model: model)
                 .onAppear {
                     Bridge.shared.onUpdate(id) { state in
@@ -74,3 +92,4 @@ struct Component: View {
         }
     }
 }
+

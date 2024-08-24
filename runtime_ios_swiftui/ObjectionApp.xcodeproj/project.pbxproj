@@ -12,11 +12,12 @@
 		3702CCD12C76A7CD00037E72 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3702CCD02C76A7CD00037E72 /* Assets.xcassets */; };
 		3702CCD52C76A7CD00037E72 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3702CCD42C76A7CD00037E72 /* Preview Assets.xcassets */; };
 		3702CCDE2C77773100037E72 /* Label.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3702CCDD2C77773000037E72 /* Label.swift */; };
-		3702CCE02C77778C00037E72 /* Flex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3702CCDF2C77778C00037E72 /* Flex.swift */; };
+		3702CCE02C77778C00037E72 /* Container.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3702CCDF2C77778C00037E72 /* Container.swift */; };
 		3702CCE22C7777F700037E72 /* Component.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3702CCE12C7777F700037E72 /* Component.swift */; };
 		3702CCE42C77876100037E72 /* Bridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3702CCE32C77876000037E72 /* Bridge.swift */; };
 		372D1B592C77EF3500589EB2 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 372D1B582C77EF3500589EB2 /* Constants.swift */; };
 		372D1B5C2C77F24100589EB2 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 372D1B5B2C77F24100589EB2 /* LaunchScreen.storyboard */; };
+		3B7E64F92C7A1C1F00EBB252 /* Shared.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B7E64F82C7A1C1F00EBB252 /* Shared.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -27,12 +28,13 @@
 		3702CCD22C76A7CD00037E72 /* ObjectionApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ObjectionApp.entitlements; sourceTree = "<group>"; };
 		3702CCD42C76A7CD00037E72 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		3702CCDD2C77773000037E72 /* Label.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Label.swift; sourceTree = "<group>"; };
-		3702CCDF2C77778C00037E72 /* Flex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Flex.swift; sourceTree = "<group>"; };
+		3702CCDF2C77778C00037E72 /* Container.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Container.swift; sourceTree = "<group>"; };
 		3702CCE12C7777F700037E72 /* Component.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Component.swift; sourceTree = "<group>"; };
 		3702CCE32C77876000037E72 /* Bridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Bridge.swift; sourceTree = "<group>"; };
 		372D1B582C77EF3500589EB2 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		372D1B5A2C77F01B00589EB2 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		372D1B5B2C77F24100589EB2 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
+		3B7E64F82C7A1C1F00EBB252 /* Shared.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -71,7 +73,8 @@
 				372D1B582C77EF3500589EB2 /* Constants.swift */,
 				3702CCE32C77876000037E72 /* Bridge.swift */,
 				3702CCE12C7777F700037E72 /* Component.swift */,
-				3702CCDF2C77778C00037E72 /* Flex.swift */,
+				3702CCDF2C77778C00037E72 /* Container.swift */,
+				3B7E64F82C7A1C1F00EBB252 /* Shared.swift */,
 				3702CCDD2C77773000037E72 /* Label.swift */,
 				3702CCD02C76A7CD00037E72 /* Assets.xcassets */,
 				372D1B5B2C77F24100589EB2 /* LaunchScreen.storyboard */,
@@ -161,11 +164,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				3702CCE22C7777F700037E72 /* Component.swift in Sources */,
-				3702CCE02C77778C00037E72 /* Flex.swift in Sources */,
+				3702CCE02C77778C00037E72 /* Container.swift in Sources */,
 				3702CCE42C77876100037E72 /* Bridge.swift in Sources */,
 				3702CCCF2C76A7CB00037E72 /* Root.swift in Sources */,
 				372D1B592C77EF3500589EB2 /* Constants.swift in Sources */,
 				3702CCCD2C76A7CB00037E72 /* Main.swift in Sources */,
+				3B7E64F92C7A1C1F00EBB252 /* Shared.swift in Sources */,
 				3702CCDE2C77773100037E72 /* Label.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
