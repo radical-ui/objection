@@ -1,20 +1,23 @@
 import Foundation
 
-struct Bridge {
+class Bridge {
     static var shared = Bridge()
     
     var onInitial: ((_: Any) -> Void)?
     var onError: ((_: String) -> Void)?
     var onNoInternet: (() -> Void)?
+    var onHasInternet: (() -> Void)?
     
+    private var isOffline = false
+    private var url: URL?
     private var websocketTask: URLSessionWebSocketTask?
     private var listeners: [String: (_ data: [String: Any]) -> Void] = [:]
     
-    mutating func onUpdate(_ id: String, handler: @escaping (_ data: [String: Any]) -> Void) {
+    func onUpdate(_ id: String, handler: @escaping (_ data: [String: Any]) -> Void) {
         self.listeners[id] = handler
     }
     
-    mutating func removeListener(_ id: String) {
+    func removeListener(_ id: String) {
         self.listeners.removeValue(forKey: id)
     }
     
@@ -30,42 +33,74 @@ struct Bridge {
         websocketTask?.receive { result in
             switch result {
             case .success(let message):
+                if self.isOffline {
+                    print("Websocket connected")
+                    self.isOffline = false
+                    
+                    if let onHasInternet = self.onHasInternet {
+                        onHasInternet()
+                    }
+                }
+                
                 switch message {
                 case .data(let data):
                     guard let json = try? JSONSerialization.jsonObject(with: data) else {
-                        callError("Failed to parse json response")
+                        self.callError("Failed to parse json response")
                         return
                     }
 
                     guard let object = json as? [String: Any] else {
-                        callError("Json message is not an object")
+                        self.callError("Json message is not an object")
                         return
                     }
 
                     self.handleIncomingMessage(message: object)
                     self.recieveMessage()
                 default:
-                    callError("Non-binary message type recieved")
+                    self.callError("Non-binary message type recieved")
                 }
             case .failure(let error):
                 if error.localizedDescription == "Could not connect to the server." && self.onNoInternet != nil {
-                        onNoInternet!()
+                    print("Websocket connection failed")
+                    
+                    self.isOffline = true
+                    self.onNoInternet!()
+                    self.queueRetry()
                 } else {
-                    callError(error.localizedDescription)
+                    self.callError(error.localizedDescription)
                 }
             }
         }
     }
     
-    mutating func start(url: String) {
-        guard let url = URL(string: url) else {
-            callError("Invalid url: \(url)")
+    private func queueRetry() {
+        self.websocketTask?.cancel()
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+            print("Retrying websocket connnection...")
+            self.connect()
+        }
+    }
+    
+    private func connect() {
+        guard let url = url else {
+            print("Must call .start() before .connect()")
             return
         }
         
         websocketTask = URLSession(configuration: .default).webSocketTask(with: url)
         websocketTask?.resume()
         recieveMessage()
+    }
+    
+    func start(url: String) {
+        guard let url = URL(string: url) else {
+            callError("Invalid url: \(url)")
+            return
+        }
+        
+        self.url = url
+//        self.connect()
     }
 
     func handleIncomingMessage(message: [String: Any]) {
