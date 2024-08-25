@@ -17,6 +17,7 @@
 		3702CCE42C77876100037E72 /* Bridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3702CCE32C77876000037E72 /* Bridge.swift */; };
 		372D1B592C77EF3500589EB2 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 372D1B582C77EF3500589EB2 /* Constants.swift */; };
 		372D1B5C2C77F24100589EB2 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 372D1B5B2C77F24100589EB2 /* LaunchScreen.storyboard */; };
+		3B449DF32C7ACB6700F68EBA /* Divider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B449DF22C7ACB6700F68EBA /* Divider.swift */; };
 		3B7E64F92C7A1C1F00EBB252 /* Shared.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B7E64F82C7A1C1F00EBB252 /* Shared.swift */; };
 		3B7E64FB2C7A5A5200EBB252 /* Space.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B7E64FA2C7A5A5200EBB252 /* Space.swift */; };
 /* End PBXBuildFile section */
@@ -35,6 +36,7 @@
 		372D1B582C77EF3500589EB2 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		372D1B5A2C77F01B00589EB2 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		372D1B5B2C77F24100589EB2 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
+		3B449DF22C7ACB6700F68EBA /* Divider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Divider.swift; sourceTree = "<group>"; };
 		3B7E64F82C7A1C1F00EBB252 /* Shared.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared.swift; sourceTree = "<group>"; };
 		3B7E64FA2C7A5A5200EBB252 /* Space.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Space.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -76,6 +78,7 @@
 				3702CCE32C77876000037E72 /* Bridge.swift */,
 				3702CCE12C7777F700037E72 /* Component.swift */,
 				3702CCDF2C77778C00037E72 /* Container.swift */,
+				3B449DF22C7ACB6700F68EBA /* Divider.swift */,
 				3B7E64F82C7A1C1F00EBB252 /* Shared.swift */,
 				3702CCDD2C77773000037E72 /* Label.swift */,
 				3B7E64FA2C7A5A5200EBB252 /* Space.swift */,
@@ -173,6 +176,7 @@
 				372D1B592C77EF3500589EB2 /* Constants.swift in Sources */,
 				3702CCCD2C76A7CB00037E72 /* Main.swift in Sources */,
 				3B7E64F92C7A1C1F00EBB252 /* Shared.swift in Sources */,
+				3B449DF32C7ACB6700F68EBA /* Divider.swift in Sources */,
 				3702CCDE2C77773100037E72 /* Label.swift in Sources */,
 				3B7E64FB2C7A5A5200EBB252 /* Space.swift in Sources */,
 			);

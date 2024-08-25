@@ -1,5 +1,6 @@
 mod component;
 mod container;
+mod divider;
 mod label;
 mod space;
 
@@ -9,6 +10,7 @@ use serde_json::{json, to_value, Value};
 
 pub use component::*;
 pub use container::*;
+pub use divider::*;
 pub use label::*;
 pub use space::*;
 

@@ -17,8 +17,8 @@ impl Label {
 		label
 	}
 
-	pub fn id(mut self, component_id: ComponentId) -> Label {
-		self._update_id = Some(component_id);
+	pub fn id(mut self, component_id: &ComponentId) -> Label {
+		self._update_id = Some(component_id.to_owned());
 
 		self
 	}

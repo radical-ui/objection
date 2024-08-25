@@ -146,8 +146,8 @@ impl Container {
 		Container::default()
 	}
 
-	pub fn id(mut self, component_id: ComponentId) -> Container {
-		self._update_id = Some(component_id);
+	pub fn id(mut self, component_id: &ComponentId) -> Container {
+		self._update_id = Some(component_id.to_owned());
 
 		self
 	}

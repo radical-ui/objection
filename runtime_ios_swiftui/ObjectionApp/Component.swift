@@ -4,6 +4,7 @@ private enum ComponentInner {
     case label(LabelModel)
     case container(ContainerModel)
     case space(SpaceModel)
+    case divider(DividerModel)
     case fragment
 }
 
@@ -65,6 +66,17 @@ class ComponentModel: ObservableObject, Identifiable {
                 
                 self.inner = .space(model)
             }
+        } else if type == "Divider" {
+            if case .divider(let dividerModel) = inner {
+                dividerModel.update(data: defObject)
+            } else {
+                let model = DividerModel()
+                model.update(data: defObject)
+                
+                self.inner = .divider(model)
+            }
+        } else {
+            print("Unknown model")
         }
     }
 }
@@ -79,6 +91,8 @@ private struct ComponentRender: View {
             Container(model: model)
         } else if case .space(let model) = model.inner {
             Space(model: model)
+        } else if case .divider(let model) = model.inner {
+            Divider(model: model)
         } else if case .fragment = model.inner {
             EmptyView()
         } else {
