@@ -35,7 +35,7 @@ struct Root: View {
             if isLoading {
                 ZStack {
                     Background()
-                    Image("launch_logo")
+                    SwiftUI.Image("launch_logo")
                 }
                 .ignoresSafeArea(.all)
                 .transition(.opacity)
@@ -47,7 +47,7 @@ struct Root: View {
                     Background()
                     
                     VStack (spacing: 20) {
-                        Image("no_internet")
+                        SwiftUI.Image("no_internet")
                         ErrorText(text: noInternetHeader).font(.title)
                         ErrorText(text: noInternetContent).multilineTextAlignment(.center)
                     }
@@ -61,7 +61,7 @@ struct Root: View {
                     Background()
                     
                     VStack (spacing: 30) {
-                        Image("error")
+                        SwiftUI.Image("error")
                         ErrorText(text: error)
                     }
                 }

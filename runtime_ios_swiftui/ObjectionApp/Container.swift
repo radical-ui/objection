@@ -219,3 +219,18 @@ struct Container: View {
     
     return Container(model: model)
 }
+
+#Preview {
+    let model = ComponentModel()
+    model.update(data: [
+        "type": "Container",
+        "def": [
+            "disregard_safe_area": true,
+            "children": [
+                [ "type": "Container", "def": [ "src": "https://plus.unsplash.com/premium_photo-1669050701946-d34455dce075" ] ]
+            ]
+        ]
+    ])
+    
+    return Component(model: model)
+}

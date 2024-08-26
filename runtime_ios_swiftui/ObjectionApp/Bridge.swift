@@ -100,7 +100,7 @@ class Bridge {
         }
         
         self.url = url
-//        self.connect()
+        self.connect()
     }
 
     func handleIncomingMessage(message: [String: Any]) {

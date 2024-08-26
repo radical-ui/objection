@@ -20,6 +20,7 @@
 		3B449DF32C7ACB6700F68EBA /* Divider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B449DF22C7ACB6700F68EBA /* Divider.swift */; };
 		3B7E64F92C7A1C1F00EBB252 /* Shared.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B7E64F82C7A1C1F00EBB252 /* Shared.swift */; };
 		3B7E64FB2C7A5A5200EBB252 /* Space.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B7E64FA2C7A5A5200EBB252 /* Space.swift */; };
+		3B8EA4ED2C7AE9170029C4D7 /* Image.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B8EA4EC2C7AE9170029C4D7 /* Image.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -39,6 +40,7 @@
 		3B449DF22C7ACB6700F68EBA /* Divider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Divider.swift; sourceTree = "<group>"; };
 		3B7E64F82C7A1C1F00EBB252 /* Shared.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared.swift; sourceTree = "<group>"; };
 		3B7E64FA2C7A5A5200EBB252 /* Space.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Space.swift; sourceTree = "<group>"; };
+		3B8EA4EC2C7AE9170029C4D7 /* Image.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Image.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -79,6 +81,7 @@
 				3702CCE12C7777F700037E72 /* Component.swift */,
 				3702CCDF2C77778C00037E72 /* Container.swift */,
 				3B449DF22C7ACB6700F68EBA /* Divider.swift */,
+				3B8EA4EC2C7AE9170029C4D7 /* Image.swift */,
 				3B7E64F82C7A1C1F00EBB252 /* Shared.swift */,
 				3702CCDD2C77773000037E72 /* Label.swift */,
 				3B7E64FA2C7A5A5200EBB252 /* Space.swift */,
@@ -178,6 +181,7 @@
 				3B7E64F92C7A1C1F00EBB252 /* Shared.swift in Sources */,
 				3B449DF32C7ACB6700F68EBA /* Divider.swift in Sources */,
 				3702CCDE2C77773100037E72 /* Label.swift in Sources */,
+				3B8EA4ED2C7AE9170029C4D7 /* Image.swift in Sources */,
 				3B7E64FB2C7A5A5200EBB252 /* Space.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
