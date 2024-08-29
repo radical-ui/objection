@@ -4,7 +4,9 @@ import SwiftUI
 struct Main: App {
     var body: some Scene {
         WindowGroup {
-            Root()
+            GlobalProvider {
+                Root()
+            }
         }
     }
 }

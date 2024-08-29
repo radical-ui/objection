@@ -46,3 +46,7 @@ func buildUrl(_ value: Any) -> URL? {
     
     return url
 }
+
+enum EnumKeys: String, CodingKey {
+    case kind, def
+}

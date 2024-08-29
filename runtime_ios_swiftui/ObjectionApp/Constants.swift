@@ -10,3 +10,5 @@ let noInternetHeader = "No Internet"
 let noInternetContent = "This app requires an internet connection to function."
 
 let errorHeader = "Uh oh"
+
+let wsUrl = "ws://localhost:8000/ui"
