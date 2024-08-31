@@ -1,0 +1,14 @@
+[package]
+name = "example_basic"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "objection_example_basic"
+path = "main.rs"
+
+[dependencies]
+axum = "0.7"
+objection = { path = "../objection" }
+tokio = { version = "1", features = ["full"] }
+uuid = "1"

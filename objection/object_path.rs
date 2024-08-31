@@ -55,6 +55,10 @@ pub struct ObjectPathIndex<T> {
 }
 
 impl<T: Clone> ObjectPathIndex<T> {
+	pub fn new() -> ObjectPathIndex<T> {
+		ObjectPathIndex { paths: Vec::new() }
+	}
+
 	pub fn define(&mut self, path: impl Into<ObjectPath>, value: T) {
 		self.paths.push((path.into(), value))
 	}

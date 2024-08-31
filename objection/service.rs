@@ -1,15 +1,17 @@
-use anyhow::{Error, Result};
-use async_worker::{Queue, SendResult, WorkerHandle};
+use anyhow::Result;
+use async_worker::{Queue, QueueBuilder, SendResult, WorkerHandle};
 use bytes::Bytes;
 use fastwebsockets::{upgrade::upgrade, Frame, OpCode, Payload, WebSocket, WebSocketError};
 use futures::future::{ready, Ready};
 use http::{Request, Response, StatusCode};
-use hyper::upgrade::Upgraded;
+use http_body_util::Full;
+use hyper::{body::Body, upgrade::Upgraded};
 use hyper_util::rt::TokioIo;
 use log::{error, warn};
 use serde::{Deserialize, Serialize};
 use serde_json::{from_slice, to_string};
 use std::{
+	convert::Infallible,
 	fmt::Display,
 	future::Future,
 	marker::PhantomData,
@@ -19,7 +21,10 @@ use std::{
 use tower::Service;
 use uuid::Uuid;
 
-use crate::session::{IncomingSocketMessage, OutgoingSocketMessage, Session, SessionEvent, SessionWorker};
+use crate::{
+	session::{IncomingSocketMessage, OutgoingSocketMessage, Session, SessionEvent, SessionWorker, SessionWorkerContext},
+	ObjectRouter,
+};
 
 pub struct ObjectionService<S>
 where
@@ -32,14 +37,26 @@ impl<S> ObjectionService<S>
 where
 	S: Session + Send + 'static,
 {
-	fn call_internal<Body>(&mut self, mut request: Request<Body>) -> Result<Response<Bytes>> {
+	pub fn new(router: ObjectRouter<S>, context: S::Context) -> ObjectionService<S> {
+		ObjectionService {
+			queue: Arc::new(QueueBuilder::default().build(SessionWorkerContext {
+				shared_router: Arc::new(router),
+				session_context: context,
+			})),
+		}
+	}
+
+	fn call_internal<Body>(&mut self, mut request: Request<Body>) -> Result<Response<Full<Bytes>>, Infallible> {
 		#[derive(Debug, Serialize, Deserialize)]
 		struct QueryParams {
 			auth_token: Option<String>,
 			session_id: Uuid,
 		}
 
-		let (empty_response, fut) = upgrade(&mut request)?;
+		let (empty_response, fut) = match upgrade(&mut request) {
+			Ok(inner) => inner,
+			Err(_) => return Ok(bad_response("Failed to upgrade request")),
+		};
 
 		let query_string = match request.uri().query() {
 			Some(query) => query,
@@ -105,32 +122,41 @@ where
 			}
 		});
 
-		Ok(empty_response.map(|_| Bytes::new()))
+		Ok(empty_response.map(|_| Full::new(Bytes::new())))
 	}
 }
 
-fn bad_response(message: impl Display) -> Response<Bytes> {
-	let mut response = Response::new(Bytes::from(message.to_string()));
-	*response.status_mut() = StatusCode::BAD_REQUEST;
-
-	response
-}
-
-impl<Body, S> Service<Request<Body>> for ObjectionService<S>
+impl<ReqBody, S> Service<Request<ReqBody>> for ObjectionService<S>
 where
 	S: Session + Send + 'static,
 {
-	type Response = Response<Bytes>;
-	type Error = Error;
+	type Response = Response<Full<Bytes>>;
+	type Error = Infallible;
 	type Future = Ready<Result<Self::Response, Self::Error>>;
 
 	fn poll_ready(&mut self, _: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
 		std::task::Poll::Ready(Ok(()))
 	}
 
-	fn call(&mut self, request: Request<Body>) -> Self::Future {
+	fn call(&mut self, request: Request<ReqBody>) -> Self::Future {
 		ready(self.call_internal(request))
 	}
+}
+
+impl<S> Clone for ObjectionService<S>
+where
+	S: Session + Send,
+{
+	fn clone(&self) -> Self {
+		ObjectionService { queue: self.queue.clone() }
+	}
+}
+
+fn bad_response(message: impl Display) -> Response<Full<Bytes>> {
+	let mut response = Response::new(Full::new(Bytes::from(message.to_string())));
+	*response.status_mut() = StatusCode::BAD_REQUEST;
+
+	response
 }
 
 struct SocketHandle<PeerEvent> {

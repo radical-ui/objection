@@ -8,12 +8,19 @@ use crate::{
 };
 
 #[derive(Debug)]
-pub struct Router<S> {
+pub struct ObjectRouter<S> {
 	path_index: ObjectPathIndex<usize>,
 	providers: Vec<ObjectProviders<S>>,
 }
 
-impl<S> Router<S> {
+impl<S> ObjectRouter<S> {
+	pub fn new() -> ObjectRouter<S> {
+		ObjectRouter {
+			path_index: ObjectPathIndex::new(),
+			providers: Vec::new(),
+		}
+	}
+
 	pub fn object<'a>(&'a mut self, path: impl Into<ObjectPath>) -> ObjectDef<'a, S> {
 		ObjectDef {
 			path: path.into(),
@@ -25,12 +32,12 @@ impl<S> Router<S> {
 
 #[derive(Debug)]
 pub struct RouteResolver<S> {
-	router: Arc<Router<S>>,
+	router: Arc<ObjectRouter<S>>,
 	watched_object_ids: HashSet<String>,
 }
 
 impl<S> RouteResolver<S> {
-	pub fn from_shared_router(router: Arc<Router<S>>) -> RouteResolver<S> {
+	pub fn from_shared_router(router: Arc<ObjectRouter<S>>) -> RouteResolver<S> {
 		RouteResolver {
 			router,
 			watched_object_ids: HashSet::new(),
@@ -127,7 +134,7 @@ pub struct ObjectDef<'a, S> {
 	path: ObjectPath,
 	providers: ObjectProviders<S>,
 
-	router: &'a mut Router<S>,
+	router: &'a mut ObjectRouter<S>,
 }
 
 impl<'a, S> ObjectDef<'a, S> {

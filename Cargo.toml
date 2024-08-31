@@ -1,3 +1,3 @@
 [workspace]
-members = ["derive_event_symbol", "async_worker", "objection"]
+members = ["derive_event_symbol", "async_worker", "objection", "example_basic"]
 resolver = "2"

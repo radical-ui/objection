@@ -54,7 +54,11 @@ impl QueueBuilder {
 		self
 	}
 
-	pub fn build<W: Worker + Send + 'static>(self, context: W::Context) -> Queue<W> {
+	pub fn build<W, H>(self, context: W::Context) -> Queue<W, H>
+	where
+		W: Worker + Send + 'static,
+		H: WorkerHandle<W::Request, W::Response> + Send + 'static,
+	{
 		Queue::new(self.options, context)
 	}
 }

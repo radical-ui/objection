@@ -6,7 +6,7 @@ use uuid::Uuid;
 
 use crate::{
 	object::Object,
-	router::{Resolution, ResolverAction, RouteResolver, Router},
+	router::{ObjectRouter, Resolution, ResolverAction, RouteResolver},
 	theme::Theme,
 };
 
@@ -53,7 +53,7 @@ pub struct SessionWorkerContext<S>
 where
 	S: Session,
 {
-	pub shared_router: Arc<Router<S>>,
+	pub shared_router: Arc<ObjectRouter<S>>,
 	pub session_context: S::Context,
 }
 
@@ -170,23 +170,28 @@ where
 	}
 }
 
-pub trait Session {
+pub trait Session
+where
+	Self: Sized,
+{
 	type Context: 'static + Clone + Send + Sync;
 	type PeerEvent: 'static + Clone + Send + Sync;
 
-	fn create(id: &Uuid, context: Self::Context) -> impl Future<Output = Self> + 'static + Send + Sync;
+	fn create(id: &Uuid, context: Self::Context) -> impl Future<Output = Self> + Send + Sync;
 
 	#[allow(unused_variables)]
-	fn provide_auth_token(&mut self, token: String) -> impl Future<Output = ()> + 'static + Send + Sync {
+	fn provide_auth_token(&mut self, token: String) -> impl Future<Output = ()> + Send + Sync {
 		async {}
 	}
 
-	fn get_theme(&mut self) -> impl Future<Output = Theme> + 'static + Send + Sync;
+	fn get_theme(&mut self) -> impl Future<Output = Theme> + Send + Sync;
 
 	#[allow(unused_variables)]
-	fn handle_peer_event(&mut self, event: Self::PeerEvent) -> impl Future<Output = ()> + 'static + Send + Sync {
+	fn handle_peer_event(&mut self, event: Self::PeerEvent) -> impl Future<Output = ()> + Send + Sync {
 		async {}
 	}
 
-	fn destroy(self) -> impl Future<Output = ()> + 'static + Send + Sync;
+	fn destroy(self) -> impl Future<Output = ()> + 'static + Send + Sync {
+		async {}
+	}
 }
