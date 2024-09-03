@@ -50,3 +50,11 @@ func buildUrl(_ value: Any) -> URL? {
 enum EnumKeys: String, CodingKey {
     case kind, def
 }
+
+//extension TabBarItem: Identifiable {
+//    public typealias ID = String
+//    
+//    var id: String {
+//        return objectId
+//    }
+//}

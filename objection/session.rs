@@ -21,7 +21,7 @@ pub enum IncomingSocketMessage {
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(tag = "kind", content = "def", rename_all = "snake_case")]
 pub enum OutgoingSocketMessage {
-	Initalize {
+	Init {
 		theme: Theme,
 		objects: HashMap<String, Object>,
 	},
@@ -143,7 +143,7 @@ where
 					let mut resolution = Resolution::empty();
 
 					if let Err(error) = self.resolver.watch(&entry_id, &mut self.session, &mut resolution).await {
-						error!("resolve.watch for an entry id should not error, but it did: {error:?}");
+						error!("resolver.watch for an entry id '{entry_id}' should not error, but it did: {error:?}");
 
 						continue;
 					}
@@ -160,7 +160,7 @@ where
 					}
 				}
 
-				Vec::from([OutgoingSocketMessage::Initalize { theme, objects }])
+				Vec::from([OutgoingSocketMessage::Init { theme, objects }])
 			}
 		}
 	}

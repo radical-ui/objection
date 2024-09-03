@@ -1,31 +1,31 @@
 import Foundation
 
-struct Paragraph: Decodable {
+struct Paragraph: Decodable, Hashable, Equatable {
     let text: String
 }
 
-struct Quote: Decodable {
+struct Quote: Decodable, Hashable, Equatable {
     let text: String
     let author: String
 }
 
-struct ObjectPreview: Decodable {
+struct ObjectPreview: Decodable, Hashable, Equatable {
     let objectId: String
 }
 
-struct CallToAction: Decodable {
+struct CallToAction: Decodable, Hashable, Equatable {
     let title: String
     let icon: String?
     let targetObject: String
 }
 
-struct ObjectGroup: Decodable {
+struct ObjectGroup: Decodable, Hashable, Equatable {
     let title: String
     let description: Bool
     let objectScope: String
 }
 
-enum Content: Decodable {
+enum Content: Decodable, Hashable, Equatable {
     case paragraph(Paragraph)
     case quote(Quote)
     case objectPreview(ObjectPreview)
@@ -53,21 +53,22 @@ enum Content: Decodable {
     }
 }
 
-struct Object: Decodable {
+struct Object: Decodable, Hashable, Equatable {
     let title: String?
     let subtitle: String?
     let description: String?
+    let icon: String?
     let content: [Content]
     let actions: [Action]
 }
 
-enum ActionKind: String, Decodable {
+enum ActionKind: String, Hashable, Decodable {
     case danger = "danger"
     case success = "success"
     case normal = "normal"
 }
 
-struct Action: Decodable {
+struct Action: Decodable, Hashable, Equatable, Identifiable {
     let id: String
     let kind: ActionKind
     let title: String

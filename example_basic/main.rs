@@ -1,14 +1,43 @@
 use axum::{serve, Router};
-use objection::{ObjectRouter, ObjectionService, Session, Theme};
+use log::info;
+use objection::{object_provider, Object, ObjectRouter, ObjectionService, Session, TabBar, Theme};
 use tokio::net::TcpListener;
 use uuid::Uuid;
 
 #[tokio::main]
 async fn main() {
-	let objects = ObjectRouter::<User>::new();
+	env_logger::init();
 
-	let app = Router::new().route_service("/ui.ws", ObjectionService::new(objects, ()));
+	let mut ui = ObjectRouter::new();
+
+	ui.object("home")
+		.provider(object_provider!(user: &mut User, state => {
+			let mut object = Object::default();
+
+			object
+				.set_title("Home")
+				.set_subtitle("My home")
+				.set_description("Foo")
+				.set_icon("house");
+
+
+			Ok(object)
+		}))
+		.commit();
+
+	ui.object("about")
+		.provider(object_provider!(user: &mut User, state => {
+			let mut object = Object::default();
+
+			object.set_title("About");
+
+			Ok(object)
+		}))
+		.commit();
+
+	let app = Router::new().route_service("/ui.ws", ObjectionService::new(ui, ()));
 	let listener = TcpListener::bind("0.0.0.0:8000").await.unwrap();
+	info!("listening at http://localhost:8000");
 
 	serve(listener, app).await.unwrap();
 }
@@ -24,6 +53,14 @@ impl Session for User {
 	}
 
 	async fn get_theme(&mut self) -> Theme {
-		Theme { tab_bar: None }
+		let mut theme = Theme::default();
+		let mut tab_bar = TabBar::default();
+
+		tab_bar.add_object("home");
+		tab_bar.add_object("about");
+
+		theme.set_tab_bar(tab_bar);
+
+		theme
 	}
 }

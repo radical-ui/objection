@@ -1,3 +1,5 @@
+use http::header::ValueDrain;
+
 #[derive(Debug)]
 enum Component {
 	Literal(String),
@@ -46,6 +48,18 @@ impl ObjectPath {
 		}
 
 		return Some(dynamic_parts);
+	}
+}
+
+impl From<String> for ObjectPath {
+	fn from(value: String) -> Self {
+		ObjectPath::new(&value)
+	}
+}
+
+impl From<&str> for ObjectPath {
+	fn from(value: &str) -> Self {
+		ObjectPath::new(value)
 	}
 }
 

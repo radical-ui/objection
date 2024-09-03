@@ -1,8 +1,10 @@
 use anyhow::{anyhow, Result};
 use serde_json::Value;
-use std::{collections::HashMap, fmt, future::Future};
+use std::{collections::HashMap, fmt};
 
 use crate::{object::Object, object_path::ObjectPath};
+
+pub use async_trait::async_trait;
 
 pub struct ObjectState {
 	dynamic_parts: Vec<String>,
@@ -30,8 +32,9 @@ impl ObjectState {
 	}
 }
 
+#[async_trait]
 pub trait ObjectProvider<S> {
-	fn call<'a>(&'a self, session: &'a mut S, state: &mut ObjectState) -> Box<dyn Future<Output = Result<Object>> + Unpin + Send + 'a>;
+	async fn call(&self, session: &mut S, state: &mut ObjectState) -> Result<Object>;
 }
 
 pub struct ObjectFormField {
@@ -43,12 +46,14 @@ pub struct ObjectForm {
 	pub fields: Vec<ObjectFormField>,
 }
 
+#[async_trait]
 pub trait ObjectUpdateProvider<S> {
-	fn call<'a>(&'a self, session: &'a mut S, state: &mut ObjectState, form: ObjectForm) -> Box<dyn Future<Output = Result<()>> + Unpin + Send + 'a>;
+	async fn call(&self, session: &mut S, state: &mut ObjectState, form: ObjectForm) -> Result<()>;
 }
 
+#[async_trait]
 pub trait ObjectOperationProvider<S> {
-	fn call<'a>(&'a self, session: &'a mut S, state: &mut ObjectState) -> Box<dyn Future<Output = Result<()>> + Unpin + Send + 'a>;
+	async fn call(&self, session: &mut S, state: &mut ObjectState) -> Result<()>;
 }
 
 pub struct ObjectProviders<S> {

@@ -25,3 +25,4 @@ uuid = { version = "1", features = ["v4", "serde"] }
 anyhow = "1"
 serde_qs = "0.13"
 hyper-util = "0.1"
+async-trait = "0.1"

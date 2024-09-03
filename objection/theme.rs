@@ -1,8 +1,8 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Default, Debug, Serialize, Deserialize)]
 pub struct Theme {
-	pub tab_bar: Option<TabBar>,
+	tab_bar: Option<TabBar>,
 }
 
 impl Theme {
@@ -10,23 +10,30 @@ impl Theme {
 		let mut ids = Vec::new();
 
 		if let Some(tab_bar) = &self.tab_bar {
-			for item in &tab_bar.items {
-				ids.push(item.object_id.clone())
+			for id in &tab_bar.objects {
+				ids.push(id.clone())
 			}
 		}
 
 		ids
 	}
+
+	pub fn set_tab_bar(&mut self, tab_bar: TabBar) -> &mut Self {
+		self.tab_bar = Some(tab_bar);
+
+		self
+	}
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Default, Debug, Serialize, Deserialize)]
 pub struct TabBar {
-	pub items: Vec<TabBarItem>,
+	objects: Vec<String>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct TabBarItem {
-	pub icon: String,
-	pub label: String,
-	pub object_id: String,
+impl TabBar {
+	pub fn add_object(&mut self, object_id: impl Into<String>) -> &mut TabBar {
+		self.objects.push(object_id.into());
+
+		self
+	}
 }

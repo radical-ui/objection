@@ -17,12 +17,13 @@ private struct ErrorText: View {
     let text: String
 
     var body: some View {
-        Text(text).foregroundStyle(colorScheme == .dark ? darkForegroundColor : lightForegroundColor)
+        Text(text).multilineTextAlignment(.center).foregroundStyle(colorScheme == .dark ? darkForegroundColor : lightForegroundColor)
     }
 }
 
-class GlobalTheme: ObservableObject {
-    var theme: Theme?
+@Observable
+class GlobalTheme {
+    var theme = Theme.empty()
     
     func startObserving() {
         // note how we are setting the event on globalObjectStore. If we were to set the event on globalBridge, globalObjectStore's event
@@ -37,7 +38,7 @@ class GlobalTheme: ObservableObject {
 struct GlobalProvider<Content: View>: View {
     @ViewBuilder let content: () -> Content
 
-    @StateObject private var state = GlobalTheme()
+    @State private var globalTheme = GlobalTheme()
     @State private var isLoading = true
     @State private var error: String?
     @State private var hasNoInternet = false
@@ -102,41 +103,69 @@ struct GlobalProvider<Content: View>: View {
             globalBridge.onHasInternet = {
                 self.hasNoInternet = false
             }
+            
+            globalBridge.onDidLoad = {
+                self.isLoading = false
+            }
+            
+            globalTheme.startObserving()
 
             globalBridge.start(url: wsUrl)
         }
-        .environmentObject(state)
+        .environment(globalTheme)
+    }
+}
+
+struct ObjectsProvider<Content: View>: View {
+    @ViewBuilder private var content: ([Object]) -> Content
+    private var listenId = UUID()
+    private var ids: [String]
+    
+    init(_ ids: [String], @ViewBuilder content: @escaping ([Object]) -> Content) {
+        self.content = content
+        self.ids = ids
+    }
+
+    @State private var objects = [Object]()
+    @State private var didDoFirstRender = false
+    
+    var body: some View {
+        Group {
+            Rectangle().hidden()
+            
+            if didDoFirstRender {
+                content(objects)
+            }
+        }
+        .onAppear {
+            print("listening", self.listenId, self.ids)
+            globalObjectStore.listen(listenId: self.listenId, objectIds: self.ids, callback: { objects in
+                self.objects = objects
+                didDoFirstRender = true
+            })
+        }
+        .onDisappear {
+            print("removing", self.listenId, self.ids)
+            globalObjectStore.removeListener(listenId: self.listenId)
+        }
     }
 }
 
 struct ObjectProvider<Content: View>: View {
-    @ViewBuilder private var content: ([Object]) -> Content
+    @ViewBuilder private var content: (Object) -> Content
     private var listenId = UUID()
-    private var path: String
+    private var id: String
     
-    init(_ path: String, @ViewBuilder content: @escaping ([Object]) -> Content) {
+    init(_ id: String, @ViewBuilder content: @escaping (Object) -> Content) {
         self.content = content
-        self.path = path
+        self.id = id
     }
-
-    @State private var hasDoneFirstSetting = false
-    @State private var objects = [Object]()
     
     var body: some View {
-        Rectangle()
-            .hidden()
-            .onAppear {
-                globalObjectStore.listen(listen_id: self.listenId, path: self.path, callback: { objects in
-                    self.objects = objects
-                    self.hasDoneFirstSetting = true
-                })
+        ObjectsProvider([id]) { objects in
+            if objects.count == 1 {
+                content(objects[0])
             }
-            .onDisappear {
-                globalObjectStore.removeListener(listen_id: self.listenId)
-            }
-        
-        if self.hasDoneFirstSetting {
-            content(objects)
         }
     }
 }

@@ -64,7 +64,11 @@ impl<S> RouteResolver<S> {
 	}
 
 	pub async fn invalidate(&self, objects: Vec<ObjectPath>, resolution: &mut Resolution) -> Result<()> {
-		todo!()
+		for object in objects {
+			todo!()
+		}
+
+		Ok(())
 	}
 
 	async fn run_getter(&self, id: &str, session: &mut S, resolution: &mut Resolution) -> Result<()> {
@@ -91,7 +95,7 @@ impl<S> RouteResolver<S> {
 		let (providers, mut state) = self.resolve(id)?;
 
 		providers.call_operation(operation, session, &mut state).await?;
-		self.invalidate(state.into_invalidations(), resolution).await;
+		self.invalidate(state.into_invalidations(), resolution).await?;
 
 		Ok(())
 	}
@@ -138,19 +142,19 @@ pub struct ObjectDef<'a, S> {
 }
 
 impl<'a, S> ObjectDef<'a, S> {
-	pub fn provider(&mut self, provider: impl ObjectProvider<S> + Send + Sync + 'static) -> &mut Self {
+	pub fn provider(mut self, provider: impl ObjectProvider<S> + Send + Sync + 'static) -> Self {
 		self.providers.provide_getter(provider);
 
 		self
 	}
 
-	pub fn updater(&mut self, provider: impl ObjectUpdateProvider<S> + Send + Sync + 'static) -> &mut Self {
+	pub fn updater(mut self, provider: impl ObjectUpdateProvider<S> + Send + Sync + 'static) -> Self {
 		self.providers.provider_updater(provider);
 
 		self
 	}
 
-	pub fn operation(&mut self, operation: impl Into<String>, provider: impl ObjectOperationProvider<S> + Send + Sync + 'static) -> &mut Self {
+	pub fn operation(mut self, operation: impl Into<String>, provider: impl ObjectOperationProvider<S> + Send + Sync + 'static) -> Self {
 		self.providers.provider_operation(operation.into(), provider);
 
 		self

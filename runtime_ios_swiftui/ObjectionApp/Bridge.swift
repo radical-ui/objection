@@ -7,13 +7,17 @@ class Bridge {
     var onObjectSet: ((String, Object) -> Void)?
     var onObjectRemoved: ((String) -> Void)?
     var onThemeSet: ((Theme) -> Void)?
+    var onDidLoad: (() -> Void)?
     
     private var isOffline = false
     private var url: URL?
     private var websocketTask: URLSessionWebSocketTask?
     
     func start(url: String) {
-        guard let url = URL(string: url) else {
+        let uuid = UUID().uuidString
+        print("starting session \(uuid)")
+        
+        guard let url = URL(string: "\(url)?session_id=\(uuid)") else {
             callError("Invalid url: \(url)")
             return
         }
@@ -22,12 +26,12 @@ class Bridge {
         self.connect()
     }
     
-    func watch(_ objectId: String) {
-        sendMessage(OutgoingMessage<Never>.watch(OutgoingMessage.Watch(id: objectId)))
+    func watch(_ id: String) {
+        sendMessage(OutgoingMessage<Never>.watch(OutgoingMessage.Watch(id: id)))
     }
     
-    func unwatch(_ objectId: String) {
-        sendMessage(OutgoingMessage<Never>.unwatch(OutgoingMessage.Unwatch(id: objectId)))
+    func unwatch(_ id: String) {
+        sendMessage(OutgoingMessage<Never>.unwatch(OutgoingMessage.Unwatch(id: id)))
     }
     
     func fireEvent<T: Encodable>(key: String, data: T) {
@@ -57,7 +61,9 @@ class Bridge {
         }
         
         task.send(.string(String(decoding: json, as: UTF8.self))) { error in
-            print("An error occurred. TODO close and restart the connection")
+            if let error = error {
+                print("An error occurred: \(error)")
+            }
         }
     }
     
@@ -76,30 +82,46 @@ class Bridge {
                 
                 switch message {
                 case .string(let data):
-                    let decoder = JSONDecoder()
-                    decoder.keyDecodingStrategy = .convertFromSnakeCase
-                    
-                    guard let message = try? decoder.decode(IncomingMessage.self, from: Data(data.utf8)) else {
-                        self.callError("Failed to parse json response")
-                        return
+                    for message in self.parseIncomingJson(data: data) {
+                        self.handleIncomingMessage(message)
                     }
-
-                    self.handleIncomingMessage(message)
+            
                     self.recieveMessage()
                 default:
                     self.callError("Non-binary message type recieved")
                 }
             case .failure(let error):
+                print("Socket error: \(error.localizedDescription)")
+                
                 if error.localizedDescription == "Could not connect to the server." && self.onNoInternet != nil {
                     print("Websocket connection failed")
                     
                     self.isOffline = true
                     self.onNoInternet!()
                     self.queueRetry()
+                } else if error.localizedDescription == "The operation couldn’t be completed. Socket is not connected" {
+                    // the socket was suddenly closed (server probably restarted, internet was lost, or ios killed the connection)
+                    // if we can reconnect, no error will flash to the user. If not, they will get the standard "no internet" behavior
+                    self.queueRetry()
                 } else {
                     self.callError(error.localizedDescription)
                 }
             }
+        }
+    }
+    
+    private func parseIncomingJson(data: String) -> [IncomingMessage] {
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+        
+        do {
+            return try decoder.decode([IncomingMessage].self, from: Data(data.utf8))
+        } catch {
+            self.callError("Failed to parse json response")
+            
+            print("failed to parse json of incoming message: \(error). JSON: \(data)")
+            
+            return []
         }
     }
     
@@ -125,14 +147,19 @@ class Bridge {
 
     private func handleIncomingMessage(_ message: IncomingMessage) {
         switch message {
-        case .initalize(let initalizeMessage):
-            guard let onObjectSet = self.onObjectSet else {
-                print("An object was set, but nobody was listening")
+        case .initialize(let initalizeMessage):
+            guard let onDidLoad = self.onDidLoad else {
+                print("Init was sent, but nobody was listening for onDidLoad")
                 return
             }
             
             guard let onThemeSet = self.onThemeSet else {
-                print("The theme was set, but nobody was listening")
+                print("Init theme was set, but nobody was listening: \(initalizeMessage.theme)")
+                return
+            }
+            
+            guard let onObjectSet = self.onObjectSet else {
+                print("Init objects were set, but nobody was listening: \(initalizeMessage.objects)")
                 return
             }
             
@@ -141,6 +168,8 @@ class Bridge {
             }
             
             onThemeSet(initalizeMessage.theme)
+            
+            onDidLoad()
         case .removeObject(let removeObjectMessage):
             guard let onObjectRemoved = self.onObjectRemoved else {
                 print("An object was removed, but nobody was listening")
@@ -162,6 +191,8 @@ class Bridge {
             }
             
             onThemeSet(setThemeMessage.theme)
+        case .acknowledge(let acknowledgeMessage):
+            print("Acknowledge:", acknowledgeMessage)
         }
     }
 }
@@ -201,11 +232,11 @@ private enum OutgoingMessage<EventData: Encodable>: Encodable {
 }
 
 private enum IncomingMessage: Decodable {
-    struct Initialize: Decodable {
+    struct Init: Decodable {
         let theme: Theme
         let objects: [String: Object]
     }
-    case initalize(Initialize)
+    case initialize(Init)
     
     struct RemoveObject: Decodable {
         let id: String
@@ -217,27 +248,36 @@ private enum IncomingMessage: Decodable {
         let object: Object
     }
     case setObject(SetObject)
-    
+
     struct SetTheme: Decodable {
         let theme: Theme
     }
     case setTheme(SetTheme)
+
+    struct Acknowledge: Decodable {
+        let requestId: UUID?
+        let error: String?
+        let retryAfterSeconds: Int?
+    }
+    case acknowledge(Acknowledge)
     
     init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: EnumKeys.self)
         let kind = try container.decode(String.self, forKey: .kind)
         
         switch kind {
-        case "initialize":
-            self = .initalize(try container.decode(Initialize.self, forKey: .def))
+        case "init":
+            self = .initialize(try container.decode(Init.self, forKey: .def))
         case "remove_object":
             self = .removeObject(try container.decode(RemoveObject.self, forKey: .def))
         case "set_object":
             self = .setObject(try container.decode(SetObject.self, forKey: .def))
         case "set_theme":
             self = .setTheme(try container.decode(SetTheme.self, forKey: .def))
+        case "acknowledge":
+            self = .acknowledge(try container.decode(Acknowledge.self, forKey: .def))
         default:
-            throw DecodingError.dataCorruptedError(forKey: .kind, in: container, debugDescription: "Unknown kind")
+            throw DecodingError.dataCorruptedError(forKey: .kind, in: container, debugDescription: "Unknown kind: \(kind)")
         }
     }
 }

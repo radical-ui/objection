@@ -1,12 +1,39 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Default, Debug, Serialize, Deserialize)]
 pub struct Object {
-	pub title: Option<String>,
-	pub subtitle: Option<String>,
-	pub description: Option<String>,
-	pub content: Vec<Content>,
-	pub actions: Vec<Action>,
+	title: Option<String>,
+	subtitle: Option<String>,
+	description: Option<String>,
+	icon: Option<String>,
+	content: Vec<Content>,
+	actions: Vec<Action>,
+}
+
+impl Object {
+	pub fn set_title(&mut self, title: impl Into<String>) -> &mut Self {
+		self.title = Some(title.into());
+
+		self
+	}
+
+	pub fn set_subtitle(&mut self, subtitle: impl Into<String>) -> &mut Self {
+		self.subtitle = Some(subtitle.into());
+
+		self
+	}
+
+	pub fn set_description(&mut self, description: impl Into<String>) -> &mut Self {
+		self.description = Some(description.into());
+
+		self
+	}
+
+	pub fn set_icon(&mut self, icon: impl Into<String>) -> &mut Self {
+		self.icon = Some(icon.into());
+
+		self
+	}
 }
 
 #[derive(Debug, Serialize, Deserialize)]

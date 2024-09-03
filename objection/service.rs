@@ -5,7 +5,7 @@ use fastwebsockets::{upgrade::upgrade, Frame, OpCode, Payload, WebSocket, WebSoc
 use futures::future::{ready, Ready};
 use http::{Request, Response, StatusCode};
 use http_body_util::Full;
-use hyper::{body::Body, upgrade::Upgraded};
+use hyper::upgrade::Upgraded;
 use hyper_util::rt::TokioIo;
 use log::{error, warn};
 use serde::{Deserialize, Serialize};
@@ -194,7 +194,7 @@ where
 				Ok(frame) => frame,
 				Err(WebSocketError::ConnectionClosed) => break None,
 				Err(error) => {
-					error!("Failed to read frame from socket. Closing to prevent infinite loop: {error}");
+					warn!("Failed to read frame from socket. Closing to prevent infinite loop: {error}");
 					break None;
 				}
 			};

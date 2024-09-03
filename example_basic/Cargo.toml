@@ -8,7 +8,10 @@ name = "objection_example_basic"
 path = "main.rs"
 
 [dependencies]
+anyhow = "1"
 axum = "0.7"
+env_logger = "0.11"
+log = "0.4"
 objection = { path = "../objection" }
 tokio = { version = "1", features = ["full"] }
 uuid = "1"
