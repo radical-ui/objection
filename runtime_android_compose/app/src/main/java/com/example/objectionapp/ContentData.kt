@@ -13,26 +13,30 @@ data class Paragraph(
 @Serializable
 data class Quote(
     @SerialName("text") val text: String,
-    @SerialName("author") val author: String
+    @SerialName("attribution") val attribution: String,
+    @SerialName("surface") val surface: String,
+    @SerialName("attribution_surface") val attributionSurface: String,
 )
 
 @Serializable
 data class ObjectPreview(
-    @SerialName("object_id") val objectId: String
+    @SerialName("object_id") val objectId: String,
+    @SerialName("surface") val surface: String,
 )
 
 @Serializable
 data class CallToAction(
     @SerialName("title") val title: String,
     @SerialName("icon") val icon: String? = null,
-    @SerialName("target_object") val targetObject: String
+    @SerialName("target_object") val targetObject: String,
+    @SerialName("surface") val surface: String,
 )
 
 @Serializable
 data class ObjectGroup(
-    @SerialName("paragraph") val title: String,
+    @SerialName("title") val title: String,
     @SerialName("description") val description: Boolean,
-    @SerialName("object_scope") val objectScope: String
+    @SerialName("objects") val objects: List<String>,
 )
 
 @OptIn(ExperimentalSerializationApi::class)
@@ -59,33 +63,3 @@ sealed class Content {
     @SerialName("object_group")
     data class ObjectGroupContent(val def: ObjectGroup) : Content()
 }
-
-@Serializable
-data class Object(
-    @SerialName("title") val title: String? = null,
-    @SerialName("subtitle") val subtitle: String? = null,
-    @SerialName("description") val description: String? = null,
-    @SerialName("icon") val icon: String? = null,
-    @SerialName("content") val content: List<Content>,
-    @SerialName("actions") val actions: List<Action>
-)
-
-@Serializable
-enum class ActionKind {
-    @SerialName("danger")
-    DANGER,
-
-    @SerialName("success")
-    SUCCESS,
-
-    @SerialName("normal")
-    NORMAL
-}
-
-@Serializable
-data class Action(
-    @SerialName("id") val id: String,
-    @SerialName("kind") val kind: ActionKind,
-    @SerialName("title") val title: String,
-    @SerialName("icon") val icon: String? = null
-)

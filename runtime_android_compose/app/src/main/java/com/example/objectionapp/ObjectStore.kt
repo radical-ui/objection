@@ -26,13 +26,12 @@ class ObjectStore(private val bridge: Bridge, private val logger: Logger) {
         val listener = ObjectListener(ids = objectIds, callback = callback)
 
         objectListeners[listenId] = listener
-
         for (id in objectIds) {
             val existingListeners = listenedObjects[id]
             if (existingListeners != null) {
                 existingListeners.add(listenId)
             } else {
-                bridge.watch(id)
+                bridge.watch(id) {}
                 listenedObjects[id] = mutableListOf(listenId)
             }
         }
@@ -52,13 +51,13 @@ class ObjectStore(private val bridge: Bridge, private val logger: Logger) {
                         existingListeners.removeAt(thisListenerIndex)
 
                         if (existingListeners.isEmpty()) {
-                            bridge.unwatch(id)
+                            bridge.unwatch(id) {}
                         }
                     } else {
                         logger.error("removed a listener that existed for '$id', but wasn't linked to the listenedObjects")
                     }
                 } else {
-                    bridge.unwatch(id)
+                    bridge.unwatch(id) {}
                     logger.error("removed a listener that existed, but had no entries in listenedObjects. Unwatched for extra measure, but something is broken")
                 }
             }

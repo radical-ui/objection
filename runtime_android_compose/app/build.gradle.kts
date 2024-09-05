@@ -72,4 +72,9 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.2")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("androidx.compose.material:material-icons-extended")
+
+    val nav_version = "2.8.0"
+
+    implementation("androidx.navigation:navigation-compose:$nav_version")
+    implementation("io.coil-kt:coil-compose:2.7.0")
 }

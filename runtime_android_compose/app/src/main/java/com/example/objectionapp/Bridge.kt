@@ -1,18 +1,17 @@
 package com.example.objectionapp
 
-import java.util.UUID
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.*
 import kotlinx.serialization.*
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonClassDiscriminator
-import kotlinx.serialization.json.JsonNames
 import okhttp3.OkHttpClient
 import okhttp3.WebSocket
 import okhttp3.Request
 import okhttp3.Response
 import okhttp3.WebSocketListener
+import java.util.UUID
 import kotlin.coroutines.CoroutineContext
 
 class Bridge(private var logger: Logger, private var session: Session) : CoroutineScope {
@@ -43,20 +42,34 @@ class Bridge(private var logger: Logger, private var session: Session) : Corouti
         connect()
     }
 
-    fun watch(id: String) {
-        sendMessage(OutgoingMessage.Watch(id))
+    fun watch(objectId: String, onComplete: () -> Unit) {
+        sendMessage(OutgoingMessage.Watch(OutgoingWatchMessage(
+            requestId = listenForAcknowledgement(onComplete),
+            id = objectId,
+        )))
     }
 
-    fun unwatch(id: String) {
-        sendMessage(OutgoingMessage.Unwatch(id))
+    fun unwatch(objectId: String, onComplete: () -> Unit) {
+        sendMessage(OutgoingMessage.Unwatch(OutgoingUnwatchMessage(
+            requestId = listenForAcknowledgement(onComplete),
+            id = objectId,
+        )))
     }
 
-    fun <T> emitEvent(key: String, data: T) {
-        sendMessage(OutgoingMessage.EmitEvent(key, data))
+    fun performOperation(objectId: String, key: String, onComplete: () -> Unit) {
+        sendMessage(OutgoingMessage.PerformOperation(OutgoingPerformOperationMessage(
+            requestId = listenForAcknowledgement(onComplete),
+            objectId = objectId,
+            key,
+        )))
     }
 
     fun getCurrentTheme(): Theme {
         return currentTheme
+    }
+
+    private fun listenForAcknowledgement(callback: () -> Unit): String {
+        return UUID.randomUUID().toString()
     }
 
     private fun callError(message: String) {
@@ -128,30 +141,50 @@ class Bridge(private var logger: Logger, private var session: Session) : Corouti
         when (message) {
             is IncomingMessage.Initialize -> {
                 onDidLoad.emit(Unit)
-                onThemeSet.emit(message.theme)
+                onThemeSet.emit(message.def.theme)
+                currentTheme = message.def.theme
 
-                message.objects.forEach { (id, obj) -> onObjectSet.emit(Pair(id, obj)) }
+                message.def.objects.forEach { (id, obj) -> onObjectSet.emit(Pair(id, obj)) }
             }
 
             is IncomingMessage.RemoveObject -> {
-                onObjectRemoved.emit(message.id)
+                onObjectRemoved.emit(message.def.id)
             }
 
             is IncomingMessage.SetObject -> {
-                onObjectSet.emit(Pair(message.id, message.obj))
+                onObjectSet.emit(Pair(message.def.id, message.def.obj))
             }
 
             is IncomingMessage.SetTheme -> {
-                currentTheme = message.theme
-                onThemeSet.emit(message.theme)
+                currentTheme = message.def.theme
+                onThemeSet.emit(message.def.theme)
             }
 
             is IncomingMessage.Acknowledge -> {
-                logger.warn("TODO acknowledge: ${message.requestId}")
+                logger.warn("TODO acknowledge: ${message.def.requestId}")
             }
         }
     }
 }
+
+@Serializable
+data class OutgoingWatchMessage(
+    @SerialName("request_id") val requestId: String,
+    @SerialName("id") val id: String
+)
+
+@Serializable
+data class OutgoingUnwatchMessage(
+    @SerialName("request_id") val requestId: String,
+    @SerialName("id") val id: String
+)
+
+@Serializable
+data class OutgoingPerformOperationMessage(
+    @SerialName("request_id") val requestId: String,
+    @SerialName("object_id") val objectId: String,
+    @SerialName("key") val key: String
+)
 
 @OptIn(ExperimentalSerializationApi::class)
 @Serializable
@@ -159,16 +192,45 @@ class Bridge(private var logger: Logger, private var session: Session) : Corouti
 sealed class OutgoingMessage {
     @Serializable
     @SerialName("watch")
-    data class Watch(val id: String) : OutgoingMessage()
+    data class Watch(val def: OutgoingWatchMessage) : OutgoingMessage()
 
     @Serializable
     @SerialName("unwatch")
-    data class Unwatch(val id: String) : OutgoingMessage()
+    data class Unwatch(val def: OutgoingUnwatchMessage) : OutgoingMessage()
 
     @Serializable
     @SerialName("emit_event")
-    data class EmitEvent<T>(val key: String, val data: T) : OutgoingMessage()
+    data class PerformOperation(val def: OutgoingPerformOperationMessage) : OutgoingMessage()
 }
+
+@Serializable
+data class IncomingInitializeMessage(
+    @SerialName("theme") val theme: Theme,
+    @SerialName("objects") val objects: Map<String, Object>
+)
+
+@Serializable
+data class IncomingRemoveObjectMessage(
+    @SerialName("id") val id: String,
+)
+
+@Serializable
+data class IncomingSetObjectMessage(
+    @SerialName("id") val id: String,
+    @SerialName("object") val obj: Object,
+)
+
+@Serializable
+data class IncomingSetThemeMessage(
+    @SerialName("theme") val theme: Theme
+)
+
+@Serializable
+data class IncomingAcknowledgeMessage(
+    @SerialName("request_id") val requestId: String? = null,
+    @SerialName("error") val error: String? = null,
+    @SerialName("retry_after_seconds") val retryAfterSeconds: Int? = null
+)
 
 @OptIn(ExperimentalSerializationApi::class)
 @Serializable
@@ -176,25 +238,21 @@ sealed class OutgoingMessage {
 sealed class IncomingMessage {
     @Serializable
     @SerialName("init")
-    data class Initialize(val theme: Theme, val objects: Map<String, Object>) : IncomingMessage()
+    data class Initialize(val def: IncomingInitializeMessage) : IncomingMessage()
 
     @Serializable
     @SerialName("remove_object")
-    data class RemoveObject(val id: String) : IncomingMessage()
+    data class RemoveObject(val def: IncomingRemoveObjectMessage) : IncomingMessage()
 
     @Serializable
     @SerialName("set_object")
-    data class SetObject(val id: String, val obj: Object) : IncomingMessage()
+    data class SetObject(val def: IncomingSetObjectMessage) : IncomingMessage()
 
     @Serializable
     @SerialName("set_theme")
-    data class SetTheme(val theme: Theme) : IncomingMessage()
+    data class SetTheme(val def: IncomingSetThemeMessage) : IncomingMessage()
 
     @Serializable
     @SerialName("acknowledge")
-    data class Acknowledge(
-        @SerialName("request_id") val requestId: String? = null,
-        @SerialName("error") val error: String? = null,
-        @SerialName("retry_after_seconds") val retryAfterSeconds: Int? = null
-    ) : IncomingMessage()
+    data class Acknowledge(val def: IncomingAcknowledgeMessage) : IncomingMessage()
 }
