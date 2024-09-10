@@ -1,12 +1,25 @@
 package com.example.objectionapp
 
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionLayout
+import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.absolutePadding
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.paddingFrom
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -25,53 +38,61 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.AlignmentLine
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.MeasureResult
+import androidx.compose.ui.layout.layout
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.dialog
-import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun Layout() {
     val navController = useNavController()
     val theme = useTheme()
     val surface = useSurface()
 
-    Scaffold(
-        containerColor = surface.value.backgroundColor1.intoColor(),
+    Scaffold(containerColor = surface.value.backgroundColor1.intoColor(),
         bottomBar = { BottomBarView() },
         content = { padding ->
             val initialObjectId = theme.value.getInitialObjectId()
 
             if (initialObjectId != null) {
-                NavHost(
-                    navController = navController,
-                    startDestination = encodeObjectIdIntoPageRoute(initialObjectId)
-                ) {
-                    composable(getObjectIdPageRouteTemplate()) { navBackStackEntry ->
-                        Page(
-                            objectId = decodeObjectIdFromRouteArgs(navBackStackEntry.arguments),
-                            modifier = Modifier.padding(bottom = padding.calculateBottomPadding())
-                        )
-                    }
-                    dialog(getObjectIdDialogRouteTemplate()) { navBackStackEntry ->
-                        Page(
-                            objectId = decodeObjectIdFromRouteArgs(navBackStackEntry.arguments),
-                            modifier = Modifier.padding(bottom = padding.calculateBottomPadding())
-                        )
+                SharedTransitionLayout {
+                    NavHost(
+                        navController = navController,
+                        startDestination = encodeObjectIdIntoPageRoute(initialObjectId)
+                    ) {
+                        composable(getObjectIdPageRouteTemplate()) { navBackStackEntry ->
+                            Page(
+                                objectId = decodeObjectIdFromRouteArgs(navBackStackEntry.arguments),
+                                bottomPadding = padding.calculateBottomPadding(),
+                                animatedVisibilityScope = this,
+                            )
+                        }
+                        dialog(getObjectIdDialogRouteTemplate()) { navBackStackEntry ->
+                            Page(
+                                objectId = decodeObjectIdFromRouteArgs(navBackStackEntry.arguments),
+                                bottomPadding = padding.calculateBottomPadding(),
+                                animatedVisibilityScope = null,
+                            )
+                        }
                     }
                 }
             }
-        }
-    )
+        })
 }
 
 @Composable
@@ -80,18 +101,64 @@ private fun BottomBarView() {
     val theme = useTheme()
     val surface = useSurface(theme.value.navigationSurface)
     val tabBarObjects = useObjects(theme.value.tabBar?.objects ?: listOf())
+    val currentBackStackEntry = navController.currentBackStackEntryAsState()
+    val currentObjectId = currentBackStackEntry.value?.arguments?.let { decodeObjectIdFromRouteArgs(it) }
+    val currentObject = useObject(currentObjectId)
 
     if (tabBarObjects.value.isNotEmpty()) {
-        NavigationBar(
-            containerColor = surface.value.backgroundColor2.intoColor(),
-            content = {
+        Column {
+            currentObject.value?.searchObject?.let {searchObjectId ->
+                val searchObject = useObject(searchObjectId)
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(surface.value.backgroundColor2.intoColor())
+                        .padding(horizontal = 16.dp)
+                        .padding(top = 16.dp)
+                ) {
+                    Box(
+                        Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(50))
+                            .background(surface.value.backgroundColor3.intoColor())
+                            .padding(vertical = 8.dp, horizontal = 16.dp)
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                            searchObject.value?.icon?.let {
+                                StandardIcon(it, modifier = Modifier.size(30.dp), tint = surface.value.foregroundColor4.intoColor())
+                            }
+
+                            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                searchObject.value?.title?.let {
+                                    Text(
+                                        it,
+                                        color = surface.value.foregroundColor2.intoColor(),
+                                        fontSize = 16.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+
+                                searchObject.value?.subtitle?.let {
+                                    Text(
+                                        it,
+                                        color = surface.value.foregroundColor3.intoColor(),
+                                        fontSize = 14.sp,
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            NavigationBar(containerColor = surface.value.backgroundColor2.intoColor(), content = {
                 val history = remember { mutableStateOf<List<String>>(listOf()) }
 
                 DisposableEffect(Unit) {
-                    val listener =
-                        NavController.OnDestinationChangedListener { _, _, arguments ->
-                            history.value += listOf(decodeObjectIdFromRouteArgs(arguments))
-                        }
+                    val listener = NavController.OnDestinationChangedListener { _, _, arguments ->
+                        history.value += listOf(decodeObjectIdFromRouteArgs(arguments))
+                    }
 
                     navController.addOnDestinationChangedListener(listener)
 
@@ -107,7 +174,7 @@ private fun BottomBarView() {
                         onClick = {
                             history.value = listOf(id)
                             navController.navigate(route = encodeObjectIdIntoPageRoute(id)) {
-                                popUpTo(navController.graph.findStartDestination().id)
+                                popUpTo(id)
                                 launchSingleTop = true
                             }
                         },
@@ -125,26 +192,16 @@ private fun BottomBarView() {
                         )
                     )
                 }
-            }
-        )
+            })
+        }
     }
-//    if (currentObject.actions.isNotEmpty()) {
-//        BottomAppBar(
-//            actions = {
-//                for (action in currentObject.actions) {
-//                    IconButton(
-//                        content = { StandardIcon("") },
-//                        onClick = { }
-//                    )
-//                }
-//            }
-//        )
-//    }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 @Composable
-private fun Page(objectId: String, modifier: Modifier = Modifier) {
+private fun SharedTransitionScope.Page(
+    objectId: String, bottomPadding: Dp, animatedVisibilityScope: AnimatedVisibilityScope?
+) {
     val navController = useNavController()
     val theme = useTheme()
     val surface = useSurface(theme.value.navigationSurface)
@@ -165,8 +222,21 @@ private fun Page(objectId: String, modifier: Modifier = Modifier) {
         actionIconContentColor = surface.value.foregroundColor2.intoColor()
     )
 
-    Column(modifier.background(surface.value.backgroundColor1.intoColor())) {
-        val inner = @Composable { Text("${obj.value?.title}") }
+    Column(
+        Modifier
+            .padding(bottom = bottomPadding)
+            .background(surface.value.backgroundColor1.intoColor())
+    ) {
+        val inner = @Composable {
+            obj.value?.engagedTitle?.let {
+                Text(
+                    it,
+                    color = surface.value.foregroundColor1.intoColor(),
+                    fontSize = 30.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            } ?: Text("${obj.value?.title}")
+        }
 
         if (isRoot) {
             LargeTopAppBar(
@@ -180,10 +250,7 @@ private fun Page(objectId: String, modifier: Modifier = Modifier) {
                     IconButton(onClick = { navController.popBackStack() }) {
                         StandardIcon("ArrowBack")
                     }
-                },
-                title = inner,
-                scrollBehavior = scrollBehavior,
-                colors = colors
+                }, title = inner, scrollBehavior = scrollBehavior, colors = colors
             )
         }
 
@@ -194,7 +261,7 @@ private fun Page(objectId: String, modifier: Modifier = Modifier) {
                 .fillMaxWidth()
                 .fillMaxHeight()
         ) {
-            val modifier = Modifier.padding(horizontal = 16.dp)
+            val childPadding = PaddingValues(horizontal = 16.dp)
 
             obj.value?.subtitle?.let { subtitle ->
                 item {
@@ -202,7 +269,7 @@ private fun Page(objectId: String, modifier: Modifier = Modifier) {
                         subtitle,
                         color = surface.value.foregroundColor3.intoColor(),
                         fontSize = 18.sp,
-                        modifier = modifier
+                        modifier = Modifier.padding(childPadding)
                     )
                 }
             }
@@ -213,8 +280,17 @@ private fun Page(objectId: String, modifier: Modifier = Modifier) {
                         model = url,
                         contentDescription = "An image",
                         clipToBounds = true,
-                        contentScale = ContentScale.FillBounds,
-                        modifier = modifier
+                        contentScale = ContentScale.Crop,
+                        modifier = if (animatedVisibilityScope != null) {
+                            Modifier.sharedElement(state = rememberSharedContentState("${objectId}/image"),
+                                animatedVisibilityScope = animatedVisibilityScope,
+                                boundsTransform = { _, _ ->
+                                    tween(durationMillis = 300)
+                                })
+                        } else {
+                            Modifier
+                        }
+                            .padding(childPadding)
                             .clip(RoundedCornerShape(8))
                             .height(300.dp)
                             .fillMaxWidth()
@@ -224,10 +300,13 @@ private fun Page(objectId: String, modifier: Modifier = Modifier) {
 
             obj.value?.content?.let { content ->
                 for (item in content) {
-                    item { ContentView(item, modifier) }
+                    item { ContentView(item, childPadding, animatedVisibilityScope) }
                 }
+            }
+
+            item {
+                Box(Modifier.padding(vertical = 8.dp))
             }
         }
     }
 }
-

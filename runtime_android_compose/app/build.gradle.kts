@@ -1,9 +1,8 @@
 plugins {
-    alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.androidApplication)
+    alias(libs.plugins.jetbrainsKotlinAndroid)
+    alias(libs.plugins.kotlinxSerialization)
     alias(libs.plugins.compose.compiler)
-
-    kotlin("plugin.serialization") version "2.0.20"
 }
 
 android {
@@ -56,25 +55,17 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
-    implementation(platform(libs.androidx.compose.bom))
-    implementation(libs.androidx.ui)
-    implementation(libs.androidx.ui.graphics)
-    implementation(libs.androidx.ui.tooling.preview)
+    implementation(libs.ui)
+    implementation(libs.ui.graphics)
+    implementation(libs.foundation)
+    implementation(libs.ui.tooling)
+    implementation(libs.ui.tooling.preview)
     implementation(libs.androidx.material3)
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation(libs.androidx.ui.test.junit4)
-    debugImplementation(libs.androidx.ui.tooling)
-    debugImplementation(libs.androidx.ui.test.manifest)
-
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.2")
-    implementation("com.squareup.okhttp3:okhttp:4.12.0")
-    implementation("androidx.compose.material:material-icons-extended")
-
-    val nav_version = "2.8.0"
-
-    implementation("androidx.navigation:navigation-compose:$nav_version")
-    implementation("io.coil-kt:coil-compose:2.7.0")
+    implementation(libs.animation)
+    implementation(libs.navigation.compose)
+    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.okhttp)
+    implementation(libs.coil)
+    implementation(libs.coil.compose)
+    implementation(libs.androidx.material.icons.extended)
 }

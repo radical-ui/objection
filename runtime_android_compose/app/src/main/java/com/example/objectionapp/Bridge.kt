@@ -11,6 +11,9 @@ import okhttp3.WebSocket
 import okhttp3.Request
 import okhttp3.Response
 import okhttp3.WebSocketListener
+import java.io.EOFException
+import java.net.ConnectException
+import java.net.SocketTimeoutException
 import java.util.UUID
 import kotlin.coroutines.CoroutineContext
 
@@ -20,52 +23,64 @@ class Bridge(private var logger: Logger, private var session: Session) : Corouti
         get() = Dispatchers.Main + job
 
     var onError = Listener<String>(logger = logger)
-    var onNoInternet = Listener<Unit>(logger = logger)
-    var onHasInternet = Listener<Unit>(logger = logger)
+    var onHasInternet = Listener<Boolean>(logger = logger)
     var onObjectSet = Listener<Pair<String, Object>>(logger = logger)
     var onObjectRemoved = Listener<String>(logger = logger)
-    var onThemeSet = Listener<Theme>(logger = logger)
+    var onThemeChanged = Listener<Theme>(logger = logger)
     var onDidLoad = Listener<Unit>(logger = logger)
 
-    private var currentTheme = Theme.testDefault()
     private var isOffline = false
     private var url: String? = null
     private var websocket: WebSocket? = null
+    private var isRunning = false
     private val client = OkHttpClient()
     private val json = Json { ignoreUnknownKeys = true; isLenient = true; encodeDefaults = true }
 
     fun start(url: String) {
-        logger.info("starting")
+        if (!isRunning) {
+            logger.info("starting")
 
-        val fullUrl = "$url?session_id=${session.getId()}"
-        this.url = fullUrl
-        connect()
+            this.websocket
+            val fullUrl = "$url?session_id=${session.getId()}"
+            this.url = fullUrl
+            connect()
+        } else {
+            logger.info("start called again, but skipping because bridge is already running")
+        }
     }
 
     fun watch(objectId: String, onComplete: () -> Unit) {
-        sendMessage(OutgoingMessage.Watch(OutgoingWatchMessage(
-            requestId = listenForAcknowledgement(onComplete),
-            id = objectId,
-        )))
+        sendMessage(
+            OutgoingMessage.Watch(
+                OutgoingWatchMessage(
+                    requestId = listenForAcknowledgement(onComplete),
+                    id = objectId,
+                )
+            )
+        )
     }
 
     fun unwatch(objectId: String, onComplete: () -> Unit) {
-        sendMessage(OutgoingMessage.Unwatch(OutgoingUnwatchMessage(
-            requestId = listenForAcknowledgement(onComplete),
-            id = objectId,
-        )))
+        sendMessage(
+            OutgoingMessage.Unwatch(
+                OutgoingUnwatchMessage(
+                    requestId = listenForAcknowledgement(onComplete),
+                    id = objectId,
+                )
+            )
+        )
     }
 
     fun performOperation(objectId: String, key: String, onComplete: () -> Unit) {
-        sendMessage(OutgoingMessage.PerformOperation(OutgoingPerformOperationMessage(
-            requestId = listenForAcknowledgement(onComplete),
-            objectId = objectId,
-            key,
-        )))
-    }
-
-    fun getCurrentTheme(): Theme {
-        return currentTheme
+        sendMessage(
+            OutgoingMessage.PerformOperation(
+                OutgoingPerformOperationMessage(
+                    requestId = listenForAcknowledgement(onComplete),
+                    objectId = objectId,
+                    key,
+                )
+            )
+        )
     }
 
     private fun listenForAcknowledgement(callback: () -> Unit): String {
@@ -95,7 +110,9 @@ class Bridge(private var logger: Logger, private var session: Session) : Corouti
     }
 
     private fun queueRetry() {
+        println("before cancel")
         websocket?.cancel()
+        println("after cancel")
 
         Executors.newSingleThreadScheduledExecutor().schedule({
             logger.info("retrying websocket connection")
@@ -114,10 +131,12 @@ class Bridge(private var logger: Logger, private var session: Session) : Corouti
         val request = Request.Builder().url(url).build()
         websocket = client.newWebSocket(request, object : WebSocketListener() {
             override fun onOpen(webSocket: WebSocket, response: Response) {
+                isRunning = true
+
                 if (isOffline) {
                     logger.info("websocket connected")
                     isOffline = false
-                    onHasInternet.emit(Unit)
+                    onHasInternet.emit(true)
                 }
             }
 
@@ -126,13 +145,17 @@ class Bridge(private var logger: Logger, private var session: Session) : Corouti
             }
 
             override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
-                logger.warn("socket failure: ${t.localizedMessage}")
-
-//                Find out what constitutes a failure due to no internet
-//                isOffline = true
-//                onNoInternet.emit(Unit)
-
-                callError(t.localizedMessage ?: "Unknown error")
+                if (t is ConnectException || t is SocketTimeoutException) {
+                    isOffline = true
+                    onHasInternet.emit(false)
+                    queueRetry()
+                } else if (t is EOFException) {
+                    logger.warn("connection was suddenly dropped")
+                    queueRetry()
+                } else {
+                    logger.warn("a socket failed: $t")
+                    callError(t.localizedMessage ?: "Unknown error")
+                }
             }
         })
     }
@@ -141,8 +164,7 @@ class Bridge(private var logger: Logger, private var session: Session) : Corouti
         when (message) {
             is IncomingMessage.Initialize -> {
                 onDidLoad.emit(Unit)
-                onThemeSet.emit(message.def.theme)
-                currentTheme = message.def.theme
+                onThemeChanged.emit(message.def.theme)
 
                 message.def.objects.forEach { (id, obj) -> onObjectSet.emit(Pair(id, obj)) }
             }
@@ -156,12 +178,15 @@ class Bridge(private var logger: Logger, private var session: Session) : Corouti
             }
 
             is IncomingMessage.SetTheme -> {
-                currentTheme = message.def.theme
-                onThemeSet.emit(message.def.theme)
+                onThemeChanged.emit(message.def.theme)
             }
 
             is IncomingMessage.Acknowledge -> {
                 logger.warn("TODO acknowledge: ${message.def.requestId}")
+            }
+
+            else -> {
+                println("unreachable")
             }
         }
     }

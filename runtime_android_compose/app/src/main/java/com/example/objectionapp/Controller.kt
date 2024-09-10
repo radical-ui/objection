@@ -1,7 +1,5 @@
 package com.example.objectionapp
 
-import android.os.Parcel
-import android.os.Parcelable
 import androidx.compose.ui.graphics.Color
 
 class Controller(
@@ -23,17 +21,17 @@ class Controller(
     val objectStore = ObjectStore(bridge, logger = logger.scope("ObjectStore"))
 
     companion object {
-        fun default(): Controller {
+        fun fromConstants(): Controller {
             return Controller(
-                wsUrl = "ws://10.0.2.2:8000/ui.ws",
-                appName = "Objection App",
-                noInternetHeader = "No Internet",
-                noInternetContent = "This app requires an internet connection to function",
-                errorHeader = "Uh oh",
-                lightBackgroundColor = Color(red = 240, green = 240, blue = 255),
-                darkBackgroundColor = Color(red = 12, green = 12, blue = 20),
-                lightForegroundColor = Color(red = 12, green = 12, blue = 20),
-                darkForegroundColor = Color(red = 240, green = 240, blue = 255),
+                wsUrl = wsUrl,
+                appName = appName,
+                noInternetHeader = noInternetHeader,
+                noInternetContent = noInternetContent,
+                errorHeader = errorHeader,
+                lightBackgroundColor = lightBackgroundColor,
+                darkBackgroundColor = darkBackgroundColor,
+                lightForegroundColor = lightForegroundColor,
+                darkForegroundColor = darkForegroundColor,
             )
         }
     }

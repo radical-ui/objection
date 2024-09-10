@@ -11,6 +11,11 @@ data class Paragraph(
 )
 
 @Serializable
+data class Headline(
+    @SerialName("text") val text: String
+)
+
+@Serializable
 data class Quote(
     @SerialName("text") val text: String,
     @SerialName("attribution") val attribution: String,
@@ -21,7 +26,7 @@ data class Quote(
 @Serializable
 data class ObjectPreview(
     @SerialName("object_id") val objectId: String,
-    @SerialName("surface") val surface: String,
+    @SerialName("surface") val surface: String?,
 )
 
 @Serializable
@@ -35,7 +40,7 @@ data class CallToAction(
 @Serializable
 data class ObjectGroup(
     @SerialName("title") val title: String,
-    @SerialName("description") val description: Boolean,
+    @SerialName("description") val description: String?,
     @SerialName("objects") val objects: List<String>,
 )
 
@@ -46,6 +51,10 @@ sealed class Content {
     @Serializable
     @SerialName("paragraph")
     data class ParagraphContent(val def: Paragraph) : Content()
+
+    @Serializable
+    @SerialName("headline")
+    data class HeadlineContent(val def: Headline) : Content()
 
     @Serializable
     @SerialName("quote")

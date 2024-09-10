@@ -8,11 +8,13 @@ import kotlinx.serialization.json.JsonClassDiscriminator
 @Serializable
 data class Object(
     @SerialName("title") val title: String?,
+    @SerialName("engaged_title") val engagedTitle: String?,
     @SerialName("subtitle") val subtitle: String?,
     @SerialName("icon") val icon: String?,
     @SerialName("image") val image: String?,
     @SerialName("content") val content: List<Content>,
     @SerialName("actions") val actions: List<Action>,
+    @SerialName("search_object") val searchObject: String?
 )
 
 @Serializable

@@ -1,41 +1,72 @@
 package com.example.objectionapp
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.unit.Dp
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun ContentView(content: Content, modifier: Modifier) {
+fun SharedTransitionScope.ContentView(
+    content: Content,
+    padding: PaddingValues,
+    animatedVisibilityScope: AnimatedVisibilityScope?
+) {
     when (content) {
         is Content.ParagraphContent -> {
-            ParagraphView(content.def, modifier)
+            ParagraphView(content.def, padding)
         }
+
+        is Content.HeadlineContent -> {
+            HeadlineView(content.def, padding)
+        }
+
         is Content.QuoteContent -> {
-            Quote(content.def, modifier)
+            Quote(content.def, padding)
         }
+
         is Content.ObjectPreviewContent -> {
-
+            ObjectPreviewView(content.def, padding, animatedVisibilityScope = animatedVisibilityScope)
         }
+
         is Content.CallToActionContent -> {
-            CallToActionView(content.def, modifier)
+            CallToActionView(content.def, padding)
         }
-        is Content.ObjectGroupContent -> {
 
+        is Content.ObjectGroupContent -> {
+            ObjectGroupView(content.def, padding, animatedVisibilityScope)
         }
+
         else -> {
             println("Unreachable")
         }
@@ -43,20 +74,37 @@ fun ContentView(content: Content, modifier: Modifier) {
 }
 
 @Composable
-fun ParagraphView(content: Paragraph, modifier: Modifier) {
+fun ParagraphView(content: Paragraph, padding: PaddingValues) {
     val surface = useSurface()
 
-    Box(modifier) {
-        Text(content.text, color = surface.value.foregroundColor2.intoColor())
+    Box(Modifier.padding(padding)) {
+        Text(content.text, color = surface.value.foregroundColor2.intoColor(), fontSize = 16.sp)
     }
 }
 
 @Composable
-fun Quote(content: Quote, modifier: Modifier) {
+fun HeadlineView(content: Headline, padding: PaddingValues) {
+    val surface = useSurface()
+
+    Box(
+        Modifier
+            .padding(padding)
+            .padding(top = 20.dp)) {
+        Text(
+            content.text,
+            color = surface.value.foregroundColor1.intoColor(),
+            fontSize = 30.sp,
+            fontWeight = FontWeight.Bold
+        )
+    }
+}
+
+@Composable
+fun Quote(content: Quote, padding: PaddingValues) {
     val surface = useSurface(content.surface)
     val attributionSurface = useSurface(content.attributionSurface)
 
-    Box(modifier = modifier) {
+    Box(modifier = Modifier.padding(padding)) {
         Column(
             modifier = Modifier
                 .background(surface.value.backgroundColor1.intoColor())
@@ -77,14 +125,19 @@ fun Quote(content: Quote, modifier: Modifier) {
 }
 
 @Composable
-fun CallToActionView(content: CallToAction, modifier: Modifier) {
+fun CallToActionView(content: CallToAction, padding: PaddingValues) {
     val navController = useNavController()
     val surface = useSurface(content.surface)
 
-    Column(modifier = modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(
+        modifier = Modifier
+            .padding(padding)
+            .fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
         Button(
             onClick = { navController.navigate(encodeObjectIdIntoPageRoute(content.targetObject)) },
-            colors = ButtonColors(
+            colors = ButtonDefaults.buttonColors(
                 containerColor = surface.value.backgroundColor1.intoColor(),
                 contentColor = surface.value.foregroundColor1.intoColor(),
                 disabledContainerColor = surface.value.backgroundColor3.intoColor(),
@@ -94,15 +147,127 @@ fun CallToActionView(content: CallToAction, modifier: Modifier) {
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(10.dp)
+                    modifier = Modifier.padding(8.dp)
                 ) {
                     content.icon?.let {
                         StandardIcon(it)
                     }
 
-                    Text(content.title, fontSize = 20.sp)
+                    Text(content.title, fontSize = 16.sp)
                 }
             }
         )
+    }
+}
+
+@OptIn(ExperimentalSharedTransitionApi::class)
+@Composable
+fun SharedTransitionScope.ObjectPreviewView(
+    content: ObjectPreview,
+    padding: PaddingValues,
+    width: Dp? = null,
+    animatedVisibilityScope: AnimatedVisibilityScope? = null
+) {
+    val obj = useObject(content.objectId)
+    val surface = useSurface(content.surface)
+    val navController = useNavController()
+
+    Box(Modifier.padding(padding)) {
+        Card(
+            modifier = if (width != null) {
+                Modifier.width(width)
+            } else {
+                Modifier
+            },
+            onClick = {
+                navController.navigate(route = encodeObjectIdIntoPageRoute(content.objectId))
+            },
+            colors = CardDefaults.cardColors(
+                containerColor = surface.value.backgroundColor3.intoColor(),
+                contentColor = surface.value.foregroundColor1.intoColor(),
+                disabledContentColor = surface.value.foregroundColor3.intoColor(),
+                disabledContainerColor = surface.value.backgroundColor2.intoColor()
+            )
+        ) {
+            obj.value?.image?.let {
+                AsyncImage(
+                    model = it,
+                    contentDescription = "An image",
+                    clipToBounds = true,
+                    contentScale = ContentScale.Crop,
+                    modifier = if (animatedVisibilityScope != null) {
+                        Modifier
+                            .sharedElement(
+                                state = rememberSharedContentState("${content.objectId}/image"),
+                                animatedVisibilityScope = animatedVisibilityScope,
+                                boundsTransform = { _, _ ->
+                                    tween(durationMillis = 300)
+                                }
+                            )
+                    } else {
+                        Modifier
+                    }
+                        .height(200.dp)
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp)),
+                    onState = { state ->
+                        println(state)
+                    }
+                )
+            }
+
+            Column(
+                Modifier.padding(horizontal = 10.dp, vertical = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Text(
+                    "${obj.value?.title}",
+                    color = surface.value.foregroundColor1.intoColor(),
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                )
+
+                obj.value?.content?.find { it is Content.ParagraphContent }?.let {
+                    Text(
+                        (it as Content.ParagraphContent).def.text,
+                        color = surface.value.foregroundColor3.intoColor(),
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalSharedTransitionApi::class)
+@Composable
+fun SharedTransitionScope.ObjectGroupView(
+    content: ObjectGroup,
+    padding: PaddingValues,
+    animatedVisibilityScope: AnimatedVisibilityScope?
+) {
+    val surface = useSurface(null)
+
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(
+            content.title,
+            fontSize = 20.sp,
+            color = surface.value.foregroundColor1.intoColor(),
+            modifier = Modifier.padding(padding)
+        )
+
+        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp), contentPadding = padding) {
+            for (objectId in content.objects) {
+                item {
+                    ObjectPreviewView(
+                        ObjectPreview(objectId, null),
+                        padding = PaddingValues(0.dp),
+                        width = 200.dp,
+                        animatedVisibilityScope = animatedVisibilityScope
+                    )
+                }
+            }
+        }
     }
 }
