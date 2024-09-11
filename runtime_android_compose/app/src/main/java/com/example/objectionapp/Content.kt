@@ -12,7 +12,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
@@ -32,7 +31,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.unit.Dp
 
 @OptIn(ExperimentalSharedTransitionApi::class)
@@ -254,17 +252,17 @@ fun SharedTransitionScope.ObjectGroupView(
             content.title,
             fontSize = 20.sp,
             color = surface.value.foregroundColor1.intoColor(),
-            modifier = Modifier.padding(padding)
+            modifier = Modifier.padding(padding),
         )
 
         LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp), contentPadding = padding) {
-            for (objectId in content.objects) {
+            for (preview in content.previews) {
                 item {
                     ObjectPreviewView(
-                        ObjectPreview(objectId, null),
+                        preview,
                         padding = PaddingValues(0.dp),
                         width = 200.dp,
-                        animatedVisibilityScope = animatedVisibilityScope
+                        animatedVisibilityScope = animatedVisibilityScope,
                     )
                 }
             }

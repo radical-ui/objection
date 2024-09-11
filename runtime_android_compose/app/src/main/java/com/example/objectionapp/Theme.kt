@@ -1,20 +1,40 @@
 package com.example.objectionapp
 
+import android.graphics.BlurMaskFilter
+import androidx.compose.foundation.background
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.drawOutline
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.unit.dp
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonClassDiscriminator
 
 @Serializable
 data class ColorData(
-    val red: Int,
-    val green: Int,
-    val blue: Int,
-    val alpha: Int
+    val red: Int, val green: Int, val blue: Int, val alpha: Int
 ) {
     fun intoColor(): Color {
         return Color(red = red, green = green, blue = blue, alpha = alpha)
     }
+
+    fun adjustBrightness(ratio: Double): ColorData {
+        val amount = (ratio * 255).toInt()
+
+        return ColorData(this.red - amount, this.green - amount, this.blue - amount, this.alpha)
+    }
+
+    fun setAlphaRatio(ratio: Double): ColorData {
+        return ColorData(this.red, this.green, this.blue, (alpha * 255).toInt())
+    }
 }
+
 
 @Serializable
 data class Theme(
@@ -33,74 +53,64 @@ data class Theme(
     fun getRoots(): List<String> {
         return tabBar?.objects ?: listOf()
     }
-
-    companion object {
-        fun testDefault(): Theme {
-            return Theme(
-                tabBar = null,
-                cornerRounding = CornerRounding.ROUND,
-                lightSurfaces = hashMapOf(),
-                darkSurfaces = hashMapOf(),
-                navigationSurface = null,
-                defaultDarkSurface = SurfaceTheme(
-                    backgroundColor1 = ColorData(0, 0, 0, 255),
-                    backgroundColor2 = ColorData(20, 20, 20, 255),
-                    backgroundColor3 = ColorData(30, 30, 30, 255),
-                    backgroundColor4 = ColorData(40, 40, 40, 255),
-
-                    foregroundColor1 = ColorData(255, 255, 255, 255),
-                    foregroundColor2 = ColorData(255, 255, 255, 255),
-                    foregroundColor3 = ColorData(255, 255, 255, 255),
-                    foregroundColor4 = ColorData(255, 255, 255, 255),
-
-                    primaryColor1 = ColorData(63, 136, 226, 210),
-                    primaryColor2 = ColorData(63, 136, 226, 170),
-                    primaryColor3 = ColorData(63, 136, 226, 140),
-                    primaryColor4 = ColorData(63, 136, 226, 80),
-
-                    glowColor = null
-                ),
-                defaultLightSurface = SurfaceTheme(
-                    backgroundColor1 = ColorData(0, 0, 0, 255),
-                    backgroundColor2 = ColorData(20, 20, 20, 255),
-                    backgroundColor3 = ColorData(30, 30, 30, 255),
-                    backgroundColor4 = ColorData(40, 40, 40, 255),
-
-                    foregroundColor1 = ColorData(255, 255, 255, 255),
-                    foregroundColor2 = ColorData(255, 255, 255, 255),
-                    foregroundColor3 = ColorData(255, 255, 255, 255),
-                    foregroundColor4 = ColorData(255, 255, 255, 255),
-
-                    primaryColor1 = ColorData(63, 136, 226, 210),
-                    primaryColor2 = ColorData(63, 136, 226, 170),
-                    primaryColor3 = ColorData(63, 136, 226, 140),
-                    primaryColor4 = ColorData(63, 136, 226, 80),
-
-                    glowColor = null
-                )
-            )
-        }
-    }
 }
 
 @Serializable
 data class SurfaceTheme(
-    @SerialName("background_color_1") val backgroundColor1: ColorData,
-    @SerialName("background_color_2") val backgroundColor2: ColorData,
-    @SerialName("background_color_3") val backgroundColor3: ColorData,
-    @SerialName("background_color_4") val backgroundColor4: ColorData,
+    @SerialName("background") val background: BackgroundData,
+    @SerialName("minimal_background") val minimalBackground: BackgroundData,
 
-    @SerialName("foreground_color_1") val foregroundColor1: ColorData,
-    @SerialName("foreground_color_2") val foregroundColor2: ColorData,
-    @SerialName("foreground_color_3") val foregroundColor3: ColorData,
-    @SerialName("foreground_color_4") val foregroundColor4: ColorData,
+    @SerialName("selection_color") val selectionColor: ColorData,
+    @SerialName("minimal_selection_color") val minimalSelectionColor: ColorData,
 
-    @SerialName("primary_color_1") val primaryColor1: ColorData,
-    @SerialName("primary_color_2") val primaryColor2: ColorData,
-    @SerialName("primary_color_3") val primaryColor3: ColorData,
-    @SerialName("primary_color_4") val primaryColor4: ColorData,
+    @SerialName("foreground_color") val foreground: ColorData,
+    @SerialName("minimal_foreground_color") val minimalForegroundColor: ColorData,
 
-    @SerialName("glow_color") val glowColor: ColorData?
+    @SerialName("shadow") val shadow: SurfaceShadow?,
+    @SerialName("border") val border: SurfaceBorder?,
+)
+
+
+@Serializable
+data class SurfaceShadow(
+    @SerialName("color") val color: ColorData,
+    @SerialName("blur") val blur: Float,
+    @SerialName("spread") val spread: Float,
+    @SerialName("offset_x") val offsetX: Float,
+    @SerialName("offset_y") val offsetY: Float,
+)
+
+fun Modifier.dropShadow(shape: Shape, surfaceShadow: SurfaceShadow) = this.drawBehind {
+    val spread = surfaceShadow.spread.dp
+    val blur = surfaceShadow.blur.dp
+    val color = surfaceShadow.color.intoColor()
+    val offsetX = surfaceShadow.offsetX.dp
+    val offsetY = surfaceShadow.offsetY.dp
+
+    val shadowSize = Size(size.width + spread.toPx(), size.height + spread.toPx())
+    val shadowOutline = shape.createOutline(shadowSize, layoutDirection, this)
+
+    val paint = Paint()
+    paint.color = color
+
+    if (blur.toPx() > 0) {
+        paint.asFrameworkPaint().apply {
+            maskFilter = BlurMaskFilter(blur.toPx(), BlurMaskFilter.Blur.NORMAL)
+        }
+    }
+
+    drawIntoCanvas { canvas ->
+        canvas.save()
+        canvas.translate(offsetX.toPx(), offsetY.toPx())
+        canvas.drawOutline(shadowOutline, paint)
+        canvas.restore()
+    }
+}
+
+@Serializable
+data class SurfaceBorder(
+    @SerialName("color") val color: ColorData,
+    @SerialName("width") val width: Float,
 )
 
 @Serializable
@@ -113,6 +123,43 @@ enum class CornerRounding {
 
     @SerialName("extra_round")
     EXTRA_ROUND,
+}
+
+@OptIn(ExperimentalSerializationApi::class)
+@Serializable
+@JsonClassDiscriminator("kind")
+sealed class BackgroundData {
+    @Serializable
+    data class ColorDef(val color: ColorData)
+
+    @Serializable
+    data class GradientDef(val from: ColorData, val to: ColorData, val angle: Float)
+
+    @Serializable
+    @SerialName("color")
+    data class Color(val def: ColorDef) : BackgroundData()
+
+    @Serializable
+    @SerialName("gradient")
+    data class Gradient(val def: GradientDef) : BackgroundData()
+
+    fun applyToModifier(modifier: Modifier): Modifier {
+        return when (this) {
+            is BackgroundData.Color -> {
+                modifier.background(this.def.color.intoColor())
+            }
+
+            is BackgroundData.Gradient -> {
+                modifier.background(
+                    LinearGradient(
+                        colors = listOf(this.def.from.intoColor(), this.def.to.intoColor()),
+                        stops = listOf(0f, 1f),
+                        angleInDegrees = this.def.angle
+                    )
+                )
+            }
+        }
+    }
 }
 
 @Serializable

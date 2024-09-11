@@ -13,7 +13,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         setContent {
-            Provider(controller) {
+            ProductionProvider(controller) {
                 Layout()
             }
         }

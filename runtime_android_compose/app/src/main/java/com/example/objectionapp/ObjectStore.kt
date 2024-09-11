@@ -75,6 +75,13 @@ class ObjectStore(private val bridge: Bridge, private val logger: Logger) {
         return matchingObjects
     }
 
+    fun prefill(objects: HashMap<String, Object>) {
+        for ((objectId, obj) in objects) {
+            objects[objectId] = obj
+            noteObjectUpdate(objectId)
+        }
+    }
+
     private fun noteObjectUpdate(id: String) {
         val listenerIds = listenedObjects[id]
         if (listenerIds != null) {

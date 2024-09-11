@@ -11,14 +11,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.absolutePadding
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.paddingFrom
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -42,10 +38,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.layout.AlignmentLine
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.MeasureResult
-import androidx.compose.ui.layout.layout
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -105,7 +98,7 @@ private fun BottomBarView() {
     val currentObjectId = currentBackStackEntry.value?.arguments?.let { decodeObjectIdFromRouteArgs(it) }
     val currentObject = useObject(currentObjectId)
 
-    if (tabBarObjects.value.isNotEmpty()) {
+    if (tabBarObjects.isNotEmpty()) {
         Column {
             currentObject.value?.searchObject?.let {searchObjectId ->
                 val searchObject = useObject(searchObjectId)
@@ -167,7 +160,7 @@ private fun BottomBarView() {
                     }
                 }
 
-                for ((id, obj) in tabBarObjects.value) {
+                for ((id, obj) in tabBarObjects) {
                     NavigationBarItem(
                         selected = history.value.contains(id),
                         icon = { StandardIcon(obj.icon ?: "Help") },

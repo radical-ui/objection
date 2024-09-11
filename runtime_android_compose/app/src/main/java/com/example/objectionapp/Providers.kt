@@ -14,8 +14,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
@@ -24,43 +26,57 @@ import androidx.navigation.compose.rememberNavController
 
 private val LocalController = compositionLocalOf<Controller?> { null }
 private var LocalNavController = compositionLocalOf<NavHostController?> { null }
+private var LocalIsDarkMode = compositionLocalOf { false }
 
 @Composable
-fun Provider(controller: Controller = Controller.fromConstants(), content: @Composable () -> Unit) {
+fun TestProvider(controller: Controller, content: () -> Unit) {
     val navController = rememberNavController()
-    val isLoading = remember { mutableStateOf(controller.bridge.onDidLoad.getLastValue()?.let { false } ?: true) }
-    val hasInternet = remember { mutableStateOf(controller.bridge.onHasInternet.getLastValue() ?: true) }
-    val error = remember { mutableStateOf<String?>(controller.bridge.onError.getLastValue()) }
     val isDark = isSystemInDarkTheme()
+
+    CompositionLocalProvider(LocalController provides controller) {
+        CompositionLocalProvider(LocalNavController provides navController) {
+            CompositionLocalProvider(LocalIsDarkMode provides isDark) { }
+            content()
+        }
+    }
+}
+
+@Composable
+fun ProductionProvider(controller: Controller = Controller.fromConstants(), content: @Composable () -> Unit) {
+    val navController = rememberNavController()
+    var isLoading by remember { mutableStateOf(controller.bridge.onDidLoad.getLastValue()?.let { false } ?: true) }
+    var hasInternet by remember { mutableStateOf(controller.bridge.onHasInternet.getLastValue() ?: true) }
+    var error by remember { mutableStateOf(controller.bridge.onError.getLastValue()) }
+
     val modifier = Modifier
         .fillMaxWidth()
         .fillMaxHeight()
         .background(
-            if (isDark) {
+            if (LocalIsDarkMode.current) {
                 controller.darkBackgroundColor
             } else {
                 controller.lightBackgroundColor
             }
         )
-    val textColor = if (isDark) { controller.darkForegroundColor } else { controller.lightForegroundColor }
+    val textColor = if (LocalIsDarkMode.current) { controller.darkForegroundColor } else { controller.lightForegroundColor }
 
     LaunchedEffect(Unit) {
         controller.bridge.start(controller.wsUrl)
 
         controller.bridge.onDidLoad.listen(ListenId()) {
-            isLoading.value = false
+            isLoading = false
         }
 
         controller.bridge.onHasInternet.listen(ListenId()) {
-            hasInternet.value = it
+            hasInternet = it
         }
 
         controller.bridge.onHasInternet.listen(ListenId()) {
-            hasInternet.value = true
+            hasInternet = true
         }
 
         controller.bridge.onError.listen(ListenId()) {
-            error.value = it
+            error = it
         }
     }
 
@@ -72,14 +88,14 @@ fun Provider(controller: Controller = Controller.fromConstants(), content: @Comp
                 }
             }
         }
-        if (isLoading.value) {
+        if (isLoading) {
             Box(modifier.zIndex(2f)) {
                 Column {
                     Text("Loading...", fontSize = 20.sp, color = textColor)
                 }
             }
         }
-        if (!hasInternet.value) {
+        if (!hasInternet) {
             Box(modifier.zIndex(3f)) {
                 Column {
                     Text(controller.noInternetHeader, fontSize = 30.sp, color = textColor)
@@ -87,11 +103,11 @@ fun Provider(controller: Controller = Controller.fromConstants(), content: @Comp
                 }
             }
         }
-        if (error.value != null) {
+        if (error != null) {
             Box(modifier.zIndex(3f)) {
                 Column {
                     Text(controller.errorHeader, fontSize = 30.sp, color = textColor)
-                    Text(error.value!!, color = textColor)
+                    Text(error!!, color = textColor)
                 }
             }
         }
@@ -117,16 +133,16 @@ fun useTheme(): State<Theme> {
 }
 
 @Composable
-fun useObjects(ids: List<String>): State<List<Pair<String, Object>>> {
+fun useObjects(ids: List<String>): List<Pair<String, Object>> {
     val controller = LocalController.current!!
-    val objects = remember { mutableStateOf(controller.objectStore.getCurrentObjects(ids)) }
+    var objects by remember { mutableStateOf(controller.objectStore.getCurrentObjects(ids)) }
 
     DisposableEffect(ids) {
         val listenId = ListenId()
         controller.objectStore.listen(listenId, ids) { newObjects ->
-            objects.value = newObjects
+            objects = newObjects
         }
-        objects.value = controller.objectStore.getCurrentObjects(ids)
+        objects = controller.objectStore.getCurrentObjects(ids)
 
         onDispose {
             controller.objectStore.removeListener(listenId)
@@ -146,7 +162,7 @@ fun useObject(id: String?): State<Object?> {
         }
     )
 
-    return remember { derivedStateOf { objects.value.firstOrNull()?.second } }
+    return remember { derivedStateOf { objects.firstOrNull()?.second } }
 }
 
 @Composable
@@ -160,7 +176,7 @@ fun useNavController(): NavHostController {
 @Composable
 fun useSurface(surface: String? = null): State<SurfaceTheme> {
     val theme = useTheme()
-    val isDark = isSystemInDarkTheme()
+    val isDark = LocalIsDarkMode.current
 
     return remember {
         derivedStateOf {
