@@ -17,13 +17,6 @@ import java.net.SocketTimeoutException
 import java.util.UUID
 import kotlin.coroutines.CoroutineContext
 
-//interface Bridge {
-//    fun start(url: String)
-//    fun watch(objectId: String, onComplete: () -> Unit)
-//    fun unwatch(objectId: String, onComplete: () -> Unit)
-//    fun performOperation(objectId: String, key: String, onComplete: () -> Unit)
-//}
-
 class Bridge(private var logger: Logger, private var session: Session) : CoroutineScope {
     private var job: Job = Job()
     override val coroutineContext: CoroutineContext

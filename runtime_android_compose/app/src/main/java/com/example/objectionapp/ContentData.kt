@@ -23,12 +23,11 @@ data class Quote(
     @SerialName("attribution_surface") val attributionSurface: String,
 )
 
-//@Serializable
-//enum class ObjectPreviewStyle {
-//    @SerialName("search") SEARCH,
-//    @SerialName("card") CARD,
-//    @SerialName("embed") EMBED,
-//}
+@Serializable
+data class ObjectPreview(
+    @SerialName("object_id") val objectId: String,
+    @SerialName("surface") val surface: String?,
+)
 
 @Serializable
 data class CallToAction(
@@ -42,7 +41,7 @@ data class CallToAction(
 data class ObjectGroup(
     @SerialName("title") val title: String,
     @SerialName("description") val description: String?,
-    @SerialName("previews") val previews: List<String>,
+    @SerialName("objects") val objects: List<String>,
 )
 
 @OptIn(ExperimentalSerializationApi::class)
@@ -63,7 +62,7 @@ sealed class Content {
 
     @Serializable
     @SerialName("object_preview")
-    data class ObjectPreviewContent(val def: ObjectGroup) : Content()
+    data class ObjectPreviewContent(val def: ObjectPreview) : Content()
 
     @Serializable
     @SerialName("call_to_action")
