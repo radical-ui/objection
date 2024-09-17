@@ -66,10 +66,6 @@ fun SharedTransitionScope.ContentView(
         is Content.ObjectGroupContent -> {
             ObjectGroupView(content.def, padding, animatedVisibilityScope)
         }
-
-        else -> {
-            println("Unreachable")
-        }
     }
 }
 

@@ -6,6 +6,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonClassDiscriminator
 
 @Serializable
+@ExperimentalSerializationApi
 data class Object(
     @SerialName("title") val title: String?,
     @SerialName("engaged_title") val engagedTitle: String?,
@@ -17,19 +18,22 @@ data class Object(
     @SerialName("search_object") val searchObject: String?
 )
 
+@ExperimentalSerializationApi
 @Serializable
-enum class ActionKind {
+@JsonClassDiscriminator("kind")
+sealed class ActionKind {
     @SerialName("danger")
-    DANGER,
+    data object Danger: ActionKind()
 
     @SerialName("success")
-    SUCCESS,
+    data object Success: ActionKind()
 
     @SerialName("normal")
-    NORMAL
+    data object Normal: ActionKind()
 }
 
 @Serializable
+@ExperimentalSerializationApi
 data class Action(
     @SerialName("kind") val kind: ActionKind,
     @SerialName("title") val title: String,
@@ -47,15 +51,15 @@ data class ShowObjectActionProcess(
     @SerialName("id") val id: String
 )
 
-@OptIn(ExperimentalSerializationApi::class)
+@ExperimentalSerializationApi
 @Serializable
 @JsonClassDiscriminator("kind")
 sealed class ActionProcess {
     @Serializable
     @SerialName("perform_operation")
-    data class PerformOperation(val def: PerformOperationActionProcess) : Content()
+    data class PerformOperation(val def: PerformOperationActionProcess) : ActionProcess()
 
     @Serializable
     @SerialName("show_object")
-    data class ShowObject(val def: ShowObjectActionProcess) : Content()
+    data class ShowObject(val def: ShowObjectActionProcess) : ActionProcess()
 }
