@@ -18,7 +18,7 @@ class Controller(
     val session = Session()
     val logger = Logger(session, scope = appName)
     val bridge = Bridge(logger = logger.scope("Bridge"), session)
-    val objectStore = ObjectStore(bridge, logger = logger.scope("ObjectStore"))
+    val objectStore = ObjectStore(bridge, logger = logger.scope("ObjectStore"), Object.serializer())
 
     companion object {
         fun fromConstants(): Controller {

@@ -2,10 +2,15 @@ package com.example.objectionapp
 
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
-import kotlinx.coroutines.*
-import kotlinx.serialization.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonClassDiscriminator
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonNull
 import okhttp3.OkHttpClient
 import okhttp3.WebSocket
 import okhttp3.Request
@@ -16,268 +21,222 @@ import java.net.ConnectException
 import java.net.SocketTimeoutException
 import java.util.UUID
 import kotlin.coroutines.CoroutineContext
+import kotlin.reflect.KClass
+import kotlinx.serialization.Serializable
 
 class Bridge(private var logger: Logger, private var session: Session) : CoroutineScope {
-    private var job: Job = Job()
-    override val coroutineContext: CoroutineContext
-        get() = Dispatchers.Main + job
+	private var job: Job = Job()
+	override val coroutineContext: CoroutineContext
+		get() = Dispatchers.Main + job
 
-    var onError = Listener<String>(logger = logger)
-    var onHasInternet = Listener<Boolean>(logger = logger)
-    var onObjectSet = Listener<Pair<String, Object>>(logger = logger)
-    var onObjectRemoved = Listener<String>(logger = logger)
-    var onThemeChanged = Listener<Theme>(logger = logger)
-    var onDidLoad = Listener<Unit>(logger = logger)
+	var onError = Listener<String>(logger = logger)
+	var onHasInternet = Listener<Boolean>(logger = logger)
+	var onObjectSet = Listener<Pair<String, JsonElement>>(logger = logger)
+	var onObjectRemoved = Listener<String>(logger = logger)
+	var onDidLoad = Listener<Unit>(logger = logger)
 
-    private var isOffline = false
-    private var url: String? = null
-    private var websocket: WebSocket? = null
-    private var isRunning = false
-    private val client = OkHttpClient()
-    private val json = Json { ignoreUnknownKeys = true; isLenient = true; encodeDefaults = true }
+	private var isOffline = false
+	private var url: String? = null
+	private var websocket: WebSocket? = null
+	private var isRunning = false
+	private val client = OkHttpClient()
+	private val json = Json { ignoreUnknownKeys = true; isLenient = true; encodeDefaults = true }
 
-    fun start(url: String) {
-        if (!isRunning) {
-            logger.info("starting")
+	fun start(url: String) {
+		if (!isRunning) {
+			logger.info("starting")
 
-            this.websocket
-            val fullUrl = "$url?session_id=${session.getId()}"
-            this.url = fullUrl
-            connect()
-        } else {
-            logger.info("start called again, but skipping because bridge is already running")
-        }
-    }
+			this.websocket
+			val fullUrl = "$url?session_id=${session.getId()}"
+			this.url = fullUrl
+			connect()
+		} else {
+			logger.info("start called again, but skipping because bridge is already running")
+		}
+	}
 
-    fun watch(objectId: String, onComplete: () -> Unit) {
-        sendMessage(
-            OutgoingMessage.Watch(
-                OutgoingWatchMessage(
-                    requestId = listenForAcknowledgement(onComplete),
-                    id = objectId,
-                )
-            )
-        )
-    }
+	fun watch(objectId: String, onComplete: () -> Unit) {
+		sendMessage(
+			OutgoingMessage.Watch(
+				requestId = listenForAcknowledgement(onComplete),
+				id = objectId,
+			)
+		)
+	}
 
-    fun unwatch(objectId: String, onComplete: () -> Unit) {
-        sendMessage(
-            OutgoingMessage.Unwatch(
-                OutgoingUnwatchMessage(
-                    requestId = listenForAcknowledgement(onComplete),
-                    id = objectId,
-                )
-            )
-        )
-    }
+	fun unwatch(objectId: String, onComplete: () -> Unit) {
+		sendMessage(
+			OutgoingMessage.Unwatch(
+				requestId = listenForAcknowledgement(onComplete),
+				id = objectId,
+			)
+		)
+	}
 
-    fun performOperation(objectId: String, key: String, onComplete: () -> Unit) {
-        sendMessage(
-            OutgoingMessage.PerformOperation(
-                OutgoingPerformOperationMessage(
-                    requestId = listenForAcknowledgement(onComplete),
-                    objectId = objectId,
-                    key,
-                )
-            )
-        )
-    }
+	fun emitNullEvent(objectId: String, key: String, onComplete: () -> Unit) {
+		sendMessage(
+			OutgoingMessage.EmitEvent(
+				requestId = listenForAcknowledgement(onComplete),
+				objectId = objectId,
+				key = key,
+				data = JsonNull
+			)
+		)
+	}
 
-    private fun listenForAcknowledgement(callback: () -> Unit): String {
-        return UUID.randomUUID().toString()
-    }
+	fun emitEvent(
+		objectId: String,
+		key: String,
+		data: JsonElement,
+		onComplete: () -> Unit
+	) {
+		sendMessage(
+			OutgoingMessage.EmitEvent(
+				requestId = listenForAcknowledgement(onComplete),
+				objectId = objectId,
+				key = key,
+				data = data
+			)
+		)
+	}
 
-    private fun callError(message: String) {
-        onError.emit(message)
-    }
+	private fun listenForAcknowledgement(callback: () -> Unit): String {
+		return UUID.randomUUID().toString()
+	}
 
-    private fun sendMessage(message: OutgoingMessage) {
-        websocket?.let { ws ->
-            val jsonMessage = json.encodeToString(OutgoingMessage.serializer(), message)
-            ws.send(jsonMessage)
-        } ?: logger.error("must call start() before watch() or fireEvent()")
-    }
+	private fun callError(message: String) {
+		onError.emit(message)
+	}
 
-    private fun parseIncomingJson(data: String): List<IncomingMessage> {
-        return try {
-            json.decodeFromString(data)
-        } catch (e: Exception) {
-            callError("Failed to parse information from server.")
-            logger.critical("failed to parse json of incoming message: ${e.message}. JSON: $data")
+	private fun sendMessage(message: OutgoingMessage) {
+		websocket?.let { ws ->
+			val jsonMessage = json.encodeToString(OutgoingMessage.serializer(), message)
+			ws.send(jsonMessage)
+		} ?: logger.error("must call start() before watch() or fireEvent()")
+	}
 
-            emptyList()
-        }
-    }
+	private fun parseIncomingJson(data: String): List<IncomingMessage> {
+		return try {
+			json.decodeFromString(data)
+		} catch (e: Exception) {
+			callError("Failed to parse information from server.")
+			logger.critical("failed to parse json of incoming message: ${e.message}. JSON: $data")
 
-    private fun queueRetry() {
-        println("before cancel")
-        websocket?.cancel()
-        println("after cancel")
+			emptyList()
+		}
+	}
 
-        Executors.newSingleThreadScheduledExecutor().schedule({
-            logger.info("retrying websocket connection")
-            connect()
-        }, 3, TimeUnit.SECONDS)
-    }
+	private fun queueRetry() {
+		println("before cancel")
+		websocket?.cancel()
+		println("after cancel")
 
-    private fun connect() {
-        logger.info("connecting")
+		Executors.newSingleThreadScheduledExecutor().schedule({
+			logger.info("retrying websocket connection")
+			connect()
+		}, 3, TimeUnit.SECONDS)
+	}
 
-        val url = url ?: run {
-            logger.error("must call .start() before .connect()")
-            return
-        }
+	private fun connect() {
+		logger.info("connecting")
 
-        val request = Request.Builder().url(url).build()
-        websocket = client.newWebSocket(request, object : WebSocketListener() {
-            override fun onOpen(webSocket: WebSocket, response: Response) {
-                isRunning = true
+		val url = url ?: run {
+			logger.error("must call .start() before .connect()")
+			return
+		}
 
-                if (isOffline) {
-                    logger.info("websocket connected")
-                    isOffline = false
-                    onHasInternet.emit(true)
-                }
-            }
+		val request = Request.Builder().url(url).build()
+		websocket = client.newWebSocket(request, object : WebSocketListener() {
+			override fun onOpen(webSocket: WebSocket, response: Response) {
+				isRunning = true
 
-            override fun onMessage(webSocket: WebSocket, text: String) {
-                parseIncomingJson(text).forEach { handleIncomingMessage(it) }
-            }
+				if (isOffline) {
+					logger.info("websocket connected")
+					isOffline = false
+					onHasInternet.emit(true)
+				}
+			}
 
-            override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
-                if (t is ConnectException || t is SocketTimeoutException) {
-                    isOffline = true
-                    onHasInternet.emit(false)
-                    queueRetry()
-                } else if (t is EOFException) {
-                    logger.warn("connection was suddenly dropped")
-                    queueRetry()
-                } else {
-                    logger.warn("a socket failed: $t")
-                    callError(t.localizedMessage ?: "Unknown error")
-                }
-            }
-        })
-    }
+			override fun onMessage(webSocket: WebSocket, text: String) {
+				parseIncomingJson(text).forEach { handleIncomingMessage(it) }
+			}
 
-    private fun handleIncomingMessage(message: IncomingMessage) {
-        when (message) {
-            is IncomingMessage.Initialize -> {
-                onDidLoad.emit(Unit)
-                onThemeChanged.emit(message.def.theme)
+			override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
+				when (t) {
+					is ConnectException, is SocketTimeoutException -> {
+						isOffline = true
+						onHasInternet.emit(false)
+						queueRetry()
+					}
 
-                message.def.objects.forEach { (id, obj) -> onObjectSet.emit(Pair(id, obj)) }
-            }
+					is EOFException -> {
+						logger.warn("connection was suddenly dropped")
+						queueRetry()
+					}
 
-            is IncomingMessage.RemoveObject -> {
-                onObjectRemoved.emit(message.def.id)
-            }
+					else -> {
+						logger.warn("a socket failed: $t")
+						callError(t.localizedMessage ?: "Unknown error")
+					}
+				}
+			}
+		})
+	}
 
-            is IncomingMessage.SetObject -> {
-                onObjectSet.emit(Pair(message.def.id, message.def.obj))
-            }
-
-            is IncomingMessage.SetTheme -> {
-                onThemeChanged.emit(message.def.theme)
-            }
-
-            is IncomingMessage.Acknowledge -> {
-                logger.warn("TODO acknowledge: ${message.def.requestId}")
-            }
-
-            else -> {
-                println("unreachable")
-            }
-        }
-    }
+	private fun handleIncomingMessage(message: IncomingMessage) {
+		when (message) {
+			is IncomingMessage.RemoveObject -> onObjectRemoved.emit(message.id)
+			is IncomingMessage.SetObject -> onObjectSet.emit(Pair(message.id, message.data))
+			is IncomingMessage.Acknowledge -> logger.warn("TODO acknowledge: ${message.requestId}")
+		}
+	}
 }
-
-@Serializable
-data class OutgoingWatchMessage(
-    @SerialName("request_id") val requestId: String,
-    @SerialName("id") val id: String
-)
-
-@Serializable
-data class OutgoingUnwatchMessage(
-    @SerialName("request_id") val requestId: String,
-    @SerialName("id") val id: String
-)
-
-@Serializable
-data class OutgoingPerformOperationMessage(
-    @SerialName("request_id") val requestId: String,
-    @SerialName("object_id") val objectId: String,
-    @SerialName("key") val key: String
-)
 
 @OptIn(ExperimentalSerializationApi::class)
 @Serializable
-@JsonClassDiscriminator("kind")
+@JsonClassDiscriminator("$")
 sealed class OutgoingMessage {
-    @Serializable
-    @SerialName("watch")
-    data class Watch(val def: OutgoingWatchMessage) : OutgoingMessage()
+	@Serializable
+	@SerialName("watch")
+	data class Watch(
+		@SerialName("request_id") val requestId: String,
+		val id: String
+	) : OutgoingMessage()
 
-    @Serializable
-    @SerialName("unwatch")
-    data class Unwatch(val def: OutgoingUnwatchMessage) : OutgoingMessage()
+	@Serializable
+	@SerialName("unwatch")
+	data class Unwatch(
+		@SerialName("request_id") val requestId: String,
+		val id: String
+	) : OutgoingMessage()
 
-    @Serializable
-    @SerialName("emit_event")
-    data class PerformOperation(val def: OutgoingPerformOperationMessage) : OutgoingMessage()
+	@Serializable
+	@SerialName("emit_event")
+	data class EmitEvent(
+		@SerialName("request_id") val requestId: String,
+		@SerialName("object_id") val objectId: String,
+		val key: String,
+		val data: JsonElement
+	) : OutgoingMessage()
 }
-
-@Serializable
-data class IncomingInitializeMessage(
-    @SerialName("theme") val theme: Theme,
-    @SerialName("objects") val objects: Map<String, Object>
-)
-
-@Serializable
-data class IncomingRemoveObjectMessage(
-    @SerialName("id") val id: String,
-)
-
-@Serializable
-data class IncomingSetObjectMessage(
-    @SerialName("id") val id: String,
-    @SerialName("object") val obj: Object,
-)
-
-@Serializable
-data class IncomingSetThemeMessage(
-    @SerialName("theme") val theme: Theme
-)
-
-@Serializable
-data class IncomingAcknowledgeMessage(
-    @SerialName("request_id") val requestId: String? = null,
-    @SerialName("error") val error: String? = null,
-    @SerialName("retry_after_seconds") val retryAfterSeconds: Int? = null
-)
 
 @OptIn(ExperimentalSerializationApi::class)
 @Serializable
-@JsonClassDiscriminator("kind")
+@JsonClassDiscriminator("$")
 sealed class IncomingMessage {
-    @Serializable
-    @SerialName("init")
-    data class Initialize(val def: IncomingInitializeMessage) : IncomingMessage()
+	@Serializable
+	@SerialName("remove_object")
+	data class RemoveObject(val id: String) : IncomingMessage()
 
-    @Serializable
-    @SerialName("remove_object")
-    data class RemoveObject(val def: IncomingRemoveObjectMessage) : IncomingMessage()
+	@Serializable
+	@SerialName("set_object")
+	data class SetObject(val id: String, val data: JsonElement) : IncomingMessage()
 
-    @Serializable
-    @SerialName("set_object")
-    data class SetObject(val def: IncomingSetObjectMessage) : IncomingMessage()
-
-    @Serializable
-    @SerialName("set_theme")
-    data class SetTheme(val def: IncomingSetThemeMessage) : IncomingMessage()
-
-    @Serializable
-    @SerialName("acknowledge")
-    data class Acknowledge(val def: IncomingAcknowledgeMessage) : IncomingMessage()
+	@Serializable
+	@SerialName("acknowledge")
+	data class Acknowledge(
+		@SerialName("request_id") val requestId: String? = null,
+		val error: String? = null,
+		@SerialName("retry_after_seconds") val retryAfterSeconds: Int? = null
+	) : IncomingMessage()
 }

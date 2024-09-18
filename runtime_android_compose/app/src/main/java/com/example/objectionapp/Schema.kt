@@ -13,81 +13,84 @@ import kotlinx.serialization.descriptors.elementDescriptors
 import kotlinx.serialization.descriptors.serialDescriptor
 import kotlinx.serialization.json.JsonClassDiscriminator
 import kotlin.reflect.KClass
-import kotlin.reflect.KType
 import kotlin.reflect.full.createType
 
-@ExperimentalSerializationApi
+@OptIn(ExperimentalSerializationApi::class)
 @SerialInfo
 @Target(AnnotationTarget.PROPERTY)
 annotation class Description(val content: String)
 
-@ExperimentalSerializationApi
+@OptIn(ExperimentalSerializationApi::class)
 @SerialInfo
 @Target(AnnotationTarget.PROPERTY)
-annotation class ObjectReference(val expectedClass: KClass<*>)
+annotation class ObjectReference(val expectedTopLevelVariant: KClass<*>)
 
-@ExperimentalSerializationApi
+@OptIn(ExperimentalSerializationApi::class)
 @SerialInfo
 @Target(AnnotationTarget.PROPERTY)
 annotation class AnyObjectReference
 
-@ExperimentalSerializationApi
-fun getSchema(type: KType): Schema {
-	return Schema(obj = getItemSchema(serialDescriptor(type)))
+@OptIn(ExperimentalSerializationApi::class)
+@SerialInfo
+@Target(AnnotationTarget.CLASS)
+annotation class IsColor
+
+@OptIn(ExperimentalSerializationApi::class)
+@SerialInfo
+@Target(AnnotationTarget.CLASS)
+annotation class ContentKey(val key: String)
+
+fun getSchema(klass: KClass<*>): Schema {
+	return Schema(getItemSchema(serialDescriptor(klass.createType())))
 }
 
-@ExperimentalSerializationApi
+@OptIn(ExperimentalSerializationApi::class)
 private fun getItemSchema(
 	descriptor: SerialDescriptor,
-	annotations: List<Any> = listOf()
+	annotations: List<Annotation> = listOf()
 ): ItemSchema {
-	when (descriptor.kind) {
-		StructureKind.CLASS -> return getClassSchema(descriptor)
-		PrimitiveKind.STRING -> return getStringSchema(annotations)
-		PrimitiveKind.DOUBLE -> return ItemSchema.NumberSchema
-		PrimitiveKind.FLOAT -> return ItemSchema.NumberSchema
-		PrimitiveKind.INT -> return ItemSchema.NumberSchema
-		PrimitiveKind.BOOLEAN -> return ItemSchema.BooleanSchema
-		StructureKind.LIST -> return getListSchema(descriptor)
-		PolymorphicKind.SEALED -> return getSealedSchema(descriptor)
+	return when (descriptor.kind) {
+		StructureKind.CLASS -> getClassSchema(descriptor)
+		PrimitiveKind.STRING -> getStringSchema(annotations)
+		PrimitiveKind.DOUBLE -> ItemSchema.NumberSchema
+		PrimitiveKind.FLOAT -> ItemSchema.NumberSchema
+		PrimitiveKind.INT -> ItemSchema.NumberSchema
+		PrimitiveKind.BOOLEAN -> ItemSchema.BooleanSchema
+		StructureKind.LIST -> getListSchema(descriptor)
+		PolymorphicKind.SEALED -> getSealedSchema(descriptor)
 		SerialKind.ENUM -> throw Exception("Use a sealed class with objects instead of an enum. Failed at: $descriptor")
-		else -> {
-			println(descriptor.kind)
-
-			return getClassSchema(descriptor)
-		}
+		else -> throw Exception("unknown item at $descriptor")
 	}
 }
 
-@ExperimentalSerializationApi
-private fun getStringSchema(annotations: List<Any>): ItemSchema {
+@OptIn(ExperimentalSerializationApi::class)
+private fun getStringSchema(annotations: List<Annotation>): ItemSchema {
 	for (annotation in annotations) {
-		println(annotation)
 		when (annotation) {
 			is ObjectReference -> return ItemSchema.ReferenceSchema(
-				expectedEnumName = serialDescriptor(
-					annotation.expectedClass.createType()
+				expectedTopLevelVariant = serialDescriptor(
+					annotation.expectedTopLevelVariant.createType()
 				).serialName
 			)
 
-			is AnyObjectReference -> return ItemSchema.ReferenceSchema(expectedEnumName = null)
+			is AnyObjectReference -> return ItemSchema.ReferenceSchema(expectedTopLevelVariant = null)
 		}
 	}
 
 	return ItemSchema.StringSchema
 }
 
-@ExperimentalSerializationApi
+@OptIn(ExperimentalSerializationApi::class)
 private fun getSealedSchema(descriptor: SerialDescriptor): ItemSchema.EnumSchema {
 	val variants = mutableListOf<EnumVariantSchema>()
 	val child = descriptor.getElementDescriptor(1)
 	var discriminatorKey: String? = null
+	var contentKey: String? = null
 
 	for (variant in child.elementDescriptors) {
 		variants.add(
 			EnumVariantSchema(
-				name = variant.serialName,
-				description = getDescription(listOf()), // FIXME
+				name = variant.serialName, description = getDescription(listOf()), // FIXME
 				type = getItemSchema(variant)
 			)
 		)
@@ -97,16 +100,19 @@ private fun getSealedSchema(descriptor: SerialDescriptor): ItemSchema.EnumSchema
 		if (annotation is JsonClassDiscriminator) {
 			discriminatorKey = annotation.discriminator
 		}
+		if (annotation is ContentKey) {
+			contentKey = annotation.key
+		}
 	}
 
 	if (discriminatorKey == null) {
 		throw Exception("All sealed classes must have a JsonDiscriminatorKey annotation. Failed at: $descriptor")
 	}
 
-	return ItemSchema.EnumSchema(discriminatorKey, contentKey = null, variants)
+	return ItemSchema.EnumSchema(discriminatorKey, contentKey, variants)
 }
 
-@ExperimentalSerializationApi
+@OptIn(ExperimentalSerializationApi::class)
 private fun getListSchema(descriptor: SerialDescriptor): ItemSchema {
 	if (descriptor.elementsCount != 1) {
 		throw Exception("A list must have exactly on child element")
@@ -115,16 +121,18 @@ private fun getListSchema(descriptor: SerialDescriptor): ItemSchema {
 	return ItemSchema.ListSchema(option = getItemSchema(descriptor.getElementDescriptor(0)))
 }
 
-@ExperimentalSerializationApi
-private fun getClassSchema(descriptor: SerialDescriptor): ItemSchema.StructSchema {
+@OptIn(ExperimentalSerializationApi::class)
+private fun getClassSchema(descriptor: SerialDescriptor): ItemSchema {
 	val items = mutableListOf<StructPropertySchema>()
-	println(descriptor)
+
+	for (annotation in descriptor.annotations) {
+		if (annotation is IsColor) return ItemSchema.ColorSchema
+	}
 
 	for (childIndex in 0..<descriptor.elementsCount) {
 		val child = descriptor.getElementDescriptor(childIndex)
 		val annotations = descriptor.getElementAnnotations(childIndex)
 
-		println("${descriptor.getElementName(childIndex)}: $annotations, $childIndex")
 		items.add(
 			StructPropertySchema(
 				name = descriptor.getElementName(childIndex),
@@ -138,7 +146,6 @@ private fun getClassSchema(descriptor: SerialDescriptor): ItemSchema.StructSchem
 	return ItemSchema.StructSchema(properties = items)
 }
 
-@ExperimentalSerializationApi
 private fun getDescription(annotations: List<Any>): String? {
 	for (annotation in annotations) {
 		if (annotation is Description) {
@@ -150,10 +157,11 @@ private fun getDescription(annotations: List<Any>): String? {
 }
 
 @Serializable
-@ExperimentalSerializationApi
-data class Schema(@SerialName("object") val obj: ItemSchema)
+data class Schema(@SerialName("object") val obj: ItemSchema) {
+	val version = "0.1"
+}
 
-@ExperimentalSerializationApi
+@OptIn(ExperimentalSerializationApi::class)
 @JsonClassDiscriminator("$")
 @Serializable
 sealed class ItemSchema {
@@ -184,6 +192,10 @@ sealed class ItemSchema {
 	data object BooleanSchema : ItemSchema()
 
 	@Serializable
+	@SerialName("color")
+	data object ColorSchema : ItemSchema()
+
+	@Serializable
 	@SerialName("list")
 	data class ListSchema(
 		val option: ItemSchema
@@ -192,16 +204,14 @@ sealed class ItemSchema {
 	@Serializable
 	@SerialName("reference")
 	data class ReferenceSchema(
-		val expectedEnumName: String?
+		val expectedTopLevelVariant: String?
 	) : ItemSchema()
 }
 
 @Serializable
-@ExperimentalSerializationApi
 data class StructPropertySchema(
 	val name: String, val description: String?, val type: ItemSchema, val optional: Boolean
 )
 
 @Serializable
-@ExperimentalSerializationApi
 data class EnumVariantSchema(val name: String, val description: String?, val type: ItemSchema)

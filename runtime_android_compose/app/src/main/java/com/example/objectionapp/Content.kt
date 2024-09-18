@@ -30,6 +30,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.Font
@@ -71,24 +73,20 @@ fun SharedTransitionScope.ContentView(
 
 @Composable
 fun ParagraphView(content: Paragraph, padding: PaddingValues) {
-    val surface = useSurface()
-
     Box(Modifier.padding(padding)) {
-        Text(content.text, color = surface.value.foregroundColor2.intoColor(), fontSize = 16.sp)
+        Text(content.text, color = content.color?.intoColor() ?: LocalContentColor.current, fontSize = 16.sp)
     }
 }
 
 @Composable
 fun HeadlineView(content: Headline, padding: PaddingValues) {
-    val surface = useSurface()
-
     Box(
         Modifier
             .padding(padding)
             .padding(top = 20.dp)) {
         Text(
             content.text,
-            color = surface.value.foregroundColor1.intoColor(),
+            color = content.color?.intoColor() ?: LocalContentColor.current,
             fontSize = 30.sp,
             fontWeight = FontWeight.Bold
         )
@@ -97,33 +95,29 @@ fun HeadlineView(content: Headline, padding: PaddingValues) {
 
 @Composable
 fun Quote(content: Quote, padding: PaddingValues) {
-    val surface = useSurface(content.surface)
-    val attributionSurface = useSurface(content.attributionSurface)
-
-    Box(modifier = Modifier.padding(padding)) {
-        Column(
-            modifier = Modifier
-                .background(surface.value.backgroundColor1.intoColor())
-                .clip(RoundedCornerShape(10))
-        ) {
-            Box(modifier = Modifier.padding(16.dp)) {
-                Text(content.text, color = surface.value.backgroundColor1.intoColor())
-            }
-            Box(
-                modifier = Modifier
-                    .padding(16.dp)
-                    .background(attributionSurface.value.backgroundColor1.intoColor())
-            ) {
-                Text(content.attribution)
-            }
-        }
-    }
+//    Box(modifier = Modifier.padding(padding)) {
+//        Column(
+//            modifier = Modifier
+//                .background(surface.value.backgroundColor1.intoColor())
+//                .clip(RoundedCornerShape(10))
+//        ) {
+//            Box(modifier = Modifier.padding(16.dp)) {
+//                Text(content.text, color = surface.value.backgroundColor1.intoColor())
+//            }
+//            Box(
+//                modifier = Modifier
+//                    .padding(16.dp)
+//                    .background(attributionSurface.value.backgroundColor1.intoColor())
+//            ) {
+//                Text(content.attribution)
+//            }
+//        }
+//    }
 }
 
 @Composable
 fun CallToActionView(content: CallToAction, padding: PaddingValues) {
     val navController = useNavController()
-    val surface = useSurface(content.surface)
 
     Column(
         modifier = Modifier
@@ -133,12 +127,12 @@ fun CallToActionView(content: CallToAction, padding: PaddingValues) {
     ) {
         Button(
             onClick = { navController.navigate(encodeObjectIdIntoPageRoute(content.targetObject)) },
-            colors = ButtonDefaults.buttonColors(
-                containerColor = surface.value.backgroundColor1.intoColor(),
-                contentColor = surface.value.foregroundColor1.intoColor(),
-                disabledContainerColor = surface.value.backgroundColor3.intoColor(),
-                disabledContentColor = surface.value.backgroundColor3.intoColor(),
-            ),
+//            colors = ButtonDefaults.buttonColors(
+//                containerColor = surface.value.backgroundColor1.intoColor(),
+//                contentColor = surface.value.foregroundColor1.intoColor(),
+//                disabledContainerColor = surface.value.backgroundColor3.intoColor(),
+//                disabledContentColor = surface.value.backgroundColor3.intoColor(),
+//            ),
             content = {
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
@@ -165,7 +159,6 @@ fun SharedTransitionScope.ObjectPreviewView(
     animatedVisibilityScope: AnimatedVisibilityScope? = null
 ) {
     val obj = useObject(content.objectId)
-    val surface = useSurface(content.surface)
     val navController = useNavController()
 
     Box(Modifier.padding(padding)) {
@@ -178,14 +171,14 @@ fun SharedTransitionScope.ObjectPreviewView(
             onClick = {
                 navController.navigate(route = encodeObjectIdIntoPageRoute(content.objectId))
             },
-            colors = CardDefaults.cardColors(
-                containerColor = surface.value.backgroundColor3.intoColor(),
-                contentColor = surface.value.foregroundColor1.intoColor(),
-                disabledContentColor = surface.value.foregroundColor3.intoColor(),
-                disabledContainerColor = surface.value.backgroundColor2.intoColor()
-            )
+//            colors = CardDefaults.cardColors(
+//                containerColor = ,
+//                contentColor = surface.value.foregroundColor1.intoColor(),
+//                disabledContentColor = surface.value.foregroundColor3.intoColor(),
+//                disabledContainerColor = surface.value.backgroundColor2.intoColor()
+//            )
         ) {
-            obj.value?.image?.let {
+            obj?.image?.let {
                 AsyncImage(
                     model = it,
                     contentDescription = "An image",
@@ -217,16 +210,16 @@ fun SharedTransitionScope.ObjectPreviewView(
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 Text(
-                    "${obj.value?.title}",
-                    color = surface.value.foregroundColor1.intoColor(),
+                    "${obj?.title}",
+//                    color = surface.value.foregroundColor1.intoColor(),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                 )
 
-                obj.value?.content?.find { it is Content.ParagraphContent }?.let {
+                obj?.content?.find { it is Content.ParagraphContent }?.let {
                     Text(
                         (it as Content.ParagraphContent).def.text,
-                        color = surface.value.foregroundColor3.intoColor(),
+//                        color = surface.value.foregroundColor3.intoColor(),
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -243,26 +236,24 @@ fun SharedTransitionScope.ObjectGroupView(
     padding: PaddingValues,
     animatedVisibilityScope: AnimatedVisibilityScope?
 ) {
-    val surface = useSurface(null)
-
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(
             content.title,
             fontSize = 20.sp,
-            color = surface.value.foregroundColor1.intoColor(),
+//            color = surface.value.foregroundColor1.intoColor(),
             modifier = Modifier.padding(padding)
         )
 
         LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp), contentPadding = padding) {
             for (objectId in content.objects) {
-                item {
-                    ObjectPreviewView(
-                        ObjectPreview(objectId, null),
-                        padding = PaddingValues(0.dp),
-                        width = 200.dp,
-                        animatedVisibilityScope = animatedVisibilityScope
-                    )
-                }
+//                item {
+//                    ObjectPreviewView(
+//                        ObjectPreview(objectId, null),
+//                        padding = PaddingValues(0.dp),
+//                        width = 200.dp,
+//                        animatedVisibilityScope = animatedVisibilityScope
+//                    )
+//                }
             }
         }
     }

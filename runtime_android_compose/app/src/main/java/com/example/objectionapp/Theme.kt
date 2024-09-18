@@ -5,6 +5,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
+@IsColor
 data class ColorData(
     val red: Int,
     val green: Int,

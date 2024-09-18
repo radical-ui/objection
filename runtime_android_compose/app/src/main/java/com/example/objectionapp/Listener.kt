@@ -2,7 +2,7 @@ package com.example.objectionapp
 
 import java.util.UUID
 
-class Listener<T>(private var logger: Logger) {
+class Listener<T>(private var logger: Logger, onZeroed: () -> Unit = {}) {
     private var lastValue: T? = null
     private var listeners = mutableMapOf<ListenId, (T) -> Unit>()
 

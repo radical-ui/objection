@@ -122,6 +122,14 @@
 															"$": "string"
 														},
 														"optional": false
+													},
+													{
+														"name": "color",
+														"description": null,
+														"type": {
+															"$": "color"
+														},
+														"optional": true
 													}
 												]
 											},
@@ -193,15 +201,23 @@
 														"description": "The object that is to be previewed",
 														"type": {
 															"$": "reference",
-															"expectedEnumName": "paragraph"
+															"expectedTopLevelVariant": "paragraph"
 														},
 														"optional": false
 													},
 													{
-														"name": "surface",
+														"name": "containerColor",
 														"description": null,
 														"type": {
-															"$": "string"
+															"$": "color"
+														},
+														"optional": true
+													},
+													{
+														"name": "contentColor",
+														"description": null,
+														"type": {
+															"$": "color"
 														},
 														"optional": true
 													}
@@ -231,6 +247,14 @@
 															"$": "string"
 														},
 														"optional": false
+													},
+													{
+														"name": "color",
+														"description": null,
+														"type": {
+															"$": "color"
+														},
+														"optional": true
 													}
 												]
 											},
@@ -410,5 +434,6 @@
 				"optional": true
 			}
 		]
-	}
+	},
+	"version": "0.1"
 }

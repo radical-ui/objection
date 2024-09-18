@@ -7,12 +7,14 @@ import kotlinx.serialization.json.JsonClassDiscriminator
 
 @Serializable
 data class Paragraph(
-	@SerialName("text") val text: String
+	val text: String,
+	val color: ColorData?,
 )
 
 @Serializable
 data class Headline(
-	@SerialName("text") val text: String
+	val text: String,
+	val color: ColorData?,
 )
 
 @Serializable
@@ -24,13 +26,13 @@ data class Quote(
 )
 
 @Serializable
-@ExperimentalSerializationApi
-data class ObjectPreview(
+data class ObjectPreview (
 	@ObjectReference(Content.ParagraphContent::class)
 	@Description("The object that is to be previewed")
 	val objectId: String,
 
-	@SerialName("surface") val surface: String?,
+	val containerColor: ColorData?,
+	val contentColor: ColorData?,
 )
 
 @Serializable
@@ -48,8 +50,8 @@ data class ObjectGroup(
 	@SerialName("objects") val objects: List<String>,
 )
 
-@ExperimentalSerializationApi
 @Serializable
+@OptIn(ExperimentalSerializationApi::class)
 @JsonClassDiscriminator("kind")
 sealed class Content {
 	@Serializable

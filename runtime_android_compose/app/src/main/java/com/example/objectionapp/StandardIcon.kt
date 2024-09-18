@@ -11,9 +11,10 @@ import androidx.compose.ui.graphics.vector.ImageVector
 
 @Composable
 fun StandardIcon(name: String, modifier: Modifier = Modifier, outline: Boolean = false, tint: Color = LocalContentColor.current) {
-    val theme = useTheme()
+//    val theme = useTheme()
 
-    val tone = getTone(outline, theme.value.cornerRounding)
+//    val tone = getTone(outline, theme.value.cornerRounding)
+    val tone = "rounded"
     val icon: ImageVector? = remember(name) {
         try {
             val cl = Class.forName("androidx.compose.material.icons.$tone.${name}Kt")
