@@ -5,17 +5,16 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonClassDiscriminator
 
+
+
+@OptIn(ExperimentalSerializationApi::class)
 @Serializable
-data class Object(
-    @SerialName("title") val title: String?,
-    @SerialName("engaged_title") val engagedTitle: String?,
-    @SerialName("subtitle") val subtitle: String?,
-    @SerialName("icon") val icon: String?,
-    @SerialName("image") val image: String?,
-    @SerialName("content") val content: List<Content>,
-    @SerialName("actions") val actions: List<Action>,
-    @SerialName("search_object") val searchObject: String?
-)
+@JsonClassDiscriminator("kind")
+sealed class Object {
+    data class Page(val def: com.example.objectionapp.Page): Object()
+    data class Theme(val def: com.example.objectionapp.Theme): Object()
+    data class Layout(val def: com.example.objectionapp.Layout): Object()
+}
 
 @OptIn(ExperimentalSerializationApi::class)
 @Serializable

@@ -21,7 +21,6 @@ import java.net.ConnectException
 import java.net.SocketTimeoutException
 import java.util.UUID
 import kotlin.coroutines.CoroutineContext
-import kotlin.reflect.KClass
 import kotlinx.serialization.Serializable
 
 class Bridge(private var logger: Logger, private var session: Session) : CoroutineScope {
@@ -33,7 +32,6 @@ class Bridge(private var logger: Logger, private var session: Session) : Corouti
 	var onHasInternet = Listener<Boolean>(logger = logger)
 	var onObjectSet = Listener<Pair<String, JsonElement>>(logger = logger)
 	var onObjectRemoved = Listener<String>(logger = logger)
-	var onDidLoad = Listener<Unit>(logger = logger)
 
 	private var isOffline = false
 	private var url: String? = null

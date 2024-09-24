@@ -38,6 +38,12 @@ class ObjectStore<T>(private val bridge: Bridge, private val logger: Logger, pri
         objects[objectId]?.removeListener(listenId)
     }
 
+    fun preload(key: String, value: T? = null) {
+        val listener = objects[key] ?: createListener(key)
+
+        value?.let { listener.emit(it) }
+    }
+
     private fun createListener(objectId: String): Listener<T?> {
         bridge.watch(objectId) { logger.info("Watched $objectId") }
 

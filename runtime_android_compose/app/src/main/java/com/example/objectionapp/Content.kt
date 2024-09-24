@@ -1,6 +1,5 @@
 package com.example.objectionapp
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -9,10 +8,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
@@ -31,10 +27,8 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.material3.LocalContentColor
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.unit.Dp
 
 @OptIn(ExperimentalSharedTransitionApi::class)
@@ -95,6 +89,7 @@ fun HeadlineView(content: Headline, padding: PaddingValues) {
 
 @Composable
 fun Quote(content: Quote, padding: PaddingValues) {
+// TODO: fixme. I should work with the material theme
 //    Box(modifier = Modifier.padding(padding)) {
 //        Column(
 //            modifier = Modifier
@@ -158,7 +153,7 @@ fun SharedTransitionScope.ObjectPreviewView(
     width: Dp? = null,
     animatedVisibilityScope: AnimatedVisibilityScope? = null
 ) {
-    val obj = useObject(content.objectId)
+    val obj = usePage(content.objectId)
     val navController = useNavController()
 
     Box(Modifier.padding(padding)) {
@@ -178,7 +173,7 @@ fun SharedTransitionScope.ObjectPreviewView(
 //                disabledContainerColor = surface.value.backgroundColor2.intoColor()
 //            )
         ) {
-            obj?.image?.let {
+            obj?.imageUrls?.first()?.let {
                 AsyncImage(
                     model = it,
                     contentDescription = "An image",
@@ -246,14 +241,14 @@ fun SharedTransitionScope.ObjectGroupView(
 
         LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp), contentPadding = padding) {
             for (objectId in content.objects) {
-//                item {
-//                    ObjectPreviewView(
-//                        ObjectPreview(objectId, null),
-//                        padding = PaddingValues(0.dp),
-//                        width = 200.dp,
-//                        animatedVisibilityScope = animatedVisibilityScope
-//                    )
-//                }
+                item {
+                    ObjectPreviewView(
+                        ObjectPreview(objectId, null, null),
+                        padding = PaddingValues(0.dp),
+                        width = 200.dp,
+                        animatedVisibilityScope = animatedVisibilityScope
+                    )
+                }
             }
         }
     }

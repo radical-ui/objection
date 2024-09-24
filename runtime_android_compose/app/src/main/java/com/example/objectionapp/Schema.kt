@@ -46,8 +46,7 @@ fun getSchema(klass: KClass<*>): Schema {
 
 @OptIn(ExperimentalSerializationApi::class)
 private fun getItemSchema(
-	descriptor: SerialDescriptor,
-	annotations: List<Annotation> = listOf()
+	descriptor: SerialDescriptor, annotations: List<Annotation> = listOf()
 ): ItemSchema {
 	return when (descriptor.kind) {
 		StructureKind.CLASS -> getClassSchema(descriptor)
@@ -146,7 +145,7 @@ private fun getClassSchema(descriptor: SerialDescriptor): ItemSchema {
 	return ItemSchema.StructSchema(properties = items)
 }
 
-private fun getDescription(annotations: List<Any>): String? {
+private fun getDescription(annotations: List<Annotation>): String? {
 	for (annotation in annotations) {
 		if (annotation is Description) {
 			return annotation.content
@@ -156,10 +155,46 @@ private fun getDescription(annotations: List<Any>): String? {
 	return null
 }
 
+@OptIn(ExperimentalSerializationApi::class)
+private fun getTopLevelVariant(klass: KClass<*>): String? {
+	val descriptor = serialDescriptor(klass.createType())
+
+	for (annotation in descriptor.annotations) {
+		if (annotation is ObjectReference) {
+			return serialDescriptor(
+				annotation.expectedTopLevelVariant.createType()
+			).serialName
+		}
+	}
+
+	return null
+}
+
 @Serializable
 data class Schema(@SerialName("object") val obj: ItemSchema) {
 	val version = "0.1"
+
+	@SerialName("initial_objects")
+	val initialObjects = listOf(
+		InitialObject(
+			id = "theme_default",
+			description = "The theme that will be applied by default to all UI elements",
+			expectedTopLevelVariant = getTopLevelVariant(Theme::class)
+		),
+		InitialObject(
+			id = "layout_default",
+			description = "The layout that will wrap everything",
+			expectedTopLevelVariant = getTopLevelVariant(Theme::class)
+		),
+	)
 }
+
+@Serializable
+data class InitialObject(
+	val id: String,
+	val description: String,
+	@SerialName("expected_top_level_variant") val expectedTopLevelVariant: String?,
+)
 
 @OptIn(ExperimentalSerializationApi::class)
 @JsonClassDiscriminator("$")
@@ -174,8 +209,8 @@ sealed class ItemSchema {
 	@Serializable
 	@SerialName("enum")
 	data class EnumSchema(
-		@SerialName("discriminator_key") val discriminatorKey: kotlin.String,
-		@SerialName("content_key") val contentKey: kotlin.String?,
+		@SerialName("discriminator_key") val discriminatorKey: String,
+		@SerialName("content_key") val contentKey: String?,
 		val variants: List<EnumVariantSchema>
 	) : ItemSchema()
 
@@ -210,7 +245,10 @@ sealed class ItemSchema {
 
 @Serializable
 data class StructPropertySchema(
-	val name: String, val description: String?, val type: ItemSchema, val optional: Boolean
+	val name: String,
+	val description: String?,
+	val type: ItemSchema,
+	val optional: Boolean
 )
 
 @Serializable

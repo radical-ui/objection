@@ -1,122 +1,97 @@
 package com.example.objectionapp
 
-import androidx.compose.ui.graphics.Color
+import android.app.ActionBar.Tab
+import android.os.Build
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Shapes
+import androidx.compose.material3.Typography
+import androidx.compose.material3.dynamicDarkColorScheme
+import androidx.compose.material3.dynamicLightColorScheme
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-@IsColor
-data class ColorData(
-    val red: Int,
-    val green: Int,
-    val blue: Int,
-    val alpha: Int
-) {
-    fun intoColor(): Color {
-        return Color(red = red, green = green, blue = blue, alpha = alpha)
-    }
-}
-
-@Serializable
 data class Theme(
-    @SerialName("tab_bar") val tabBar: TabBar?,
-    @SerialName("corner_rounding") val cornerRounding: CornerRounding,
-    @SerialName("light_surfaces") val lightSurfaces: HashMap<String, SurfaceTheme>,
-    @SerialName("dark_surfaces") val darkSurfaces: HashMap<String, SurfaceTheme>,
-    @SerialName("default_light_surface") val defaultLightSurface: SurfaceTheme,
-    @SerialName("default_dark_surface") val defaultDarkSurface: SurfaceTheme,
-    @SerialName("navigation_surface") val navigationSurface: String?
-) {
-    fun getInitialObjectId(): String? {
-        return getRoots().firstOrNull()
-    }
+	@Description("Unless otherwise specified, the supplied light and dark color schemes will be overridden with the android-supplied color scheme, which is computed from the home screen background.")
+	val disableDynamicTheme: Boolean = false,
 
-    fun getRoots(): List<String> {
-        return tabBar?.objects ?: listOf()
-    }
+	@Description("The color scheme that will be applied when the system is in light mode, when the dynamic theme is disabled")
+	val lightColorScheme: ColorScheme = ColorScheme(),
 
-    companion object {
-        fun testDefault(): Theme {
-            return Theme(
-                tabBar = null,
-                cornerRounding = CornerRounding.ROUND,
-                lightSurfaces = hashMapOf(),
-                darkSurfaces = hashMapOf(),
-                navigationSurface = null,
-                defaultDarkSurface = SurfaceTheme(
-                    backgroundColor1 = ColorData(0, 0, 0, 255),
-                    backgroundColor2 = ColorData(20, 20, 20, 255),
-                    backgroundColor3 = ColorData(30, 30, 30, 255),
-                    backgroundColor4 = ColorData(40, 40, 40, 255),
-
-                    foregroundColor1 = ColorData(255, 255, 255, 255),
-                    foregroundColor2 = ColorData(255, 255, 255, 255),
-                    foregroundColor3 = ColorData(255, 255, 255, 255),
-                    foregroundColor4 = ColorData(255, 255, 255, 255),
-
-                    primaryColor1 = ColorData(63, 136, 226, 210),
-                    primaryColor2 = ColorData(63, 136, 226, 170),
-                    primaryColor3 = ColorData(63, 136, 226, 140),
-                    primaryColor4 = ColorData(63, 136, 226, 80),
-
-                    glowColor = null
-                ),
-                defaultLightSurface = SurfaceTheme(
-                    backgroundColor1 = ColorData(0, 0, 0, 255),
-                    backgroundColor2 = ColorData(20, 20, 20, 255),
-                    backgroundColor3 = ColorData(30, 30, 30, 255),
-                    backgroundColor4 = ColorData(40, 40, 40, 255),
-
-                    foregroundColor1 = ColorData(255, 255, 255, 255),
-                    foregroundColor2 = ColorData(255, 255, 255, 255),
-                    foregroundColor3 = ColorData(255, 255, 255, 255),
-                    foregroundColor4 = ColorData(255, 255, 255, 255),
-
-                    primaryColor1 = ColorData(63, 136, 226, 210),
-                    primaryColor2 = ColorData(63, 136, 226, 170),
-                    primaryColor3 = ColorData(63, 136, 226, 140),
-                    primaryColor4 = ColorData(63, 136, 226, 80),
-
-                    glowColor = null
-                )
-            )
-        }
-    }
-}
+	@Description("The color scheme that will be applied when the system is in dark mode, when the dynamic theme is disabled")
+	val darkColorScheme: ColorScheme = ColorScheme(),
+)
 
 @Serializable
 data class SurfaceTheme(
-    @SerialName("background_color_1") val backgroundColor1: ColorData,
-    @SerialName("background_color_2") val backgroundColor2: ColorData,
-    @SerialName("background_color_3") val backgroundColor3: ColorData,
-    @SerialName("background_color_4") val backgroundColor4: ColorData,
+	@SerialName("background_color_1") val backgroundColor1: ColorData,
+	@SerialName("background_color_2") val backgroundColor2: ColorData,
+	@SerialName("background_color_3") val backgroundColor3: ColorData,
+	@SerialName("background_color_4") val backgroundColor4: ColorData,
 
-    @SerialName("foreground_color_1") val foregroundColor1: ColorData,
-    @SerialName("foreground_color_2") val foregroundColor2: ColorData,
-    @SerialName("foreground_color_3") val foregroundColor3: ColorData,
-    @SerialName("foreground_color_4") val foregroundColor4: ColorData,
+	@SerialName("foreground_color_1") val foregroundColor1: ColorData,
+	@SerialName("foreground_color_2") val foregroundColor2: ColorData,
+	@SerialName("foreground_color_3") val foregroundColor3: ColorData,
+	@SerialName("foreground_color_4") val foregroundColor4: ColorData,
 
-    @SerialName("primary_color_1") val primaryColor1: ColorData,
-    @SerialName("primary_color_2") val primaryColor2: ColorData,
-    @SerialName("primary_color_3") val primaryColor3: ColorData,
-    @SerialName("primary_color_4") val primaryColor4: ColorData,
+	@SerialName("primary_color_1") val primaryColor1: ColorData,
+	@SerialName("primary_color_2") val primaryColor2: ColorData,
+	@SerialName("primary_color_3") val primaryColor3: ColorData,
+	@SerialName("primary_color_4") val primaryColor4: ColorData,
 
-    @SerialName("glow_color") val glowColor: ColorData?
+	@SerialName("glow_color") val glowColor: ColorData?
 )
 
 @Serializable
 enum class CornerRounding {
-    @SerialName("sharp")
-    SHARP,
+	@SerialName("sharp")
+	SHARP,
 
-    @SerialName("round")
-    ROUND,
+	@SerialName("round")
+	ROUND,
 
-    @SerialName("extra_round")
-    EXTRA_ROUND,
+	@SerialName("extra_round")
+	EXTRA_ROUND,
 }
 
-@Serializable
-data class TabBar(
-    @SerialName("objects") val objects: List<String>
-)
+
+
+@Composable
+fun RenderTheme(content: @Composable () -> Unit) {
+	val theme = useDefaultTheme()
+	val isDarkTheme = isSystemInDarkTheme()
+	val supportsDynamicColor = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+	val shouldDoDynamicTheme = theme.disableDynamicTheme
+
+	val colorScheme = when {
+		supportsDynamicColor && isDarkTheme && shouldDoDynamicTheme -> dynamicDarkColorScheme(LocalContext.current)
+		supportsDynamicColor && !isDarkTheme && shouldDoDynamicTheme -> dynamicLightColorScheme(LocalContext.current)
+		isDarkTheme -> fillDarkDefaults(theme.darkColorScheme)
+		else -> fillLightDefaults(theme.lightColorScheme)
+	}
+
+	val typography = Typography(
+		displaySmall = TextStyle(
+			fontWeight = FontWeight.W100,
+			fontSize = 96.sp
+		),
+		labelLarge = TextStyle(fontWeight = FontWeight.W600, fontSize = 14.sp)
+	)
+
+	val shapes = Shapes(extraSmall = RoundedCornerShape(3.0.dp), small = RoundedCornerShape(6.0.dp))
+
+	MaterialTheme(
+		colorScheme = colorScheme,
+		typography = typography,
+		shapes = shapes,
+		content = content
+	)
+}

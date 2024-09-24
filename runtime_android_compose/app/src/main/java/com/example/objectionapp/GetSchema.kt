@@ -17,4 +17,5 @@ fun main() {
 	path.toFile().writeText(text)
 
 	println("Wrote schema to ${path.toAbsolutePath()}")
+
 }

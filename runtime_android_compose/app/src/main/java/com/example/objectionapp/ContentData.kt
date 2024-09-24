@@ -5,6 +5,10 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonClassDiscriminator
 
+data class TextNode(
+	val text: String
+)
+
 @Serializable
 data class Paragraph(
 	val text: String,
@@ -19,10 +23,10 @@ data class Headline(
 
 @Serializable
 data class Quote(
-	@SerialName("text") val text: String,
-	@SerialName("attribution") val attribution: String,
-	@SerialName("surface") val surface: String,
-	@SerialName("attribution_surface") val attributionSurface: String,
+	val text: String,
+	val attribution: String,
+	val surface: String,
+	val attributionSurface: String,
 )
 
 @Serializable
