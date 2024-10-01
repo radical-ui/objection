@@ -172,6 +172,8 @@ where
 						}
 
 						if !did_close {
+							debug!("adding a new handle for worker {id:?}");
+
 							if let Some(mut old_handle) = stashed_handle.replace(handle) {
 								old_handle.will_drop(DropReason::Ceeded).await;
 							}

@@ -7,7 +7,7 @@ use http::{Request, Response, StatusCode};
 use http_body_util::Full;
 use hyper::upgrade::Upgraded;
 use hyper_util::rt::TokioIo;
-use log::{error, warn};
+use log::{debug, error, warn};
 use serde::{Deserialize, Serialize};
 use serde_json::{from_slice, to_string};
 use std::{
@@ -77,6 +77,8 @@ where
 		};
 
 		let queue = self.queue.clone();
+
+		debug!("spawning a new websocket handle for session {:?}", query_params.session_id);
 
 		tokio::spawn(async move {
 			match fut.await {

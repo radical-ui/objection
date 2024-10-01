@@ -5,16 +5,24 @@ use crate::Surface;
 #[derive(Default, Debug, Serialize, Deserialize)]
 pub struct Object {
 	title: Option<String>,
+	engaged_title: Option<String>,
 	subtitle: Option<String>,
 	icon: Option<String>,
 	image: Option<String>,
 	content: Vec<Content>,
 	actions: Vec<Action>,
+	search_object: Option<String>,
 }
 
 impl Object {
 	pub fn set_title(&mut self, title: impl Into<String>) -> &mut Self {
 		self.title = Some(title.into());
+
+		self
+	}
+
+	pub fn set_engaged_title(&mut self, title: impl Into<String>) -> &mut Self {
+		self.engaged_title = Some(title.into());
 
 		self
 	}
@@ -42,12 +50,19 @@ impl Object {
 
 		self
 	}
+
+	pub fn set_search_object(&mut self, object_id: impl Into<String>) -> &mut Self {
+		self.search_object = Some(object_id.into());
+
+		self
+	}
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(tag = "kind", content = "def", rename_all = "snake_case")]
 pub enum Content {
 	Paragraph(Paragraph),
+	Headline(Headline),
 	Quote(Quote),
 	ObjectPreview(ObjectPreview),
 	CallToAction(CallToAction),
@@ -62,6 +77,17 @@ pub struct Paragraph {
 impl From<Paragraph> for Content {
 	fn from(value: Paragraph) -> Self {
 		Content::Paragraph(value)
+	}
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Headline {
+	pub text: String,
+}
+
+impl From<Headline> for Content {
+	fn from(value: Headline) -> Self {
+		Content::Headline(value)
 	}
 }
 
@@ -82,7 +108,7 @@ impl From<Quote> for Content {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ObjectPreview {
 	pub object_id: String,
-	pub surface: String,
+	pub surface: Option<String>,
 }
 
 impl From<ObjectPreview> for Content {
