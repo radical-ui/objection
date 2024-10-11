@@ -58,7 +58,7 @@ where
 pub async fn drive_workers<W, H>(worker_inactivity_timeout: Duration, mut spawn_receiver: mpsc::Receiver<SpawnMessage<W, H>>)
 where
 	W: Worker,
-	H: WorkerHandle<W::Request, W::Response> + Send + Sync + 'static,
+	H: WorkerHandle<W::Request, W::Response> + Send + 'static,
 {
 	loop {
 		let SpawnMessage {

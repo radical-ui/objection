@@ -1,0 +1,21 @@
+{
+	"object": {
+		"$": "enum",
+		"discriminator_key": "kind",
+		"content_key": null,
+		"variants": []
+	},
+	"version": "0.1",
+	"initial_objects": [
+		{
+			"id": "theme_default",
+			"description": "The theme that will be applied by default to all UI elements",
+			"expected_top_level_variant": null
+		},
+		{
+			"id": "layout_default",
+			"description": "The layout that will wrap everything",
+			"expected_top_level_variant": null
+		}
+	]
+}

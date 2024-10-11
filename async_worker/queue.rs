@@ -54,7 +54,11 @@ impl QueueBuilder {
 		self
 	}
 
-	pub fn build<W: Worker + Send + 'static>(self, context: W::Context) -> Queue<W> {
+	pub fn build<W, H>(self, context: W::Context) -> Queue<W, H>
+	where
+		W: Worker + Send + 'static,
+		H: WorkerHandle<W::Request, W::Response> + Send + 'static,
+	{
 		Queue::new(self.options, context)
 	}
 }
@@ -69,7 +73,7 @@ pub struct Queue<W: Worker, H: WorkerHandle<W::Request, W::Response> = NoopHandl
 impl<W, H> Queue<W, H>
 where
 	W: Worker + Send + 'static,
-	H: WorkerHandle<W::Request, W::Response> + Send + Sync + 'static,
+	H: WorkerHandle<W::Request, W::Response> + Send + 'static,
 {
 	fn new(options: QueueOptions, context: W::Context) -> Queue<W, H> {
 		let (spawn_sender, spawn_receiver) = mpsc::channel(1000);
