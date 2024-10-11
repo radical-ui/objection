@@ -4,7 +4,7 @@ Build server-first, highly-interactive, and beautiful web applications in Rust.
 
 ...because the current web-based application development trends are worth objecting to.
 
-> Due to an ongoing refactor, breaking changes are expected in the near future.
+> Due to an ongoing refactor, breaking changes are expected in the near future. See [#320](https://github.com/radical-ui/objection/pull/320) for current status.
 
 ## Installation
 
