@@ -1,43 +1,40 @@
 # Objection
 
-Build server-first, highly-interactive, and beautiful web applications in Rust.
-
-...because the current web-based application development trends are worth objecting to.
-
-> Due to an ongoing refactor, breaking changes are expected in the near future.
+Build server-first, interactive, and beautiful applications in Rust.
 
 ## Installation
-
-Unfortunately, [Deno](https://deno.com/) is a required runtime dependency. We aim to remove this dependency in the near future.
 
 ```sh
 # MacOS
 brew install radical-ui/tap/objection
 
 # Linux / Windows
-cargo install --git https://github.com/radical-ui/objection.git --bin objection
+# Install deno, then...
+deno install -Af https://denopkg.com/radical-ui/objection/main.ts
 ```
 
 ## Usage
 
-Objection works by generating a network bridge, allowing a series of typescript components (referred to as the runtime)
-to be managed by your backend (referred to as the engine). In practice, it feels like a merge between Phenix Liveview
-and HTMX.
+Objection works by managing a network bridge on which objects are broadcast, allowing a generic frontend application to
+be managed and customized by a backend. In practice, it feels like a merge between Phenix Liveview and HTMX.
 
-The default runtime is located in the `runtime` folder, but you can create and use your own.
+We provide high-quality frontends for [IOS](https://github.com/radical-ui/ipage),
+[Android](https://github.com/radical-ui/apge), and the [web](https://github.com/todo). You can also
+[build your own](/specification.md).
 
-### Rust Engine
+Before writing backend code for the frontend, types should be generated for it.
 
-The runtime can be started, and Rust bindings generated, by using the following command:
-
-```sh
-objection --engine rust --bindings-path src/bindings.rs --engine-url http://localhost:8000/ui run
+```shell
+objection gen radical-ui/apage@0.1.0 types.rs
 ```
 
-The corresponding Rust engine can be written like so:
+### Rust Backend Quick Start
+
+Here is an example of writing a rust backend for the apage frontend using [axum](https://docs.rs/axum) as the server.
 
 ```rust
 // src/main.rs
+// TODO update this
 
 use axum::{extract::State, routing::post, Json, Router};
 use bindings::Label;
@@ -45,7 +42,7 @@ use objection::{handle_request, RootUi, UiResponse};
 use tokio::net::TcpListener;
 use tower_http::cors::CorsLayer;
 
-mod bindings;
+mod types;
 
 #[tokio::main]
 async fn main() {
@@ -68,12 +65,27 @@ async fn main() {
 }
 ```
 
-That should do it. After starting the engine, navigate to the app server that objection will have started at `http://localhost:3000`.
-Behind the scenes, the app will connect to the engine at `http://localhost:8000` over the generated network bridge.
+### Preview and Deploy the Frontend
+
+The frontend can be previewed using the `preview` command.
+
+```shell
+objection preview radical-ui/apage@0.1.0 --backend-url ws://localhost:3000/ui.ws
+```
+
+To build and deploy the frontend, use the `deploy` command.
+
+```shell
+objection deploy radical-ui/apage@0.1.0 --backend-url ws://my-backend.example.com/ui.ws
+```
+
+While it is dependent on the frontend, both of these commands tend to require a good bit of configuration. That
+configuration can be supplied directly to the frontend via cli options (eg. `--backend-url` in the above examples), or
+by way of an `Objection.toml`. If a configuration cannot be obtained using those methods, it will be prompted for.
 
 ## Development
 
-You'll want to make sure that you have development dependencies installed:
+The system
 
 - [Rust](https://www.rust-lang.org/tools/install)
 - [Runner](https://github.com/stylemistake/runner)
