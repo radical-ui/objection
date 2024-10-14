@@ -96,17 +96,34 @@ when it would be noticable.
 
 #### Upstream `watch_object`
 
-TODO
+Sent when the frontend would like the representation of an object. The backend should then emit a
+[`set_object` message](#downstream-setobject).
+
+- `$` - Must be the string, `watch_object`.
+
+- `id` - A string, the id of the object to watch. This id must have been referenced in an preceeding object.
 
 #### Upstream `unwatch_object`
 
-TODO
+Sent when the frontend no longer needs the representation of a previously-watch object.
+
+- `$` - Must be the string, `watch_object`.
+
+- `id` - A string, the id of the object to unwatch. This id must have been previously watched.
 
 #### Upstream `emit_binding_update`
 
-TODO
+Sent when the frontend would like to update the content of a [bound value](#data-bindings).
+
+- `$` - Must be the string, `emit_binding_update`.
+
+- `key` - A string, the value that was specificed in the `key` field of the binding.
+
+- `data` - Json, the value that the binding is to be updated to. This must match the type of the original data.
 
 #### Downstream `aknowledge`
+
+Sent once the message referenced by `request_id` was processed.
 
 - `$` - Must be the string, "aknowledge"
 
@@ -122,11 +139,37 @@ TODO
 
 #### Downstream `set_object`
 
-TODO
+Sent when an object is watched by the client, or if already watched (and not unwatched), when the underlying data was
+updated, resulting in a different representation.
+
+- `$` - Must be the string, `set_object`.
+
+- `id` - A string, the id of the object that is being set. This id must be referenced as an initial object id, or have
+  been requested by the frontend via a `watch_object` message.
+
+- `data` - The object data, in json. This must match the [object schema](#schema).
+
+**Example**
+
+```jsonc
+{
+  "$": "set_object",
+  "id": "some_object_id",
+  "data": {
+    "some_object_field": "value"
+    // ...
+  }
+}
+```
 
 #### Downstream `remove_object`
 
-TODO
+Sent when an object that is currently watched (and not unwatch), when the underlying data was deleted.
+
+- `$` - Must be the string, `remove_object`.
+
+- `id` - A string, the id of the object that is to be removed. This object must have already been sent to the frontend
+  via a [`set_object` message](#downstream-setobject)
 
 ## Building
 
