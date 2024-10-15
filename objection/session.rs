@@ -10,7 +10,7 @@ use uuid::Uuid;
 use crate::{controller::new_controller, Controller};
 
 #[derive(Debug, Serialize, Deserialize)]
-#[serde(tag = "kind", rename_all = "snake_case")]
+#[serde(tag = "$", rename_all = "snake_case")]
 pub enum UpstreamMessage {
 	Watch { request_id: Uuid, id: String },
 	Unwatch { request_id: Uuid, id: String },
@@ -18,7 +18,7 @@ pub enum UpstreamMessage {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-#[serde(tag = "kind", rename_all = "snake_case")]
+#[serde(tag = "$", rename_all = "snake_case")]
 pub enum DownstreamMessage {
 	RemoveObject {
 		id: String,
@@ -86,19 +86,19 @@ where
 	}
 
 	async fn handle(&mut self, request: Self::Request) -> Self::Response {
-		let session = match &mut self.session {
-			Some(session) => session,
-			None => {
-				warn!("BUG: Session could not be constructed and handle was called again");
-				return Vec::new();
-			}
-		};
-
 		let publisher = Publisher::new();
 		let controller = new_controller(&self.id, &publisher);
 
 		match request {
 			SessionEvent::ClientMessage(message) => {
+				let session = match &mut self.session {
+					Some(session) => session,
+					None => {
+						warn!("BUG: Session could not be constructed and handle was called again");
+						return Vec::new();
+					}
+				};
+
 				let (request_id, result) = match message {
 					UpstreamMessage::Watch { request_id, id } => (request_id, session.watch_object(&id, &self.session_context, controller).await),
 					UpstreamMessage::Unwatch { request_id, id } => (request_id, session.unwatch_object(&id, &self.session_context, controller).await),
@@ -112,7 +112,7 @@ where
 
 					publisher.publish(DownstreamMessage::Acknowledge {
 						request_id: None,
-						error: Some(error.to_string()),
+						error: Some("Something went wrong".into()),
 						retry_after_seconds: None,
 					});
 				} else {
@@ -127,9 +127,11 @@ where
 			SessionEvent::Init { auth_token, path } => {
 				match S::create(auth_token, path, &self.session_context, controller).await {
 					Err(error) => {
+						warn!("error in session creation: {error:?}");
+
 						publisher.publish(DownstreamMessage::Acknowledge {
 							request_id: None,
-							error: Some(error.to_string()),
+							error: Some("Something went wrong".into()),
 							retry_after_seconds: None,
 						});
 					}
@@ -158,42 +160,26 @@ where
 	type Context: 'static + Clone + Send + Sync;
 	type PeerEvent: 'static + Clone + Send + Sync;
 
-	fn create(
-		auth_token: Option<String>,
-		path: String,
-		context: &Self::Context,
-		controller: Controller<'_>,
-	) -> impl Future<Output = Result<Self>> + Send + Sync;
+	fn create(auth_token: Option<String>, path: String, context: &Self::Context, controller: Controller<'_>) -> impl Future<Output = Result<Self>> + Send;
 
-	fn watch_object(&mut self, id: &str, context: &Self::Context, controller: Controller<'_>) -> impl Future<Output = Result<()>> + Send + Sync;
+	fn watch_object(&mut self, id: &str, context: &Self::Context, controller: Controller<'_>) -> impl Future<Output = Result<()>> + Send;
 
 	#[allow(unused_variables)]
-	fn unwatch_object(&mut self, id: &str, context: &Self::Context, controller: Controller<'_>) -> impl Future<Output = Result<()>> + Send + Sync {
+	fn unwatch_object(&mut self, id: &str, context: &Self::Context, controller: Controller<'_>) -> impl Future<Output = Result<()>> + Send {
 		async { Ok(()) }
 	}
 
 	#[allow(unused_variables)]
-	fn update_binding(
-		&mut self,
-		key: &str,
-		data: Value,
-		context: &Self::Context,
-		controller: Controller<'_>,
-	) -> impl Future<Output = Result<()>> + Send + Sync {
+	fn update_binding(&mut self, key: &str, data: Value, context: &Self::Context, controller: Controller<'_>) -> impl Future<Output = Result<()>> + Send {
 		async { Ok(()) }
 	}
 
 	#[allow(unused_variables)]
-	fn provide_auth_token(&mut self, token: String) -> impl Future<Output = ()> + Send + Sync {
+	fn handle_peer_event(&mut self, event: Self::PeerEvent) -> impl Future<Output = ()> + Send {
 		async {}
 	}
 
-	#[allow(unused_variables)]
-	fn handle_peer_event(&mut self, event: Self::PeerEvent) -> impl Future<Output = ()> + Send + Sync {
-		async {}
-	}
-
-	fn destroy(self) -> impl Future<Output = ()> + Send + Sync {
+	fn destroy(self) -> impl Future<Output = ()> + Send {
 		async {}
 	}
 }

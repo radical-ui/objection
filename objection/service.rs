@@ -92,43 +92,37 @@ where
 						_phantom_data: PhantomData,
 					};
 
-					let (query_params, path) = match info {
-						RequestInfo::Error(error) => {
-							handle.send_init_error(&error, None).await;
-							return;
+					match info {
+						RequestInfo::Error(error) => handle.send_init_error(&error, None).await,
+						RequestInfo::Data { query, path } => {
+							let enqueue_result = queue
+								.enqueue(
+									&query.session_id,
+									SessionEvent::Init {
+										auth_token: query.auth_token,
+										path,
+									},
+								)
+								.await;
+
+							match enqueue_result {
+								Ok(_) => (),
+								Err(async_worker::Error::WorkerAtCapacity) => {
+									warn!("the worker for session '{}', which just connected, was already at capacity", query.session_id);
+
+									handle.send_init_error("You've been rate-limited", Some(10)).await;
+								}
+								Err(error) => {
+									error!("failed to enqueue the init message: {error}");
+
+									handle.send_init_error("We've encountered an internal error.", Some(10)).await;
+								}
+							}
+
+							if let Err(error) = queue.register_handle(&query.session_id, handle) {
+								error!("failed to send socket handle to worker: {error}");
+							}
 						}
-						RequestInfo::Data { query, path } => (query, path),
-					};
-
-					let enqueue_result = queue
-						.enqueue(
-							&query_params.session_id,
-							SessionEvent::Init {
-								auth_token: query_params.auth_token,
-								path,
-							},
-						)
-						.await;
-
-					match enqueue_result {
-						Ok(_) => (),
-						Err(async_worker::Error::WorkerAtCapacity) => {
-							warn!(
-								"the worker for session '{}', which just connected, was already at capacity",
-								query_params.session_id
-							);
-
-							handle.send_init_error("You've been rate-limited", Some(10)).await;
-						}
-						Err(error) => {
-							error!("failed to enqueue the init message: {error}");
-
-							handle.send_init_error("We've encountered an internal error.", Some(10)).await;
-						}
-					}
-
-					if let Err(error) = queue.register_handle(&query_params.session_id, handle) {
-						error!("failed to send socket handle to worker: {error}");
 					}
 				}
 				Err(error) => {
@@ -184,6 +178,8 @@ where
 	PeerEvent: Send,
 {
 	async fn send_init_error(&mut self, message: &str, retry_after_seconds: Option<u32>) {
+		warn!("failed to initialize session: {message}");
+
 		let result = self
 			.send(Vec::from([DownstreamMessage::Acknowledge {
 				request_id: None,
@@ -208,6 +204,7 @@ where
 			let frame = match frame_res {
 				Ok(frame) => frame,
 				Err(WebSocketError::ConnectionClosed) => break None,
+				Err(WebSocketError::UnexpectedEOF) => break None,
 				Err(error) => {
 					warn!("Failed to read frame from socket. Closing to prevent infinite loop: {error}");
 					break None;
