@@ -4,7 +4,7 @@ use bytes::Bytes;
 use fastwebsockets::{upgrade::upgrade, Frame, OpCode, Payload, WebSocket, WebSocketError};
 use futures::future::{ready, Ready};
 use http::{Request, Response, StatusCode};
-use http_body_util::Full;
+use http_body_util::{Empty, Full};
 use hyper::upgrade::Upgraded;
 use hyper_util::rt::TokioIo;
 use log::{debug, error, warn};
@@ -21,10 +21,7 @@ use std::{
 use tower::Service;
 use uuid::Uuid;
 
-use crate::{
-	session::{IncomingSocketMessage, OutgoingSocketMessage, Session, SessionEvent, SessionWorker, SessionWorkerContext},
-	ObjectRouter,
-};
+use crate::session::{DownstreamMessage, Session, SessionEvent, SessionWorker, SessionWorkerContext, UpstreamMessage};
 
 pub struct ObjectionService<S>
 where
@@ -37,48 +34,52 @@ impl<S> ObjectionService<S>
 where
 	S: Session + Send + 'static,
 {
-	pub fn new(router: ObjectRouter<S>, context: S::Context) -> ObjectionService<S> {
+	pub fn new(context: S::Context) -> ObjectionService<S> {
 		ObjectionService {
-			queue: Arc::new(QueueBuilder::default().build(SessionWorkerContext {
-				shared_router: Arc::new(router),
-				session_context: context,
-			})),
+			queue: Arc::new(QueueBuilder::default().build(SessionWorkerContext { session_context: context })),
 		}
 	}
 
-	fn call_internal<Body>(&mut self, mut request: Request<Body>) -> Result<Response<Full<Bytes>>, Infallible> {
+	fn call_internal<Body>(&mut self, mut request: Request<Body>) -> Result<Response<Empty<Bytes>>, Infallible> {
 		#[derive(Debug, Serialize, Deserialize)]
 		struct QueryParams {
 			auth_token: Option<String>,
 			session_id: Uuid,
 		}
 
+		#[derive(Debug)]
+		enum RequestInfo {
+			Error(String),
+			Data { query: QueryParams },
+		}
+
 		let (empty_response, fut) = match upgrade(&mut request) {
 			Ok(inner) => inner,
-			Err(_) => return Ok(bad_response("Failed to upgrade request")),
-		};
-
-		let query_string = match request.uri().query() {
-			Some(query) => query,
-			None => {
-				warn!("recieved no query parameters in request");
-
-				return Ok(bad_response("Expected to recieve a querystring with the request"));
+			Err(_) => {
+				warn!("failed to upgrade request");
+				return Ok(Response::new(Empty::new()));
 			}
 		};
 
-		let query_params = match serde_qs::from_str::<QueryParams>(query_string) {
-			Ok(params) => params,
-			Err(error) => {
-				warn!("recieved invalid query parameters in request: {error:?}");
+		let info = match request.uri().query() {
+			Some(query) => match serde_qs::from_str::<QueryParams>(query) {
+				Ok(query) => RequestInfo::Data { query },
+				Err(error) => {
+					warn!("recieved invalid query parameters in request: {error:?}");
 
-				return Ok(bad_response("Recieved invalid query parameters: {error}"));
+					RequestInfo::Error("Recieved invalid query parameters: {error}".into())
+				}
+			},
+			None => {
+				warn!("recieved no query parameters in request");
+
+				RequestInfo::Error("Expected query params in request".into())
 			}
 		};
 
 		let queue = self.queue.clone();
 
-		debug!("spawning a new websocket handle for session {:?}", query_params.session_id);
+		debug!("spawning a new websocket handle with info {:?}", info);
 
 		tokio::spawn(async move {
 			match fut.await {
@@ -86,6 +87,14 @@ where
 					let mut handle = SocketHandle {
 						socket,
 						_phantom_data: PhantomData,
+					};
+
+					let query_params = match info {
+						RequestInfo::Error(error) => {
+							handle.send_init_error(&error, None).await;
+							return;
+						}
+						RequestInfo::Data { query } => query,
 					};
 
 					let enqueue_result = queue
@@ -124,7 +133,7 @@ where
 			}
 		});
 
-		Ok(empty_response.map(|_| Full::new(Bytes::new())))
+		Ok(empty_response)
 	}
 }
 
@@ -132,7 +141,7 @@ impl<ReqBody, S> Service<Request<ReqBody>> for ObjectionService<S>
 where
 	S: Session + Send + 'static,
 {
-	type Response = Response<Full<Bytes>>;
+	type Response = Response<Empty<Bytes>>;
 	type Error = Infallible;
 	type Future = Ready<Result<Self::Response, Self::Error>>;
 
@@ -172,7 +181,7 @@ where
 {
 	async fn send_init_error(&mut self, message: &str, retry_after_seconds: Option<u32>) {
 		let result = self
-			.send(Vec::from([OutgoingSocketMessage::Acknowledge {
+			.send(Vec::from([DownstreamMessage::Acknowledge {
 				request_id: None,
 				error: Some(message.into()),
 				retry_after_seconds,
@@ -185,7 +194,7 @@ where
 	}
 }
 
-impl<PeerEvent> WorkerHandle<SessionEvent<PeerEvent>, Vec<OutgoingSocketMessage>> for SocketHandle<PeerEvent>
+impl<PeerEvent> WorkerHandle<SessionEvent<PeerEvent>, Vec<DownstreamMessage>> for SocketHandle<PeerEvent>
 where
 	Self: Send,
 {
@@ -210,11 +219,11 @@ where
 				}
 			};
 
-			let message = match from_slice::<IncomingSocketMessage>(&frame.payload) {
+			let message = match from_slice::<UpstreamMessage>(&frame.payload) {
 				Ok(message) => message,
 				Err(error) => {
 					warn!("Failed to deserialize message from socket. Skipping to next message: {error}");
-					self.send(Vec::from([OutgoingSocketMessage::Acknowledge {
+					self.send(Vec::from([DownstreamMessage::Acknowledge {
 						request_id: None,
 						error: Some("Message could not be deserialized".into()),
 						retry_after_seconds: None,
@@ -229,7 +238,7 @@ where
 		}
 	}
 
-	async fn send(&mut self, response: Vec<OutgoingSocketMessage>) -> SendResult<Vec<OutgoingSocketMessage>> {
+	async fn send(&mut self, response: Vec<DownstreamMessage>) -> SendResult<Vec<DownstreamMessage>> {
 		let result = self
 			.socket
 			.write_frame(Frame::text(Payload::Owned(to_string(&response).unwrap().into_bytes())))

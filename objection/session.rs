@@ -1,39 +1,31 @@
+use anyhow::Result;
 use async_worker::Worker;
-use log::{error, warn};
+use log::warn;
+use publisher::Publisher;
 use serde::{Deserialize, Serialize};
-use std::{collections::HashMap, future::Future, iter::once, sync::Arc};
+use serde_json::Value;
+use std::future::Future;
 use uuid::Uuid;
 
-use crate::{
-	object::Object,
-	router::{ObjectRouter, Resolution, ResolverAction, RouteResolver},
-	theme::Theme,
-};
+use crate::{controller::new_controller, Controller};
 
 #[derive(Debug, Serialize, Deserialize)]
-#[serde(tag = "kind", content = "def", rename_all = "snake_case")]
-pub enum IncomingSocketMessage {
+#[serde(tag = "kind", rename_all = "snake_case")]
+pub enum UpstreamMessage {
 	Watch { request_id: Uuid, id: String },
 	Unwatch { request_id: Uuid, id: String },
-	PerformOperation { request_id: Uuid, object_id: String, key: String },
+	EmitBindingUpdate { request_id: Uuid, key: String, data: Value },
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-#[serde(tag = "kind", content = "def", rename_all = "snake_case")]
-pub enum OutgoingSocketMessage {
-	Init {
-		theme: Theme,
-		objects: HashMap<String, Object>,
-	},
+#[serde(tag = "kind", rename_all = "snake_case")]
+pub enum DownstreamMessage {
 	RemoveObject {
 		id: String,
 	},
 	SetObject {
 		id: String,
-		object: Object,
-	},
-	SetTheme {
-		theme: Theme,
+		data: Value,
 	},
 	Acknowledge {
 		request_id: Option<Uuid>,
@@ -43,7 +35,7 @@ pub enum OutgoingSocketMessage {
 }
 
 pub enum SessionEvent<T> {
-	ClientMessage(IncomingSocketMessage),
+	ClientMessage(UpstreamMessage),
 	PeerEvent(T),
 	Init { auth_token: Option<String> },
 }
@@ -53,7 +45,6 @@ pub struct SessionWorkerContext<S>
 where
 	S: Session,
 {
-	pub shared_router: Arc<ObjectRouter<S>>,
 	pub session_context: S::Context,
 }
 
@@ -63,7 +54,6 @@ where
 {
 	fn clone(&self) -> Self {
 		SessionWorkerContext {
-			shared_router: self.shared_router.clone(),
 			session_context: self.session_context.clone(),
 		}
 	}
@@ -73,8 +63,9 @@ pub struct SessionWorker<S>
 where
 	S: Session,
 {
-	resolver: RouteResolver<S>,
-	session: S,
+	id: Uuid,
+	session: Option<S>,
+	session_context: S::Context,
 }
 
 impl<S> Worker for SessionWorker<S>
@@ -84,89 +75,79 @@ where
 	type Context = SessionWorkerContext<S>;
 	type Id = Uuid;
 	type Request = SessionEvent<S::PeerEvent>;
-	type Response = Vec<OutgoingSocketMessage>;
+	type Response = Vec<DownstreamMessage>;
 
 	async fn create(id: &Self::Id, context: Self::Context) -> Self {
 		SessionWorker {
-			resolver: RouteResolver::from_shared_router(context.shared_router),
-			session: S::create(id, context.session_context).await,
+			id: id.clone(),
+			session: None,
+			session_context: context.session_context,
 		}
 	}
 
 	async fn handle(&mut self, request: Self::Request) -> Self::Response {
+		let session = match &mut self.session {
+			Some(session) => session,
+			None => {
+				warn!("BUG: Session could not be constructed and handle was called again");
+				return Vec::new();
+			}
+		};
+
+		let publisher = Publisher::new();
+		let controller = new_controller(&self.id, &publisher);
+
 		match request {
 			SessionEvent::ClientMessage(message) => {
-				let mut resolution = Resolution::empty();
-
 				let (request_id, result) = match message {
-					IncomingSocketMessage::Watch { request_id, id } => (request_id, self.resolver.watch(&id, &mut self.session, &mut resolution).await),
-					IncomingSocketMessage::Unwatch { request_id, id } => (request_id, Ok(self.resolver.unwatch(&id).await)),
-					IncomingSocketMessage::PerformOperation { request_id, object_id, key } => {
-						(request_id, self.resolver.perform_operation(&object_id, &key, &mut resolution).await)
+					UpstreamMessage::Watch { request_id, id } => (request_id, session.watch_object(&id, &self.session_context, controller).await),
+					UpstreamMessage::Unwatch { request_id, id } => (request_id, session.unwatch_object(&id, &self.session_context, controller).await),
+					UpstreamMessage::EmitBindingUpdate { request_id, key, data } => {
+						(request_id, session.update_binding(&key, data, &self.session_context, controller).await)
 					}
 				};
 
 				if let Err(error) = result {
 					warn!("error in handler: {error:?}");
 
-					Vec::from([OutgoingSocketMessage::Acknowledge {
+					publisher.publish(DownstreamMessage::Acknowledge {
 						request_id: None,
 						error: Some(error.to_string()),
-						retry_after_seconds: Some(5),
-					}])
+						retry_after_seconds: None,
+					});
 				} else {
-					resolution
-						.actions
-						.drain(..)
-						.map(|action| match action {
-							ResolverAction::RemoveObject { id } => OutgoingSocketMessage::RemoveObject { id },
-							ResolverAction::SetObject { id, object } => OutgoingSocketMessage::SetObject { id, object },
-						})
-						.chain(once(OutgoingSocketMessage::Acknowledge {
-							request_id: Some(request_id),
-							error: None,
-							retry_after_seconds: None,
-						}))
-						.collect()
+					publisher.publish(DownstreamMessage::Acknowledge {
+						request_id: Some(request_id),
+						error: None,
+						retry_after_seconds: None,
+					});
 				}
 			}
 			SessionEvent::PeerEvent(_) => todo!(),
 			SessionEvent::Init { auth_token } => {
-				if let Some(token) = auth_token {
-					self.session.provide_auth_token(token).await;
-				}
-
-				let theme = self.session.get_theme().await;
-				let mut objects = HashMap::new();
-
-				for entry_id in theme.get_entry_object_ids() {
-					let mut resolution = Resolution::empty();
-
-					if let Err(error) = self.resolver.watch(&entry_id, &mut self.session, &mut resolution).await {
-						error!("resolver.watch for an entry id '{entry_id}' should not error, but it did: {error:?}");
-
-						continue;
+				match S::create(auth_token, &self.session_context, controller).await {
+					Err(error) => {
+						publisher.publish(DownstreamMessage::Acknowledge {
+							request_id: None,
+							error: Some(error.to_string()),
+							retry_after_seconds: None,
+						});
 					}
 
-					for action in resolution.actions {
-						match action {
-							ResolverAction::RemoveObject { id } => {
-								warn!("resolver.watch for an entry id should not be removing objects, but it did try to remove '{id}'")
-							}
-							ResolverAction::SetObject { id, object } => {
-								objects.insert(id, object);
-							}
-						}
+					Ok(session) => {
+						self.session = Some(session);
 					}
-				}
-
-				Vec::from([OutgoingSocketMessage::Init { theme, objects }])
+				};
 			}
 		}
+
+		publisher.items()
 	}
 
-	fn destroy(self) -> impl Future<Output = ()> + Send {
-		self.session.destroy()
+	async fn destroy(self) {
+		if let Some(session) = self.session {
+			session.destroy().await;
+		}
 	}
 }
 
@@ -177,21 +158,37 @@ where
 	type Context: 'static + Clone + Send + Sync;
 	type PeerEvent: 'static + Clone + Send + Sync;
 
-	fn create(id: &Uuid, context: Self::Context) -> impl Future<Output = Self> + Send + Sync;
+	fn create(auth_token: Option<String>, context: &Self::Context, controller: Controller<'_>) -> impl Future<Output = Result<Self>> + Send + Sync;
+
+	fn watch_object(&mut self, id: &str, context: &Self::Context, controller: Controller<'_>) -> impl Future<Output = Result<()>> + Send + Sync;
+
+	#[allow(unused_variables)]
+	fn unwatch_object(&mut self, id: &str, context: &Self::Context, controller: Controller<'_>) -> impl Future<Output = Result<()>> + Send + Sync {
+		async { Ok(()) }
+	}
+
+	#[allow(unused_variables)]
+	fn update_binding(
+		&mut self,
+		key: &str,
+		data: Value,
+		context: &Self::Context,
+		controller: Controller<'_>,
+	) -> impl Future<Output = Result<()>> + Send + Sync {
+		async { Ok(()) }
+	}
 
 	#[allow(unused_variables)]
 	fn provide_auth_token(&mut self, token: String) -> impl Future<Output = ()> + Send + Sync {
 		async {}
 	}
 
-	fn get_theme(&mut self) -> impl Future<Output = Theme> + Send + Sync;
-
 	#[allow(unused_variables)]
 	fn handle_peer_event(&mut self, event: Self::PeerEvent) -> impl Future<Output = ()> + Send + Sync {
 		async {}
 	}
 
-	fn destroy(self) -> impl Future<Output = ()> + 'static + Send + Sync {
+	fn destroy(self) -> impl Future<Output = ()> + Send + Sync {
 		async {}
 	}
 }

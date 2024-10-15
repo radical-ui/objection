@@ -1,0 +1,15 @@
+[package]
+name = "basic"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "basic"
+path = "main.rs"
+
+[dependencies]
+anyhow = "1"
+axum = "0.7"
+objection = { path = "../../objection" }
+tokio = { version = "1", features = ["full"] }
+tower-http = "0.6"

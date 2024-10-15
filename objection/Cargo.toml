@@ -26,3 +26,4 @@ anyhow = "1"
 serde_qs = "0.13"
 hyper-util = "0.1"
 async-trait = "0.1"
+publisher = { git = "https://github.com/vehmloewff/publisher", rev = "1.1.0" }
