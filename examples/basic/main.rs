@@ -5,7 +5,7 @@ use tokio::net::TcpListener;
 
 #[tokio::main]
 async fn main() {
-	let app = Router::new().route_service("/ui.ws", ObjectionService::<Instance>::new(()));
+	let app = Router::new().route_service("/:path", ObjectionService::<Instance>::new(()));
 
 	let listener = TcpListener::bind(("localhost", 8000)).await.unwrap();
 	println!("listening at ws://localhost:8000/ui.ws");
@@ -19,7 +19,7 @@ impl Session for Instance {
 	type Context = ();
 	type PeerEvent = ();
 
-	async fn create(_: Option<String>, _: &Self::Context, _: objection::Controller<'_>) -> Result<Self> {
+	async fn create(_: Option<String>, path: String, _: &Self::Context, _: objection::Controller<'_>) -> Result<Self> {
 		Ok(Instance)
 	}
 

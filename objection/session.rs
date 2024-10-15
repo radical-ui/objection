@@ -37,7 +37,7 @@ pub enum DownstreamMessage {
 pub enum SessionEvent<T> {
 	ClientMessage(UpstreamMessage),
 	PeerEvent(T),
-	Init { auth_token: Option<String> },
+	Init { auth_token: Option<String>, path: String },
 }
 
 #[derive(Debug)]
@@ -124,8 +124,8 @@ where
 				}
 			}
 			SessionEvent::PeerEvent(_) => todo!(),
-			SessionEvent::Init { auth_token } => {
-				match S::create(auth_token, &self.session_context, controller).await {
+			SessionEvent::Init { auth_token, path } => {
+				match S::create(auth_token, path, &self.session_context, controller).await {
 					Err(error) => {
 						publisher.publish(DownstreamMessage::Acknowledge {
 							request_id: None,
@@ -158,7 +158,12 @@ where
 	type Context: 'static + Clone + Send + Sync;
 	type PeerEvent: 'static + Clone + Send + Sync;
 
-	fn create(auth_token: Option<String>, context: &Self::Context, controller: Controller<'_>) -> impl Future<Output = Result<Self>> + Send + Sync;
+	fn create(
+		auth_token: Option<String>,
+		path: String,
+		context: &Self::Context,
+		controller: Controller<'_>,
+	) -> impl Future<Output = Result<Self>> + Send + Sync;
 
 	fn watch_object(&mut self, id: &str, context: &Self::Context, controller: Controller<'_>) -> impl Future<Output = Result<()>> + Send + Sync;
 

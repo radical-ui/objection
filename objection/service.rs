@@ -50,7 +50,7 @@ where
 		#[derive(Debug)]
 		enum RequestInfo {
 			Error(String),
-			Data { query: QueryParams },
+			Data { query: QueryParams, path: String },
 		}
 
 		let (empty_response, fut) = match upgrade(&mut request) {
@@ -63,7 +63,10 @@ where
 
 		let info = match request.uri().query() {
 			Some(query) => match serde_qs::from_str::<QueryParams>(query) {
-				Ok(query) => RequestInfo::Data { query },
+				Ok(query) => RequestInfo::Data {
+					query,
+					path: request.uri().path().to_string(),
+				},
 				Err(error) => {
 					warn!("recieved invalid query parameters in request: {error:?}");
 
@@ -89,12 +92,12 @@ where
 						_phantom_data: PhantomData,
 					};
 
-					let query_params = match info {
+					let (query_params, path) = match info {
 						RequestInfo::Error(error) => {
 							handle.send_init_error(&error, None).await;
 							return;
 						}
-						RequestInfo::Data { query } => query,
+						RequestInfo::Data { query, path } => (query, path),
 					};
 
 					let enqueue_result = queue
@@ -102,6 +105,7 @@ where
 							&query_params.session_id,
 							SessionEvent::Init {
 								auth_token: query_params.auth_token,
+								path,
 							},
 						)
 						.await;
