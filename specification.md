@@ -22,7 +22,7 @@ procedure.
 
 2. Unless the websocket handshake itself is malformed, the backend must complete it. If something is wrong, and
    connection cannot continue (eg. the server encountered an error, the session id was not a uuid, etc.), the backend
-   must send down an [`aknowledge` message](#downstream-aknowledge) with a `request_id` of `null` and an appropriate
+   must send down an [`acknowledge` message](#downstream-acknowledge) with a `request_id` of `null` and an appropriate
    `error` set, subsequently closing the connection. The frontend should display this error to the user.
 
 3. The backend must send down representations of the frontend's [initial objects](#initialobjects) using
@@ -52,7 +52,7 @@ procedure.
    that the backend can be aware that updates are no longer necessary.
 
 9. In response to any message sent up by the frontend, the backend must respond with an
-   [`aknowledge` message](#downstream-aknowledge), referencing the frontend's [`request_id`](#requestid).
+   [`acknowledge` message](#downstream-acknowledge), referencing the frontend's [`request_id`](#requestid).
 
 10. The frontend may close the websocket connection for any reason, but if the same ui session is still desired, should
     try to reconnect within a reasonable amount if time using the same `session_id` that was originally used to open the
@@ -65,18 +65,34 @@ procedure.
 > Note(*): Some frontends may have offline support, and it is not in violation of this principal for a frontend to rely
 > on cached objects when a connection cannot be established.
 
-### Setting an Auth Token
-
-TODO
-
 ### Ui Session
 
 A session that lasts for the lifetime of the in-memory frontend state. In most cases, this is from the time the
 application was started to the time it stopped, and it's memory was cleaned up.
 
+### Setting an Auth Token
+
+While a session id is only persisted for the duration of a [ui session](#ui-session), an auth token should be persisted
+for as long a duration as possible. When a new connection is made, the most recently stashed auth token should always be
+sent up as a query param.
+
+The auth token can be a string of any length. Unlike the session id, it does not need to be a uuid.
+
 ### Data Bindings
 
-TODO
+For the most part objects are synced from the backend to the frontend (eg. via `watch_object` messages). However, the
+frontend may sync certain values in objects to the backend via data bindings.
+
+A binding must be [declared in the schema](#kind-binding). Once declared, they should be represented as a
+`{ key: string, child: T }` object, where `key` is the key that the frontend may use to emit updates, and `child` is the
+initial value of the data. The frontend should not rely upon the backend to update the object with a new value after a
+binding update is emitted, but should instead treat the just-emitted value as the current value, as if it were specified
+directly in the object.
+
+There is a lot of freedom for the frontend to choose when to emit a binding update (eg. if the bound data is represented
+as a text input, an emition could be made when the field changes, when it is blurred, or when the form containing it is
+submitted). Ideally a frontend should try to defer as much of these decisions as possible to the backed, via additional
+object properties (eg. a `whenToEmit: 'change'|'blur'|'submit'`).
 
 ### Messages
 
@@ -91,7 +107,7 @@ Optional values may be set to their appropriate value, or may be `null`, or may 
 #### `request_id`
 
 All upstream messages contain a `request_id` field. This must be a uuid. Once the backend has processed the message, it
-must send down an [`aknowledge` message]. The client should use this process to inform the user of pending operations,
+must send down an [`acknowledge` message]. The client should use this process to inform the user of pending operations,
 when it would be noticable.
 
 #### Upstream `watch_object`
@@ -121,11 +137,11 @@ Sent when the frontend would like to update the content of a [bound value](#data
 
 - `data` - Json, the value that the binding is to be updated to. This must match the type of the original data.
 
-#### Downstream `aknowledge`
+#### Downstream `acknowledge`
 
 Sent once the message referenced by `request_id` was processed.
 
-- `$` - Must be the string, "aknowledge"
+- `$` - Must be the string, "acknowledge"
 
 - `request_id` (optional) - A uuid, encoded as a string. This is the particular upstream message that the backend is
   aknowleging. If this property is not specified, the backend is aknowledging the websocket connection itself, something
@@ -171,6 +187,14 @@ Sent when an object that is currently watched (and not unwatch), when the underl
 - `id` - A string, the id of the object that is to be removed. This object must have already been sent to the frontend
   via a [`set_object` message](#downstream-setobject)
 
+#### Downstream `set_auth_token`
+
+See [setting an auth token](#setting-an-auth-token) for more information.
+
+- `$` - Must be the string, `set_auth_token`
+
+- `auth_token` - A string, the auth token.
+
 ## Building
 
 TODO
@@ -180,6 +204,8 @@ TODO
 TODO
 
 #### `object`
+
+##### Kind `binding`
 
 TODO
 
