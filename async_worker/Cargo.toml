@@ -11,3 +11,4 @@ dashmap = { version = "6" }
 log = { version = "0.4" }
 thiserror = "1"
 tokio = { version = "1", features = ["full"] }
+publisher = { git = "https://github.com/vehmloewff/publisher", rev = "1.1.0" }

@@ -1,4 +1,5 @@
 use log::{debug, info};
+use publisher::Publisher;
 use std::{collections::VecDeque, fmt::Debug, future::Future, hash::Hash, time::Duration};
 use tokio::{
 	select,
@@ -8,7 +9,7 @@ use tokio::{
 
 use crate::handle::{recv_from_handle, DropReason, SendResult, WorkerHandle};
 
-pub enum InternalPollResponse<T: Sized> {
+pub enum InternalPollResponse<T> {
 	Ok(T),
 	Ceeded,
 	WorkerTerminated,
@@ -34,6 +35,19 @@ pub struct SpawnMessage<W: Worker, Handle: WorkerHandle<W::Request, W::Response>
 	pub context: W::Context,
 	pub message_receiver: mpsc::Receiver<TaskMessage<W::Request, W::Response, Handle>>,
 	pub initial_request: W::Request,
+	pub peer_requests_sender: mpsc::Sender<Vec<PeerRequest<W::Id, W::Request>>>,
+}
+
+#[derive(Debug)]
+pub struct PeerRequest<Id, Content> {
+	pub id: Id,
+	pub content: Content,
+}
+
+async fn send_peer_requests<Id, Request>(sender: &mpsc::Sender<Vec<PeerRequest<Id, Request>>>, requests: Vec<PeerRequest<Id, Request>>) {
+	if !requests.is_empty() {
+		let _ = sender.send(requests).await;
+	}
 }
 
 pub trait Worker
@@ -43,13 +57,17 @@ where
 	type Context: 'static + Send + Sized + Clone;
 	type Request: 'static + Send + Sized;
 	type Response: 'static + Send + Sized;
-	type Id: 'static + Hash + PartialOrd + Eq + Clone + Send + Debug;
+	type Id: 'static + Hash + PartialOrd + Eq + Clone + Send + Debug + Sync;
 
 	/// Creates a new worker, which will be referenced to by the queue as `id`. `context` is a clone of the context that was given to the queue when it was built
 	fn create(id: &Self::Id, context: Self::Context) -> impl Future<Output = Self> + Send;
 
 	/// Handle a new response. The output will be able to be attained by the queue via a `WorkerHandle` or polling.
-	fn handle(&mut self, request: Self::Request) -> impl Future<Output = Self::Response> + Send;
+	fn handle(
+		&mut self,
+		request: Self::Request,
+		peer_requests: &Publisher<PeerRequest<Self::Id, Self::Request>>,
+	) -> impl Future<Output = Self::Response> + Send;
 
 	/// Called just before this worker is dropped, but after the worker handle (if present) was dropped and any ongoing polls were closed with an `Error::WorkerTerminated`.
 	fn destroy(self) -> impl Future<Output = ()> + Send;
@@ -66,6 +84,7 @@ where
 			context,
 			mut message_receiver,
 			initial_request,
+			peer_requests_sender,
 		} = match spawn_receiver.recv().await {
 			Some(message) => message,
 			None => break,
@@ -77,7 +96,9 @@ where
 			let mut stashed_handle = Option::<H>::None;
 			let mut single_response_sender = Option::<ResponseSender<W::Response>>::None;
 
-			response_list.push_back(worker.handle(initial_request).await);
+			let peer_requests = Publisher::new();
+			response_list.push_back(worker.handle(initial_request, &peer_requests).await);
+			send_peer_requests(&peer_requests_sender, peer_requests.items()).await;
 
 			loop {
 				let message = select! {
@@ -180,7 +201,9 @@ where
 						}
 					}
 					TaskMessage::Enqueue { request } => {
-						let mut response = worker.handle(request).await;
+						let peer_requests = Publisher::new();
+						let mut response = worker.handle(request, &peer_requests).await;
+						send_peer_requests(&peer_requests_sender, peer_requests.items()).await;
 
 						if let Some(handle) = &mut stashed_handle {
 							loop {
@@ -223,7 +246,9 @@ where
 				let _ = responder.send_new(InternalPollResponse::WorkerTerminated);
 			}
 
+			let peer_requests = Publisher::new();
 			worker.destroy().await;
+			send_peer_requests(&peer_requests_sender, peer_requests.items()).await;
 		});
 	}
 }

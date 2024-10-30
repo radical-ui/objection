@@ -3,8 +3,8 @@ use async_worker::{Queue, QueueBuilder, SendResult, WorkerHandle};
 use bytes::Bytes;
 use fastwebsockets::{upgrade::upgrade, Frame, OpCode, Payload, WebSocket, WebSocketError};
 use futures::future::{ready, Ready};
-use http::{Request, Response, StatusCode};
-use http_body_util::{Empty, Full};
+use http::{Request, Response};
+use http_body_util::Empty;
 use hyper::upgrade::Upgraded;
 use hyper_util::rt::TokioIo;
 use log::{debug, error, warn};
@@ -12,7 +12,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::{from_slice, to_string};
 use std::{
 	convert::Infallible,
-	fmt::Display,
+	fmt,
 	future::Future,
 	marker::PhantomData,
 	sync::Arc,
@@ -23,23 +23,64 @@ use uuid::Uuid;
 
 use crate::session::{DownstreamMessage, Session, SessionEvent, SessionWorker, SessionWorkerContext, UpstreamMessage};
 
-pub struct ObjectionService<S>
+pub struct Manager<S>
 where
 	S: Session + Send + 'static,
 {
 	queue: Arc<Queue<SessionWorker<S>, SocketHandle<S::PeerEvent>>>,
 }
 
-impl<S> ObjectionService<S>
+impl<S> fmt::Debug for Manager<S>
 where
 	S: Session + Send + 'static,
 {
-	pub fn new(context: S::Context) -> ObjectionService<S> {
-		ObjectionService {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		write!(f, "[Manager]")
+	}
+}
+
+impl<S> Manager<S>
+where
+	Self: Send + Sync,
+	S: Session + Send + 'static + Sync,
+{
+	pub fn new(context: S::Context) -> Manager<S> {
+		Manager {
 			queue: Arc::new(QueueBuilder::default().build(SessionWorkerContext { session_context: context })),
 		}
 	}
 
+	pub fn service(&self) -> ObjectionService<S> {
+		ObjectionService { manager: self.clone() }
+	}
+
+	pub async fn send_peer_event(&self, target_session: &Uuid, event: S::PeerEvent) -> Result<()> {
+		self.queue.enqueue(target_session, SessionEvent::PeerEvent(event)).await?;
+
+		Ok(())
+	}
+}
+
+impl<S> Clone for Manager<S>
+where
+	S: Session + Send + 'static,
+{
+	fn clone(&self) -> Self {
+		Manager { queue: self.queue.clone() }
+	}
+}
+
+pub struct ObjectionService<S>
+where
+	S: Session + Send + 'static,
+{
+	manager: Manager<S>,
+}
+
+impl<S> ObjectionService<S>
+where
+	S: Session + Send + 'static,
+{
 	fn call_internal<Body>(&mut self, mut request: Request<Body>) -> Result<Response<Empty<Bytes>>, Infallible> {
 		#[derive(Debug, Serialize, Deserialize)]
 		struct QueryParams {
@@ -80,7 +121,7 @@ where
 			}
 		};
 
-		let queue = self.queue.clone();
+		let manager = self.manager.clone();
 
 		debug!("spawning a new websocket handle with info {:?}", info);
 
@@ -95,7 +136,8 @@ where
 					match info {
 						RequestInfo::Error(error) => handle.send_init_error(&error, None).await,
 						RequestInfo::Data { query, path } => {
-							let enqueue_result = queue
+							let enqueue_result = manager
+								.queue
 								.enqueue(
 									&query.session_id,
 									SessionEvent::Init {
@@ -119,7 +161,7 @@ where
 								}
 							}
 
-							if let Err(error) = queue.register_handle(&query.session_id, handle) {
+							if let Err(error) = manager.queue.register_handle(&query.session_id, handle) {
 								error!("failed to send socket handle to worker: {error}");
 							}
 						}
@@ -157,15 +199,8 @@ where
 	S: Session + Send,
 {
 	fn clone(&self) -> Self {
-		ObjectionService { queue: self.queue.clone() }
+		ObjectionService { manager: self.manager.clone() }
 	}
-}
-
-fn bad_response(message: impl Display) -> Response<Full<Bytes>> {
-	let mut response = Response::new(Full::new(Bytes::from(message.to_string())));
-	*response.status_mut() = StatusCode::BAD_REQUEST;
-
-	response
 }
 
 struct SocketHandle<PeerEvent> {

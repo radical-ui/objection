@@ -1,13 +1,16 @@
 use anyhow::Result;
-use async_worker::Worker;
-use log::warn;
+use async_worker::{PeerRequest, Worker};
+use log::{error, warn};
 use publisher::Publisher;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::future::Future;
 use uuid::Uuid;
 
-use crate::{controller::new_controller, Controller};
+use crate::{
+	controller::{self, new_controller},
+	Controller,
+};
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(tag = "$", rename_all = "snake_case")]
@@ -34,6 +37,7 @@ pub enum DownstreamMessage {
 	},
 }
 
+#[derive(Debug)]
 pub enum SessionEvent<T> {
 	ClientMessage(UpstreamMessage),
 	PeerEvent(T),
@@ -85,9 +89,9 @@ where
 		}
 	}
 
-	async fn handle(&mut self, request: Self::Request) -> Self::Response {
+	async fn handle(&mut self, request: Self::Request, peer_requests: &Publisher<PeerRequest<Self::Id, Self::Request>>) -> Self::Response {
 		let publisher = Publisher::new();
-		let controller = new_controller(&self.id, &publisher);
+		let controller = new_controller(&self.id, &publisher, peer_requests);
 
 		match request {
 			SessionEvent::ClientMessage(message) => {
@@ -123,7 +127,19 @@ where
 					});
 				}
 			}
-			SessionEvent::PeerEvent(_) => todo!(),
+			SessionEvent::PeerEvent(event) => {
+				let session = match &mut self.session {
+					Some(session) => session,
+					None => {
+						warn!("BUG: Session could not be constructed and handle was called again with a peer event");
+						return Vec::new();
+					}
+				};
+
+				if let Err(error) = session.handle_peer_event(event, controller).await {
+					error!("error when handling peer event: {error:?}");
+				}
+			}
 			SessionEvent::Init { auth_token, path } => {
 				match S::create(auth_token, path, &self.session_context, controller).await {
 					Err(error) => {
@@ -148,7 +164,7 @@ where
 
 	async fn destroy(self) {
 		if let Some(session) = self.session {
-			session.destroy().await;
+			session.destroy(&self.id).await;
 		}
 	}
 }
@@ -158,28 +174,40 @@ where
 	Self: Sized,
 {
 	type Context: 'static + Clone + Send + Sync;
-	type PeerEvent: 'static + Clone + Send + Sync;
+	type PeerEvent: 'static + Send + Sync;
 
-	fn create(auth_token: Option<String>, path: String, context: &Self::Context, controller: Controller<'_>) -> impl Future<Output = Result<Self>> + Send;
+	fn create(
+		auth_token: Option<String>,
+		path: String,
+		context: &Self::Context,
+		controller: Controller<'_, Self::PeerEvent>,
+	) -> impl Future<Output = Result<Self>> + Send;
 
-	fn watch_object(&mut self, id: &str, context: &Self::Context, controller: Controller<'_>) -> impl Future<Output = Result<()>> + Send;
+	fn watch_object(&mut self, id: &str, context: &Self::Context, controller: Controller<'_, Self::PeerEvent>) -> impl Future<Output = Result<()>> + Send;
 
 	#[allow(unused_variables)]
-	fn unwatch_object(&mut self, id: &str, context: &Self::Context, controller: Controller<'_>) -> impl Future<Output = Result<()>> + Send {
+	fn unwatch_object(&mut self, id: &str, context: &Self::Context, controller: Controller<'_, Self::PeerEvent>) -> impl Future<Output = Result<()>> + Send {
 		async { Ok(()) }
 	}
 
 	#[allow(unused_variables)]
-	fn update_binding(&mut self, key: &str, data: Value, context: &Self::Context, controller: Controller<'_>) -> impl Future<Output = Result<()>> + Send {
+	fn update_binding(
+		&mut self,
+		key: &str,
+		data: Value,
+		context: &Self::Context,
+		controller: Controller<'_, Self::PeerEvent>,
+	) -> impl Future<Output = Result<()>> + Send {
 		async { Ok(()) }
 	}
 
 	#[allow(unused_variables)]
-	fn handle_peer_event(&mut self, event: Self::PeerEvent) -> impl Future<Output = ()> + Send {
-		async {}
+	fn handle_peer_event(&mut self, event: Self::PeerEvent, controller: Controller<'_, Self::PeerEvent>) -> impl Future<Output = Result<()>> + Send {
+		async { Ok(()) }
 	}
 
-	fn destroy(self) -> impl Future<Output = ()> + Send {
+	#[allow(unused_variables)]
+	fn destroy(self, session_id: &Uuid) -> impl Future<Output = ()> + Send {
 		async {}
 	}
 }

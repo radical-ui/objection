@@ -1,6 +1,6 @@
 use dashmap::DashMap;
 use log::error;
-use std::time::Duration;
+use std::{sync::Arc, time::Duration};
 use tokio::{
 	select,
 	sync::{mpsc, oneshot},
@@ -9,7 +9,7 @@ use tokio::{
 
 use crate::{
 	handle::{NoopHandle, WorkerHandle},
-	worker::{drive_workers, InternalPollResponse, SpawnMessage, TaskMessage, Worker},
+	worker::{drive_workers, InternalPollResponse, PeerRequest, SpawnMessage, TaskMessage, Worker},
 	Error, Result,
 };
 
@@ -63,10 +63,12 @@ impl QueueBuilder {
 	}
 }
 
+#[derive(Debug)]
 pub struct Queue<W: Worker, H: WorkerHandle<W::Request, W::Response> = NoopHandle> {
 	max_length: usize,
 	spawn_sender: mpsc::Sender<SpawnMessage<W, H>>,
-	map: DashMap<W::Id, mpsc::Sender<TaskMessage<W::Request, W::Response, H>>>,
+	peer_requests_sender: mpsc::Sender<Vec<PeerRequest<W::Id, W::Request>>>,
+	map: Arc<DashMap<W::Id, mpsc::Sender<TaskMessage<W::Request, W::Response, H>>>>,
 	context: W::Context,
 }
 
@@ -77,15 +79,32 @@ where
 {
 	fn new(options: QueueOptions, context: W::Context) -> Queue<W, H> {
 		let (spawn_sender, spawn_receiver) = mpsc::channel(1000);
+		let (peer_requests_sender, mut peer_requests_receiver) = mpsc::channel(1000);
 
-		tokio::spawn(async move { drive_workers(options.terminate_worker_after, spawn_receiver).await });
-
-		Queue {
+		let queue = Queue::<W, H> {
 			max_length: options.max_length,
 			spawn_sender,
-			map: DashMap::new(),
+			peer_requests_sender,
+			map: Arc::new(DashMap::new()),
 			context,
-		}
+		};
+		let copied_queue = queue.clone();
+
+		tokio::spawn(async move { drive_workers(options.terminate_worker_after, spawn_receiver).await });
+		tokio::spawn(async move {
+			loop {
+				let peer_requests = match peer_requests_receiver.recv().await {
+					Some(requests) => requests,
+					None => break,
+				};
+
+				for request in peer_requests {
+					copied_queue.enqueue(&request.id, request.content);
+				}
+			}
+		});
+
+		queue
 	}
 
 	/// Attach a waiter to the worker referenced by `id`. Waiters always take precident over polling, so if there is an active waiter, all responses will be immediately
@@ -156,6 +175,7 @@ where
 					context: self.context.clone(),
 					message_receiver: receiver,
 					initial_request: request,
+					peer_requests_sender: self.peer_requests_sender.clone(),
 				})
 				.await;
 
@@ -280,5 +300,21 @@ where
 	/// have capacity to perform the termination. In other words, this queues a graceful termination instead of forcefully shutting down the worker.
 	pub fn terminate(&self, id: &W::Id) {
 		self.map.remove(id);
+	}
+}
+
+impl<W, H> Clone for Queue<W, H>
+where
+	W: Worker,
+	H: WorkerHandle<W::Request, W::Response>,
+{
+	fn clone(&self) -> Self {
+		Queue {
+			max_length: self.max_length,
+			spawn_sender: self.spawn_sender.clone(),
+			peer_requests_sender: self.peer_requests_sender.clone(),
+			map: self.map.clone(),
+			context: self.context.clone(),
+		}
 	}
 }

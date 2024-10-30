@@ -8,7 +8,7 @@ mod worker;
 
 pub use handle::{DropReason, NoopHandle, SendResult, WorkerHandle};
 pub use queue::{Queue, QueueBuilder};
-pub use worker::Worker;
+pub use worker::{PeerRequest, Worker};
 
 #[derive(Debug, Error)]
 pub enum Error {
