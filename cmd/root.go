@@ -6,8 +6,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var currentConfig config
-var currentFrontend frontend
+var (
+	suppliedFrontend               string
+	suppliedRev                    string
+	suppliedProjectConfigFile      string
+	suppliedProjectConfigNeverSave bool
+)
 
 var rootCmd = &cobra.Command{
 	Use:   "objection",
@@ -22,8 +26,8 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.PersistentFlags().StringVarP(&currentConfig.file, "config", "c", "objection.kdl", "Path to a KDL config file")
-	rootCmd.PersistentFlags().StringVarP(&currentFrontend.pathOrUrl, "frontend", "f", "", "Git URL or local directory path for the frontend")
-	rootCmd.PersistentFlags().StringVarP(&currentFrontend.rev, "rev", "r", "", "Frontend Git revision to use")
-	rootCmd.PersistentFlags().BoolVarP(&currentConfig.neverSave, "never-save", "n", false, "Do not save frontend configurations")
+	rootCmd.PersistentFlags().StringVarP(&suppliedProjectConfigFile, "config", "c", "objection.kdl", "Path to a KDL config file")
+	rootCmd.PersistentFlags().StringVarP(&suppliedFrontend, "frontend", "f", "", "Git URL or local directory path for the frontend")
+	rootCmd.PersistentFlags().StringVarP(&suppliedRev, "rev", "r", "", "Frontend Git revision to use")
+	rootCmd.PersistentFlags().BoolVarP(&suppliedProjectConfigNeverSave, "never-save", "n", false, "Do not save frontend configurations")
 }

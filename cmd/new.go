@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"fmt"
+	"log/slog"
 
 	"github.com/spf13/cobra"
 )
@@ -10,7 +10,10 @@ var newCmd = &cobra.Command{
 	Use:   "new",
 	Short: "A brief description of your command",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("new called")
+		if err := run(); err != nil {
+			slog.Error(err.Error())
+			return
+		}
 	},
 }
 

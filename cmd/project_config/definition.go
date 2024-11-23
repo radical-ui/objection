@@ -22,19 +22,19 @@ type frontendDef struct {
 	configuration map[string]string `hcl:"configuration,optional"`
 }
 
-func NewProjectConfig(initialLocation string, neverSave bool) (ProjectConfig, error) {
+func NewProjectConfig(initialLocation string, neverSave bool) (*ProjectConfig, error) {
 	config := ProjectConfig{}
 
 	location := provideLocationDefault(initialLocation)
 	if len(location) == 0 {
-		return config, nil
+		return &ProjectConfig{}, nil
 	}
 
 	if err := hclsimple.DecodeFile(location, nil, &config.localConfig); err != nil {
-		return ProjectConfig{}, err
+		return nil, err
 	}
 
-	return config, nil
+	return &config, nil
 }
 
 func provideLocationDefault(initialLocation string) string {

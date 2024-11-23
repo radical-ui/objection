@@ -13,6 +13,7 @@ type FrontendInfo struct {
 	Configuration  map[string]string
 }
 
+// Resolve the supplied frontend into some frontend info. `expression` must not be empty
 func (self *ProjectConfig) ResolveFrontend(expression string) (*FrontendInfo, error) {
 	for _, frontend := range self.localConfig.frontends {
 		if frontend.alias == expression || frontend.location == expression {
@@ -29,14 +30,24 @@ func (self *ProjectConfig) ResolveFrontend(expression string) (*FrontendInfo, er
 		}
 	}
 
-	return nil, nil
+	def, err := self.addFrontend(expression)
+	if err != nil {
+		return nil, err
+	}
+
+	info, err := def.getInfo()
+	if err != nil {
+		return nil, err
+	}
+
+	return &info, nil
 }
 
 func (self *frontendDef) getInfo() (FrontendInfo, error) {
 	var localLocation, remoteLocation, remoteRev string
 
 	info, err := os.Stat(self.location)
-	if err != nil && info.IsDir() {
+	if err == nil && info.IsDir() {
 		localLocation = self.location
 	} else {
 		remoteLocation = self.location
