@@ -26,7 +26,7 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.PersistentFlags().StringVarP(&suppliedProjectConfigFile, "config", "c", "objection.kdl", "Path to a KDL config file")
+	rootCmd.PersistentFlags().StringVarP(&suppliedProjectConfigFile, "config", "c", "", "Path to a HCL config file. Defaults to objection.hcl")
 	rootCmd.PersistentFlags().StringVarP(&suppliedFrontend, "frontend", "f", "", "Git URL or local directory path for the frontend")
 	rootCmd.PersistentFlags().StringVarP(&suppliedRev, "rev", "r", "", "Frontend Git revision to use")
 	rootCmd.PersistentFlags().BoolVarP(&suppliedProjectConfigNeverSave, "never-save", "n", false, "Do not save frontend configurations")

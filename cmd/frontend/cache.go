@@ -60,18 +60,17 @@ func hash(key string) string {
 	return hex.EncodeToString(hash[:])
 }
 
-// func (self *cache) getDownloadPath(key string) string {
-// 	return path.Join(self.dir, downloadsDir, hash(key))
-// }
+func (self *cache) isDownloaded() bool {
+	info, err := os.Stat(self.DownloadDir)
 
-// func (self *cache) getConfigurePath(key string) string {
-// 	return path.Join(self.dir, configureDir, hash(key))
-// }
+	if os.IsNotExist(err) || !info.IsDir() {
+		return false
+	}
+
+	return true
+}
 
 func (self *cache) aquireLock() error {
-	// locksDir := path.Join(self.dir, locksDir)
-	// lockFile := path.Join(locksDir, fmt.Sprintf("%s.lock", hash(key)))
-
 	for {
 		if _, err := os.Stat(self.lockFile); os.IsNotExist(err) {
 			break
@@ -88,31 +87,11 @@ func (self *cache) aquireLock() error {
 		}
 	}
 
-	// self.locks = append(self.locks, key)
-
 	return nil
 }
 
 func (self *cache) releaseLock() {
-	// lockFile := path.Join(self.dir, locksDir, fmt.Sprintf("%s.lock", hash(key)))
-
 	if err := os.Remove(self.lockFile); err != nil {
 		slog.Warn(fmt.Sprintf("Failed to remove lock at %s. This may indicate a broader issue.", self.lockFile))
 	}
-
-	// newLocks := make([]string, len(self.locks)-1)
-
-	// for _, lock := range self.locks {
-	// 	if lock != key {
-	// 		newLocks = append(newLocks, lock)
-	// 	}
-	// }
-
-	// self.locks = newLocks
 }
-
-// func (self *cache) releaseAllLocks() {
-// 	for _, lock := range self.locks {
-// 		self.releaseLock(lock)
-// 	}
-// }

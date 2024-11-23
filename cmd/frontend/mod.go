@@ -31,47 +31,43 @@ func (self *FrontendManager) ReleaseLock() {
 	self.cache.releaseLock()
 }
 
-type SetupParams struct {
-	// If specified
-	SelectRev func(defaultTag string, otherTagsOrHashes []string) string
-}
-
 func (self *FrontendManager) DownloadIfNecessary() error {
-	// remoteDownloadKey := fmt.Sprintf("download:%s", self.info.RemoteLocation)
-	// defer self.cache.releaseAllLocks()
-
-	if len(self.info.RemoteLocation) != 0 {
-		// self.cache.aquireLock(remoteDownloadKey)
+	if len(self.info.RemoteLocation) != 0 && !self.cache.isDownloaded() {
 		if err := self.git.downloadRepo(); err != nil {
 			return err
 		}
-
-		// if len(self.info.RemoteRev) == 0 {
-		// 	tags, err := self.git.listAllTags(self.info.RemoteLocation)
-		// 	if err != nil {
-		// 		return err
-		// 	}
-
-		// 	self.info.RemoteRev = params.SelectRev(tags)
-		// }
-
-		// self.git.checkoutTag(self.info.RemoteLocation, self.info.RemoteRev)
 	}
 
 	return nil
 }
 
 type RevInfo struct {
-	defaultRev   []string
-	currentHash  string
-	tagsOrHashes []string
+	defaultRev string
+	tags       []string
+	commits    []Commit
 }
 
 func (self *FrontendManager) GetRevInfo() (RevInfo, error) {
-	// self.git.listAllTags()
-	// TODO
+	tags, err := self.git.listAllTags()
+	if err != nil {
+		return RevInfo{}, err
+	}
 
-	return RevInfo{}, nil
+	commits, err := self.git.getRecentCommits(20)
+	if err != nil {
+		return RevInfo{}, err
+	}
+
+	defaultRev, err := self.git.getDefaultRev()
+	if err != nil {
+		return RevInfo{}, err
+	}
+
+	return RevInfo{
+		defaultRev,
+		tags,
+		commits,
+	}, nil
 }
 
 func (self *FrontendManager) GetConfigPath() string {

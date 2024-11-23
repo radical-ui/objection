@@ -27,9 +27,6 @@ func newGit(cache *cache, remote string) *git {
 }
 
 func (self *git) downloadRepo() error {
-	// self.cache.aquireLock(remote)
-	// defer self.cache.releaseLock(remote)
-
 	if err := self.runTransparentCommand("clone", self.remote, self.cache.DownloadDir); err != nil {
 		return errors.Join(errors.New(fmt.Sprintf("Failed to clone %s", self.remote)), err)
 	}
@@ -43,9 +40,8 @@ func (self *git) downloadRepo() error {
 	return nil
 }
 
-func (self *git) listAllTags(remote string) ([]string, error) {
-	// TODO checkout the
-	data, err := self.runCapturedCommand(remote, "tags")
+func (self *git) listAllTags() ([]string, error) {
+	data, err := self.runCapturedCommand("tags")
 	if err != nil {
 		return make([]string, 0), err
 	}
@@ -53,10 +49,37 @@ func (self *git) listAllTags(remote string) ([]string, error) {
 	return strings.Split(data, "\n"), nil
 }
 
-func (self *git) copyDownloadedRepoForConfiguration(rev string) error {
-	// self.cache.aquireLock(remote)
-	// defer self.cache.releaseLock(remote)
+func (self *git) getDefaultRev() (string, error) {
+	data, err := self.runCapturedCommand("rev-parse", "--abbrev-ref", "origin/HEAD")
+	if err != nil {
+		return "", err
+	}
 
+	return strings.TrimSpace(string(data)), nil
+}
+
+type Commit struct {
+	hash    string
+	message string
+}
+
+func (self *git) getRecentCommits(count int) ([]Commit, error) {
+	commits := make([]Commit, 0)
+
+	data, err := self.runCapturedCommand("log", fmt.Sprintf("-%d", count), "--pretty=format:\"%h %s\"")
+	if err != nil {
+		return commits, err
+	}
+
+	for _, line := range strings.Split(data, "\n") {
+		chunks := strings.SplitN(line, " ", 1)
+		commits = append(commits, Commit{hash: chunks[0], message: chunks[1]})
+	}
+
+	return commits, nil
+}
+
+func (self *git) copyDownloadedRepoForConfiguration(rev string) error {
 	if err := self.runTransparentCommand("checkout", rev); err != nil {
 		return err
 	}
@@ -64,10 +87,6 @@ func (self *git) copyDownloadedRepoForConfiguration(rev string) error {
 	if err := gitFriendlyCopy(self.cache.DownloadDir, self.cache.ConfigureDir); err != nil {
 		return err
 	}
-
-	// if err := self.runTransparentCommand(remote, "checkout", "-"); err != nil {
-	// 	return err
-	// }
 
 	return nil
 }

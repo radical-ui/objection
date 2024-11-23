@@ -15,10 +15,10 @@ type FrontendInfo struct {
 
 // Resolve the supplied frontend into some frontend info. `expression` must not be empty
 func (self *ProjectConfig) ResolveFrontend(expression string) (*FrontendInfo, error) {
-	for _, frontend := range self.localConfig.frontends {
-		if frontend.alias == expression || frontend.location == expression {
-			if frontend.location == expression {
-				slog.Warn(fmt.Sprintf("Assuming frontend with alias '%s' because the location matched. In the future, refer to this frontend by it's alias", frontend.alias))
+	for _, frontend := range self.localConfig.Frontends {
+		if frontend.Alias == expression || frontend.Location == expression {
+			if frontend.Location == expression {
+				slog.Warn(fmt.Sprintf("Assuming frontend with alias '%s' because the location matched. In the future, refer to this frontend by it's alias", frontend.Alias))
 			}
 
 			info, err := frontend.getInfo()
@@ -30,10 +30,7 @@ func (self *ProjectConfig) ResolveFrontend(expression string) (*FrontendInfo, er
 		}
 	}
 
-	def, err := self.addFrontend(expression)
-	if err != nil {
-		return nil, err
-	}
+	def := frontendDef{Location: expression}
 
 	info, err := def.getInfo()
 	if err != nil {
@@ -46,14 +43,14 @@ func (self *ProjectConfig) ResolveFrontend(expression string) (*FrontendInfo, er
 func (self *frontendDef) getInfo() (FrontendInfo, error) {
 	var localLocation, remoteLocation, remoteRev string
 
-	info, err := os.Stat(self.location)
+	info, err := os.Stat(self.Location)
 	if err == nil && info.IsDir() {
-		localLocation = self.location
+		localLocation = self.Location
 	} else {
-		remoteLocation = self.location
+		remoteLocation = self.Location
 	}
 
-	remoteRev = self.rev
+	remoteRev = self.Rev
 
-	return FrontendInfo{localLocation, remoteLocation, remoteRev, self.configuration}, nil
+	return FrontendInfo{localLocation, remoteLocation, remoteRev, self.Configuration}, nil
 }
