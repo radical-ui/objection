@@ -1,14 +1,13 @@
 package frontend
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
+	"log/slog"
 	"os"
 	"os/exec"
-	"path"
 	"strings"
-
-	"github.com/otiai10/copy"
 )
 
 type git struct {
@@ -27,13 +26,13 @@ func newGit(cache *cache, remote string) *git {
 }
 
 func (self *git) downloadRepo() error {
-	if err := self.runTransparentCommand("clone", self.remote, self.cache.DownloadDir); err != nil {
+	if _, err := self.runCommand("clone", self.remote, self.cache.DownloadDir); err != nil {
 		return errors.Join(errors.New(fmt.Sprintf("Failed to clone %s", self.remote)), err)
 	}
 
 	// we never want to use pagers. Of course we could run this command when we need to get the tags, but it makes a lot of
 	// sense to never have the repo in a state where a pager is available
-	if err := self.runTransparentCommand("config", "pager.tag", "false"); err != nil {
+	if _, err := self.runCommand("config", "pager.tag", "false"); err != nil {
 		return errors.Join(errors.New(fmt.Sprintf("Failed to configure the git to not use a pager for tags")), err)
 	}
 
@@ -41,98 +40,105 @@ func (self *git) downloadRepo() error {
 }
 
 func (self *git) listAllTags() ([]string, error) {
-	data, err := self.runCapturedCommand("tags")
+	data, err := self.runCommand("tag")
 	if err != nil {
 		return make([]string, 0), err
 	}
 
-	return strings.Split(data, "\n"), nil
+	return breakCliOutput(data), nil
 }
 
 func (self *git) getDefaultRev() (string, error) {
-	data, err := self.runCapturedCommand("rev-parse", "--abbrev-ref", "origin/HEAD")
+	data, err := self.runCommand("rev-parse", "--abbrev-ref", "origin/HEAD")
 	if err != nil {
 		return "", err
 	}
 
-	return strings.TrimSpace(string(data)), nil
+	return strings.TrimSuffix(string(data), "\n"), nil
 }
 
 type Commit struct {
-	hash    string
-	message string
+	Hash    string
+	Message string
 }
 
 func (self *git) getRecentCommits(count int) ([]Commit, error) {
 	commits := make([]Commit, 0)
 
-	data, err := self.runCapturedCommand("log", fmt.Sprintf("-%d", count), "--pretty=format:\"%h %s\"")
+	data, err := self.runCommand("log", fmt.Sprintf("-%d", count), "--pretty=format:\"%h %s\"")
 	if err != nil {
 		return commits, err
 	}
 
-	for _, line := range strings.Split(data, "\n") {
-		chunks := strings.SplitN(line, " ", 1)
-		commits = append(commits, Commit{hash: chunks[0], message: chunks[1]})
+	for _, line := range breakCliOutput(data) {
+		chunks := strings.SplitN(line, " ", 2)
+		commits = append(commits, Commit{Hash: chunks[0], Message: chunks[1]})
 	}
 
 	return commits, nil
 }
 
-func (self *git) copyDownloadedRepoForConfiguration(rev string) error {
-	if err := self.runTransparentCommand("checkout", rev); err != nil {
-		return err
-	}
-
-	if err := gitFriendlyCopy(self.cache.DownloadDir, self.cache.ConfigureDir); err != nil {
+func (self *git) checkoutRev(rev string) error {
+	if _, err := self.runCommand("checkout", rev); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (self *git) copyLocalFolderForConfiguration(localFolder string) error {
-	if err := gitFriendlyCopy(localFolder, self.cache.ConfigureDir); err != nil {
-		return err
+func (self *git) runCommand(args ...string) (string, error) {
+	inner := func() (string, error) {
+		var stdout bytes.Buffer
+		var stderr bytes.Buffer
+
+		cmd := exec.Command(self.path, args...)
+		cmd.Dir = self.cache.DownloadDir
+		cmd.Stdout = &stdout
+		cmd.Stderr = &stderr
+
+		slog.Info("Running git command", "args", args, "dir", self.cache.DownloadDir)
+
+		if err := cmd.Run(); err != nil {
+			stderrText := strings.TrimSpace(stderr.String())
+			if len(stderrText) > 0 {
+				return "", errors.Join(err, errors.New(stderrText))
+			}
+
+			return "", err
+		}
+
+		return stdout.String(), nil
 	}
 
-	return nil
-}
+	out, err := inner()
 
-func (self *git) runTransparentCommand(args ...string) error {
-	cmd := exec.Command(self.path, args...)
-	cmd.Stderr = os.Stderr
-	cmd.Stdout = os.Stdout
-	cmd.Stdin = os.Stdin
-	cmd.Dir = self.cache.DownloadDir
-
-	if err := cmd.Run(); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (self *git) runCapturedCommand(args ...string) (string, error) {
-	cmd := exec.Command(self.path, args...)
-	cmd.Dir = self.cache.DownloadDir
-
-	out, err := cmd.Output()
 	if err != nil {
+		slog.Error("git command failed", "args", args, "dir", self.cache.DownloadDir)
+
+		if os.IsNotExist(err) {
+			slog.Warn("git command failed because something doesn't exist; creating dir and trying again", "dir", self.cache.DownloadDir)
+
+			if err := os.MkdirAll(self.cache.DownloadDir, os.ModePerm); err != nil {
+				return "", errors.Join(fmt.Errorf("Tried to create download dir at '%s'", self.cache.DownloadDir), err)
+			}
+			return inner()
+		}
+
 		return "", err
 	}
 
-	return string(out), nil
+	return out, nil
 }
 
-func gitFriendlyCopy(src string, dest string) error {
-	return copy.Copy(src, dest, copy.Options{
-		Skip: func(srcinfo os.FileInfo, src, dest string) (bool, error) {
-			if srcinfo.IsDir() && path.Base(src) == ".git" {
-				return true, nil
-			}
+func breakCliOutput(input string) []string {
+	items := strings.Split(input, "\n")
+	var filteredItems []string
 
-			return false, nil
-		},
-	})
+	for _, item := range items {
+		if len(item) != 0 {
+			filteredItems = append(filteredItems, item)
+		}
+	}
+
+	return filteredItems
 }

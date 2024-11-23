@@ -14,9 +14,32 @@ func (self *ProjectConfig) AddFrontend(location string, name string) error {
 		Location: location,
 		Alias:    name,
 	}
-	self.localConfig.Frontends = append(self.localConfig.Frontends, frontend)
+	self.localConfig.Frontends = append(self.localConfig.Frontends, &frontend)
 
 	self.save()
+
+	return nil
+}
+
+func (self *ProjectConfig) SetFrontendRev(alias string, rev string) error {
+	def := self.getFrontendByAlias(alias)
+	if def == nil {
+		return fmt.Errorf("Frontend '%s' does not exist", alias)
+	}
+
+	def.Rev = rev
+
+	self.save()
+
+	return nil
+}
+
+func (self *ProjectConfig) getFrontendByAlias(alias string) *frontendDef {
+	for _, def := range self.localConfig.Frontends {
+		if def.Alias == alias {
+			return def
+		}
+	}
 
 	return nil
 }

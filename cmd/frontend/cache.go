@@ -61,7 +61,9 @@ func hash(key string) string {
 }
 
 func (self *cache) isDownloaded() bool {
-	info, err := os.Stat(self.DownloadDir)
+	// we don't just check that the download dir exists, because it could've been created prior to a clone
+	// but then the clone failed
+	info, err := os.Stat(path.Join(self.DownloadDir, ".git"))
 
 	if os.IsNotExist(err) || !info.IsDir() {
 		return false

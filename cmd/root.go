@@ -6,12 +6,16 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
-	suppliedFrontend               string
-	suppliedRev                    string
-	suppliedProjectConfigFile      string
-	suppliedProjectConfigNeverSave bool
-)
+type GlobalArgs struct {
+	frontend  string
+	rev       string
+	config    string
+	neverSave bool
+	verbose   bool
+	debug     bool
+}
+
+var globalArgs GlobalArgs
 
 var rootCmd = &cobra.Command{
 	Use:   "objection",
@@ -26,8 +30,10 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.PersistentFlags().StringVarP(&suppliedProjectConfigFile, "config", "c", "", "Path to a HCL config file. Defaults to objection.hcl")
-	rootCmd.PersistentFlags().StringVarP(&suppliedFrontend, "frontend", "f", "", "Git URL or local directory path for the frontend")
-	rootCmd.PersistentFlags().StringVarP(&suppliedRev, "rev", "r", "", "Frontend Git revision to use")
-	rootCmd.PersistentFlags().BoolVarP(&suppliedProjectConfigNeverSave, "never-save", "n", false, "Do not save frontend configurations")
+	rootCmd.PersistentFlags().StringVarP(&globalArgs.config, "config", "c", "", "Path to a HCL config file. Defaults to objection.hcl")
+	rootCmd.PersistentFlags().StringVarP(&globalArgs.frontend, "frontend", "f", "", "Git URL or local directory path for the frontend")
+	rootCmd.PersistentFlags().StringVarP(&globalArgs.rev, "rev", "r", "", "Frontend Git revision to use")
+	rootCmd.PersistentFlags().BoolVarP(&globalArgs.neverSave, "never-save", "n", false, "Do not save frontend configurations")
+	rootCmd.PersistentFlags().BoolVarP(&globalArgs.verbose, "verbose", "v", false, "Print debug information")
+	rootCmd.PersistentFlags().BoolVarP(&globalArgs.debug, "debug", "d", false, "Print debug information")
 }

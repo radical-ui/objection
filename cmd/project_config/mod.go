@@ -1,6 +1,7 @@
 package project_config
 
 import (
+	"log/slog"
 	"os"
 
 	"github.com/hashicorp/hcl/v2/hclsimple"
@@ -17,7 +18,7 @@ type ProjectConfig struct {
 }
 
 type rootDef struct {
-	Frontends []frontendDef `hcl:"frontend,block"`
+	Frontends []*frontendDef `hcl:"frontend,block"`
 }
 
 type frontendDef struct {
@@ -36,14 +37,20 @@ type frontendDef struct {
 func NewProjectConfig(initialLocation string, neverSave bool) (*ProjectConfig, error) {
 	location := provideLocationDefault(initialLocation)
 	if len(location) == 0 {
+		slog.Info("assuming default project config path, but it does not exist", "default_config", defaultConfigPath)
+
 		return &ProjectConfig{path: defaultConfigPath}, nil
 	}
 
 	config := ProjectConfig{path: location}
 
+	slog.Info("reading project config", "path", defaultConfigPath)
+
 	if err := hclsimple.DecodeFile(location, nil, &config.localConfig); err != nil {
 		return nil, err
 	}
+
+	slog.Debug("parsed project config", "data", config.localConfig)
 
 	return &config, nil
 }
@@ -59,7 +66,7 @@ func (self *ProjectConfig) GetExistingFrontends() []string {
 }
 
 func provideLocationDefault(initialLocation string) string {
-	if len(initialLocation) == 0 {
+	if len(initialLocation) != 0 {
 		return initialLocation
 	}
 

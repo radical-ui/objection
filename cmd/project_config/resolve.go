@@ -11,13 +11,14 @@ type FrontendInfo struct {
 	RemoteLocation string
 	RemoteRev      string
 	Configuration  map[string]string
+	Alias          string
 }
 
 // Resolve the supplied frontend into some frontend info. `expression` must not be empty
 func (self *ProjectConfig) ResolveFrontend(expression string) (*FrontendInfo, error) {
 	for _, frontend := range self.localConfig.Frontends {
 		if frontend.Alias == expression || frontend.Location == expression {
-			if frontend.Location == expression {
+			if frontend.Alias != expression && frontend.Location == expression {
 				slog.Warn(fmt.Sprintf("Assuming frontend with alias '%s' because the location matched. In the future, refer to this frontend by it's alias", frontend.Alias))
 			}
 
@@ -52,5 +53,5 @@ func (self *frontendDef) getInfo() (FrontendInfo, error) {
 
 	remoteRev = self.Rev
 
-	return FrontendInfo{localLocation, remoteLocation, remoteRev, self.Configuration}, nil
+	return FrontendInfo{localLocation, remoteLocation, remoteRev, self.Configuration, self.Alias}, nil
 }

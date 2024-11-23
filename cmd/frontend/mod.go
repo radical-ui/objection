@@ -1,7 +1,10 @@
 package frontend
 
 import (
+	"os"
 	"path"
+
+	"github.com/otiai10/copy"
 
 	"github.com/radical-ui/objection/cmd/project_config"
 )
@@ -31,20 +34,22 @@ func (self *FrontendManager) ReleaseLock() {
 	self.cache.releaseLock()
 }
 
-func (self *FrontendManager) DownloadIfNecessary() error {
-	if len(self.info.RemoteLocation) != 0 && !self.cache.isDownloaded() {
-		if err := self.git.downloadRepo(); err != nil {
-			return err
-		}
+func (self *FrontendManager) ShouldDownload() bool {
+	return len(self.info.RemoteLocation) != 0 && !self.cache.isDownloaded()
+}
+
+func (self *FrontendManager) Download() error {
+	if err := self.git.downloadRepo(); err != nil {
+		return err
 	}
 
 	return nil
 }
 
 type RevInfo struct {
-	defaultRev string
-	tags       []string
-	commits    []Commit
+	DefaultRev string
+	Tags       []string
+	Commits    []Commit
 }
 
 func (self *FrontendManager) GetRevInfo() (RevInfo, error) {
@@ -70,6 +75,14 @@ func (self *FrontendManager) GetRevInfo() (RevInfo, error) {
 	}, nil
 }
 
+func (self *FrontendManager) EnsureRevIsApplied() error {
+	if len(self.info.RemoteLocation) != 0 {
+		return self.git.checkoutRev(self.info.RemoteRev)
+	}
+
+	return nil
+}
+
 func (self *FrontendManager) GetConfigPath() string {
 	configFile := "objection_frontend.hcl"
 
@@ -82,14 +95,26 @@ func (self *FrontendManager) GetConfigPath() string {
 
 func (self *FrontendManager) PrepareToConfigure() (string, error) {
 	if len(self.info.RemoteLocation) != 0 {
-		if err := self.git.copyDownloadedRepoForConfiguration(self.info.RemoteRev); err != nil {
+		if err := gitFriendlyCopy(self.cache.DownloadDir, self.cache.ConfigureDir); err != nil {
 			return "", err
 		}
 	} else {
-		if err := self.git.copyLocalFolderForConfiguration(self.info.LocalLocation); err != nil {
+		if err := gitFriendlyCopy(self.info.LocalLocation, self.cache.ConfigureDir); err != nil {
 			return "", err
 		}
 	}
 
 	return self.cache.ConfigureDir, nil
+}
+
+func gitFriendlyCopy(src string, dest string) error {
+	return copy.Copy(src, dest, copy.Options{
+		Skip: func(srcinfo os.FileInfo, src, dest string) (bool, error) {
+			if srcinfo.IsDir() && path.Base(src) == ".git" {
+				return true, nil
+			}
+
+			return false, nil
+		},
+	})
 }
