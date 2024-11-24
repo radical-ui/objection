@@ -9,7 +9,7 @@ import (
 type Object struct {
 	kind       string
 	resetKey   string
-	attributes map[string]any
+	attributes any
 	children   []Object
 }
 
@@ -17,7 +17,7 @@ type Frontend struct {
 	stack []Object
 }
 
-func (self *Frontend) GetCurrentObject() *Object {
+func (self *Frontend) getCurrentObject() *Object {
 	if len(self.stack) == 0 {
 		slog.Error("Cannot get current object because there is nothing on the stack")
 
@@ -27,15 +27,15 @@ func (self *Frontend) GetCurrentObject() *Object {
 	return &self.stack[len(self.stack)-1]
 }
 
-func (self *Frontend) SetAttribute(name string, value any) error {
-	object := self.GetCurrentObject()
-	object.attributes[name] = value
+func (self *Frontend) SetAttributes(value any) error {
+	object := self.getCurrentObject()
+	object.attributes = value
 
 	return nil
 }
 
 func (self *Frontend) GetCurrentResetKey() (string, error) {
-	currentObject := self.GetCurrentObject()
+	currentObject := self.getCurrentObject()
 
 	if len(currentObject.resetKey) == 0 {
 		currentObject.resetKey = randSeq(10)

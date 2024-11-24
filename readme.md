@@ -13,3 +13,14 @@ Locate the binary for your system in the release artifacts, and download it to `
 ```
 curl -L -o /usr/local/bin https://github.com/radical-ui/objection/releases/download/latest/objection_darwin
 ```
+
+## Tech Debt
+
+- `cmd/frontend` needs some packaging
+- `cmd/project_config` - `FrontendInfo` should allow edits directly to it. The whole `RemoteLocation`/`LocalLocation`
+  thing with empty strings is a disaster. Add a `isRemote()` function to the struct. Additionally none of the fields
+  should be public. Its functions should be mostly getters ontop of a reference to the underlying `frontendDef`.
+- `bindings_path` odd. It should always default to the name of the alias, with a potential override that could be
+  specified only in the config.
+- there should be a spinner for aquiring a frontend lock
+- logs should be written a logfile

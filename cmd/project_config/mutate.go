@@ -16,7 +16,9 @@ func (self *ProjectConfig) AddFrontend(location string, name string) error {
 	}
 	self.localConfig.Frontends = append(self.localConfig.Frontends, &frontend)
 
-	self.save()
+	if err := self.save(); err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -24,12 +26,29 @@ func (self *ProjectConfig) AddFrontend(location string, name string) error {
 func (self *ProjectConfig) SetFrontendRev(alias string, rev string) error {
 	def := self.getFrontendByAlias(alias)
 	if def == nil {
-		return fmt.Errorf("Frontend '%s' does not exist", alias)
+		return fmt.Errorf("frontend '%s' does not exist", alias)
 	}
 
 	def.Rev = rev
 
-	self.save()
+	if err := self.save(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (self *ProjectConfig) SetFrontendBindingsPath(alias string, path string) error {
+	def := self.getFrontendByAlias(alias)
+	if def == nil {
+		return fmt.Errorf("frontend '%s' does not exist", alias)
+	}
+
+	def.BindingsPath = path
+
+	if err := self.save(); err != nil {
+		return err
+	}
 
 	return nil
 }

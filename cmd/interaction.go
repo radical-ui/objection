@@ -159,6 +159,26 @@ func selectRev(info frontend.RevInfo) (string, error) {
 	return selectedRev, nil
 }
 
+func selectBindingsPath(suggestion string) (string, error) {
+	var value string
+
+	input := huh.NewInput().
+		Title("Select bindings directory").
+		Description("The golang bindings will be written to a `mod.go` file in this directory.").
+		Placeholder(suggestion).
+		Value(&value)
+
+	if err := input.Run(); err != nil {
+		return "", nil
+	}
+
+	if len(value) == 0 {
+		return suggestion, nil
+	}
+
+	return value, nil
+}
+
 func runTask(loadingText string, successText string, task func() error) error {
 	var err error
 	action := func() {

@@ -25,6 +25,7 @@ type frontendDef struct {
 	Alias         string            `hcl:"alias,label"`
 	Location      string            `hcl:"location,optional"`
 	Rev           string            `hcl:"rev,optional"`
+	BindingsPath  string            `hcl:"bindings_path,optional"`
 	Configuration map[string]string `hcl:"configuration,optional"`
 }
 

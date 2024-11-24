@@ -5,7 +5,9 @@ import (
 	"github.com/fatih/color"
 
 	"github.com/radical-ui/objection/cmd/frontend"
+	"github.com/radical-ui/objection/cmd/frontend_config"
 	"github.com/radical-ui/objection/cmd/project_config"
+	"github.com/radical-ui/objection/cmd/schema"
 )
 
 func runWithErrorHandling() {
@@ -93,7 +95,43 @@ func run() error {
 	// Before we try to get the config, we need to make sure the rev is applied. This is because the config can change with the different revisions
 	frontendManager.EnsureRevIsApplied()
 
-	// build the frontend config
+	frontendConfig, err := frontend_config.NewFrontendConfig(frontendManager.GetConfigPath())
+	if err != nil {
+		return err
+	}
+
+	// runTask("Generating bindings...", "Wrote bindings", func() error {
+	frontendName := frontendInfo.GetName()
+
+	if len(frontendInfo.BindingsPath) == 0 {
+		path, err := selectBindingsPath(frontendName)
+		if err != nil {
+			return err
+		}
+
+		frontendInfo.BindingsPath = path
+		if len(frontendInfo.Alias) != 0 {
+			projectConfig.SetFrontendBindingsPath(frontendInfo.Alias, path)
+		}
+	}
+
+	schema, err := schema.NewSchema(frontendConfig.GetSchemaFile())
+	if err != nil {
+		return err
+	}
+
+	bindings, err := schema.GenBindings(frontendName)
+	if err != nil {
+		return err
+	}
+
+	if err := frontendInfo.WriteBindings(bindings); err != nil {
+		return err
+	}
+
+	return nil
+	// })
+
 	// prepare to configure
 	// configure
 

@@ -1,9 +1,11 @@
 package project_config
 
 import (
+	"errors"
 	"fmt"
 	"log/slog"
 	"os"
+	"path"
 )
 
 type FrontendInfo struct {
@@ -12,6 +14,47 @@ type FrontendInfo struct {
 	RemoteRev      string
 	Configuration  map[string]string
 	Alias          string
+	BindingsPath   string
+}
+
+func (self *FrontendInfo) GetName() string {
+	if len(self.Alias) != 0 {
+		return self.Alias
+	}
+
+	if len(self.LocalLocation) != 0 {
+		return path.Base(self.LocalLocation)
+	}
+
+	return path.Base(self.RemoteLocation)
+}
+
+func (self *FrontendInfo) WriteBindings(data []byte) error {
+	file := path.Join(self.BindingsPath, "mod.go")
+	slog.Info("writing bindings", "path", self.BindingsPath)
+
+	if err := os.WriteFile(file, data, os.ModePerm); err != nil {
+		slog.Error("failed to write bindings because something doesn't exist")
+
+		if os.IsNotExist(err) {
+			slog.Info("creating directory to retry failing binding write")
+
+			dir := self.BindingsPath
+			if err := os.MkdirAll(dir, os.ModePerm); err != nil {
+				return errors.Join(fmt.Errorf("failed to create directory '%s' after a direct bindings write failed", dir), err)
+			}
+
+			if err := os.WriteFile(file, data, os.ModePerm); err != nil {
+				return errors.Join(fmt.Errorf("failed to write bindings to '%s'", self.BindingsPath), err)
+			}
+
+			return nil
+		}
+
+		return errors.Join(fmt.Errorf("failed to write bindings to '%s'", self.BindingsPath), err)
+	}
+
+	return nil
 }
 
 // Resolve the supplied frontend into some frontend info. `expression` must not be empty
@@ -53,5 +96,5 @@ func (self *frontendDef) getInfo() (FrontendInfo, error) {
 
 	remoteRev = self.Rev
 
-	return FrontendInfo{localLocation, remoteLocation, remoteRev, self.Configuration, self.Alias}, nil
+	return FrontendInfo{localLocation, remoteLocation, remoteRev, self.Configuration, self.Alias, self.BindingsPath}, nil
 }

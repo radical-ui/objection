@@ -13,12 +13,6 @@ import (
 	"github.com/radical-ui/objection/cmd/project_config"
 )
 
-var (
-	downloadsDir = "frontend_downloads"
-	locksDir     = "locks"
-	configureDir = "frontend_configurations"
-)
-
 type cache struct {
 	lockFile     string
 	DownloadDir  string
@@ -73,19 +67,36 @@ func (self *cache) isDownloaded() bool {
 }
 
 func (self *cache) aquireLock() error {
+	slog.Info("checking to make sure that a lockfile does not already exist", "lockfile", self.lockFile)
+
 	for {
 		if _, err := os.Stat(self.lockFile); os.IsNotExist(err) {
 			break
 		}
-		slog.Info("Waiting to aquite cache lock")
+		slog.Info("Waiting to aquire cache lock")
 		time.Sleep(1000 * time.Millisecond)
 	}
 
-	if file, err := os.Create(self.lockFile); os.IsNotExist(err) {
-		file.Close()
+	slog.Info("lock file does not exist; creating", "lockfile", self.lockFile)
 
-		if err := os.MkdirAll(locksDir, os.ModePerm); err != nil {
-			return errors.Join(errors.New(fmt.Sprintf("Could not create lock file at %s", self.lockFile)), err)
+	if _, err := os.Create(self.lockFile); err != nil {
+		slog.Error("failed to create lockfile", "lockfile", self.lockFile, "error", err)
+
+		if os.IsNotExist(err) {
+			dir := path.Dir(self.lockFile)
+
+			slog.Info("creating lockfile directory, then creation of lockfile will be retried", "dir", dir)
+			if err := os.MkdirAll(dir, os.ModePerm); err != nil {
+				return errors.Join(errors.New(fmt.Sprintf("Could not create lock file at %s", self.lockFile)), err)
+			}
+
+			if _, err := os.Create(self.lockFile); err != nil {
+				slog.Error("failed to create lockfile after creation of directory", "lockfile", self.lockFile, "error", err)
+
+				return errors.Join(fmt.Errorf("failed to create a lock file at '%s'", self.lockFile), err)
+			}
+		} else {
+			return errors.Join(fmt.Errorf("could not create a lock file at '%s'", self.lockFile), err)
 		}
 	}
 
@@ -94,6 +105,6 @@ func (self *cache) aquireLock() error {
 
 func (self *cache) releaseLock() {
 	if err := os.Remove(self.lockFile); err != nil {
-		slog.Warn(fmt.Sprintf("Failed to remove lock at %s. This may indicate a broader issue.", self.lockFile))
+		slog.Warn("failed to remove lockfile", "lockfile", self.lockFile, "error", err)
 	}
 }
