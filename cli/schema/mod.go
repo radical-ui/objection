@@ -18,16 +18,31 @@ type schemaDef struct {
 }
 
 type objectDef struct {
-	Name       string       `json:"name"`
-	Attributes []schemaType `json:"attributes"`
+	foo        bool
+	Name       string     `json:"name"`
+	Attributes schemaType `json:"attributes"`
 }
 
 type schemaType struct {
-	Kind             string    `json:"$"`
-	DiscriminatorKey string    `json:"discriminator_key,omitempty"`
-	ContentKey       string    `json:"content_key,omitempty"`
-	Variants         []itemDef `json:"variants,omitempty"`
-	Properties       []itemDef `json:"properties,omitempty"`
+	Kind string `json:"$"`
+
+	// Used when kind is enum
+	DiscriminatorKey string `json:"discriminator_key,omitempty"`
+
+	// Used when kind is enum
+	ContentKey string `json:"content_key,omitempty"`
+
+	// Used when kind is enum
+	Variants []itemDef `json:"variants,omitempty"`
+
+	// Used when kind is struct
+	Properties []itemDef `json:"properties,omitempty"`
+
+	// Used when kind is list
+	Item *schemaType `json:"item,omitempty"`
+
+	// Used when kind is binding or optional
+	Child *schemaType `json:"child,omitempty"`
 }
 
 type itemDef struct {
