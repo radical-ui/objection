@@ -10,7 +10,7 @@ import (
 	"path"
 	"time"
 
-	"github.com/radical-ui/objection/cmd/project_config"
+	"github.com/radical-ui/objection/cli/project_config"
 )
 
 type cache struct {

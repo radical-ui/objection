@@ -1,13 +1,13 @@
-package cmd
+package main
 
 import (
 	"github.com/charmbracelet/huh"
 	"github.com/fatih/color"
 
-	"github.com/radical-ui/objection/cmd/frontend"
-	"github.com/radical-ui/objection/cmd/frontend_config"
-	"github.com/radical-ui/objection/cmd/project_config"
-	"github.com/radical-ui/objection/cmd/schema"
+	"github.com/radical-ui/objection/cli/frontend"
+	"github.com/radical-ui/objection/cli/frontend_config"
+	"github.com/radical-ui/objection/cli/project_config"
+	"github.com/radical-ui/objection/cli/schema"
 )
 
 func runWithErrorHandling() {
@@ -135,5 +135,5 @@ func run() error {
 	// prepare to configure
 	// configure
 
-	return nil
+	// return nil
 }

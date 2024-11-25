@@ -1,4 +1,4 @@
-package cmd
+package main
 
 import (
 	"errors"
@@ -7,7 +7,7 @@ import (
 	"github.com/charmbracelet/huh"
 	"github.com/charmbracelet/huh/spinner"
 	"github.com/fatih/color"
-	"github.com/radical-ui/objection/cmd/frontend"
+	"github.com/radical-ui/objection/cli/frontend"
 )
 
 type selectableFrontend struct {
