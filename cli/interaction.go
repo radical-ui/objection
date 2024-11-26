@@ -164,7 +164,7 @@ func selectBindingsPath(suggestion string) (string, error) {
 
 	input := huh.NewInput().
 		Title("Select bindings directory").
-		Description("The golang bindings will be written to a `mod.go` file in this directory.").
+		Description("The golang bindings will be written to a `pkg.go` file in this directory.").
 		Placeholder(suggestion).
 		Value(&value)
 

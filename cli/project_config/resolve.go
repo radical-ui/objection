@@ -30,7 +30,7 @@ func (self *FrontendInfo) GetName() string {
 }
 
 func (self *FrontendInfo) WriteBindings(data []byte) error {
-	file := path.Join(self.BindingsPath, "mod.go")
+	file := path.Join(self.BindingsPath, "pkg.go")
 	slog.Info("writing bindings", "path", self.BindingsPath)
 
 	if err := os.WriteFile(file, data, os.ModePerm); err != nil {
