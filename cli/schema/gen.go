@@ -68,6 +68,14 @@ func (self *generator) writeObjectMethod(object *objectDef) {
 		},
 		"",
 		func() {
+			self.text.WriteString("self.frontend.StartNewObject(")
+			self.writeStringLiteral(object.Name)
+			self.text.WriteString(")\n")
+
+			self.text.WriteString("self.frontend.SetAttributes(attributes)\n")
+			self.text.WriteString("self.frontend.CurrentChildrenFunc = children\n")
+			self.text.WriteString("children()\n")
+			self.text.WriteString("self.frontend.FinishObject()")
 		},
 	)
 
