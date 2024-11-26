@@ -2,26 +2,29 @@ package objection
 
 import (
 	"errors"
+	"fmt"
 	"log/slog"
 	"math/rand"
 )
 
-type Object struct {
-	kind       string
-	resetKey   string
-	attributes any
-	children   []Object
+type object struct {
+	Kind       string
+	ResetKey   string
+	Attributes any
+	Children   []object
 }
 
 type Frontend struct {
-	stack []Object
+	CurrentChildrenFunc func()
+	stack               []object
+	nodes               []object
 }
 
-func (self *Frontend) getCurrentObject() *Object {
+func (self *Frontend) getCurrentObject() *object {
 	if len(self.stack) == 0 {
 		slog.Error("Cannot get current object because there is nothing on the stack")
 
-		return &Object{}
+		return &object{}
 	}
 
 	return &self.stack[len(self.stack)-1]
@@ -29,7 +32,7 @@ func (self *Frontend) getCurrentObject() *Object {
 
 func (self *Frontend) SetAttributes(value any) error {
 	object := self.getCurrentObject()
-	object.attributes = value
+	object.Attributes = value
 
 	return nil
 }
@@ -37,15 +40,15 @@ func (self *Frontend) SetAttributes(value any) error {
 func (self *Frontend) GetCurrentResetKey() (string, error) {
 	currentObject := self.getCurrentObject()
 
-	if len(currentObject.resetKey) == 0 {
-		currentObject.resetKey = randSeq(10)
+	if len(currentObject.ResetKey) == 0 {
+		currentObject.ResetKey = randSeq(10)
 	}
 
-	return currentObject.resetKey, nil
+	return currentObject.ResetKey, nil
 }
 
 func (self *Frontend) StartNewObject(kind string) {
-	self.stack = append(self.stack, Object{kind: kind})
+	self.stack = append(self.stack, object{Kind: kind})
 }
 
 func (self *Frontend) FinishObject() error {
@@ -54,16 +57,27 @@ func (self *Frontend) FinishObject() error {
 	}
 
 	if len(self.stack) == 1 {
+		self.nodes = append(self.nodes, self.stack[0])
+		self.stack = []object{}
+
 		return nil
 	}
 
 	lastElement := self.stack[len(self.stack)-1]
 	secondLastElement := &self.stack[len(self.stack)-2]
 
-	secondLastElement.children = append(secondLastElement.children, lastElement)
+	secondLastElement.Children = append(secondLastElement.Children, lastElement)
 	self.stack = self.stack[:len(self.stack)-1]
 
 	return nil
+}
+
+func (self *Frontend) GetData() (any, error) {
+	if len(self.stack) != 0 {
+		return nil, fmt.Errorf("cannot get frontend data because there are %d object(s) on the sack", len(self.stack))
+	}
+
+	return self.nodes, nil
 }
 
 var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
