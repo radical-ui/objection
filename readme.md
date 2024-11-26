@@ -10,8 +10,15 @@ Build server-first, highly-interactive, and beautiful web applications in Go.
 
 Locate the binary for your system in the release artifacts, and download it to `/usr/local/bin/objection`.
 
+```sh
+curl -L -o /usr/local/bin/objection https://github.com/radical-ui/objection/releases/download/latest/objection_darwin
 ```
-curl -L -o /usr/local/bin https://github.com/radical-ui/objection/releases/download/latest/objection_darwin
+
+### Install from Source
+
+```sh
+git clone https://github.com/radical-ui/objection
+go build -o objection ./cli && sudo cp objection /usr/local/bin/objection && rm objection
 ```
 
 ## Tech Debt
