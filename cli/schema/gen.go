@@ -103,9 +103,8 @@ func (self *generator) writeSchemaType(stack []string, ty *schemaType) func() {
 		writeWithNillControl(ty.Child, "child")
 		self.text.WriteRune(']')
 	case "optional":
-		self.text.WriteString("objection.Optional[")
+		self.text.WriteRune('*')
 		writeWithNillControl(ty.Child, "child")
-		self.text.WriteRune(']')
 	case "struct":
 		returnFunc = self.writeStructSchemaType(stack, ty)
 	case "enum":
