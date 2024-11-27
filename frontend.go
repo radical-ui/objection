@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	"math/rand"
 )
 
 type object struct {
@@ -37,14 +36,30 @@ func (self *Frontend) SetAttributes(value any) error {
 	return nil
 }
 
-func (self *Frontend) GetCurrentResetKey() (string, error) {
+// Creates a reset in the current object. Will overrite an existing reset if it exists. Use `GetCurrentReset` to get the key of
+// the newly created reset.
+func (self *Frontend) SetResetOnCurrentObject(key string) {
 	currentObject := self.getCurrentObject()
+	currentObject.ResetKey = key
+}
 
-	if len(currentObject.ResetKey) == 0 {
-		currentObject.ResetKey = randSeq(10)
+// Gets the nearest reset key in the object or a parent, and an index that represents the number of parents away the key is
+// (0, therefore means that the key was found in the current object). The root reset key is always called "root", so
+// if no reset keys can be found, "root" will be returned.
+func (self *Frontend) GetCurrentResetKey() (string, int) {
+	if len(self.stack) == 0 {
+		return "root", 0
 	}
 
-	return currentObject.ResetKey, nil
+	for index := len(self.stack) - 1; index >= 0; index-- {
+		key := self.stack[index].ResetKey
+
+		if len(key) != 0 {
+			return key, len(self.stack) - index - 1
+		}
+	}
+
+	return "root", len(self.stack)
 }
 
 func (self *Frontend) StartNewObject(kind string) {
@@ -78,14 +93,4 @@ func (self *Frontend) GetData() (any, error) {
 	}
 
 	return self.nodes, nil
-}
-
-var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
-
-func randSeq(n int) string {
-	b := make([]rune, n)
-	for i := range b {
-		b[i] = letters[rand.Intn(len(letters))]
-	}
-	return string(b)
 }
