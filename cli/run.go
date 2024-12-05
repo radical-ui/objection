@@ -7,7 +7,7 @@ import (
 	"github.com/radical-ui/objection/cli/frontend"
 	"github.com/radical-ui/objection/cli/frontend_config"
 	"github.com/radical-ui/objection/cli/project_config"
-	"github.com/radical-ui/objection/cli/schema"
+	"github.com/radical-ui/objection/schema"
 )
 
 func runWithErrorHandling() {
@@ -115,7 +115,7 @@ func run() error {
 		}
 	}
 
-	schema, err := schema.NewSchema(frontendConfig.GetSchemaFile())
+	schema, err := schema.NewSchemaFromPath(frontendConfig.GetSchemaFile())
 	if err != nil {
 		return err
 	}

@@ -17,7 +17,7 @@ func newGenerator(frontendName string) *generator {
 	return &generator{frontendName: cases.ToPascal(frontendName)}
 }
 
-func (self *generator) writeSchema(schema *schemaDef) {
+func (self *generator) writeSchema(schema *Schema) {
 	self.writePackageLabel(self.frontendName)
 
 	self.writeImportBlock(func() {
@@ -49,7 +49,7 @@ func (self *generator) writeSchema(schema *schemaDef) {
 	}
 }
 
-func (self *generator) writeObjectMethod(object *objectDef) {
+func (self *generator) writeObjectMethod(object *ObjectDef) {
 	var returnFunc func()
 
 	self.writeFunc(
@@ -82,15 +82,15 @@ func (self *generator) writeObjectMethod(object *objectDef) {
 	returnFunc()
 }
 
-func (self *generator) writeSchemaType(stack []string, ty *schemaType) func() {
+func (self *generator) writeSchemaType(stack []string, ty *SchemaType) func() {
 	var returnFunc func()
 
-	writeWithNillControl := func(ty *schemaType, key string) {
+	writeWithNillControl := func(ty *SchemaType, key string) {
 		if ty.Child != nil {
 			returnFunc = self.writeSchemaType(stack, ty.Child)
 		} else {
 			slog.Error("found a nill value in schema where it was not supposed to exist", "key", key, "stack", stack)
-			returnFunc = self.writeSchemaType(stack, &schemaType{})
+			returnFunc = self.writeSchemaType(stack, &SchemaType{})
 		}
 	}
 
@@ -128,7 +128,7 @@ func (self *generator) writeSchemaType(stack []string, ty *schemaType) func() {
 	return returnFunc
 }
 
-func (self *generator) writeStructSchemaType(stack []string, ty *schemaType) func() {
+func (self *generator) writeStructSchemaType(stack []string, ty *SchemaType) func() {
 	name := stackToPublicName(stack)
 
 	self.text.WriteString(name)
@@ -145,7 +145,7 @@ func (self *generator) writeStructSchemaType(stack []string, ty *schemaType) fun
 	}
 }
 
-func (self *generator) writeEnumSchemaType(stack []string, ty *schemaType) func() {
+func (self *generator) writeEnumSchemaType(stack []string, ty *SchemaType) func() {
 	name := stackToPublicName(stack)
 	self.text.WriteString(name)
 
