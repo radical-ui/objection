@@ -25,20 +25,20 @@ func (self *generator) writeSchema(schema *Schema) {
 	})
 
 	self.writeStruct(self.frontendName, func() {
-		self.text.WriteString("frontend *objection.Frontend")
+		self.text.WriteString("frontendRef *objection.FrontendRef")
 	})
 
 	self.writeFunc(
 		fmt.Sprintf("New%s", self.frontendName),
 		"",
 		func() {
-			self.text.WriteString("frontend *objection.Frontend")
+			self.text.WriteString("frontendRef *objection.FrontendRef")
 		},
 		self.frontendName,
 		func() {
 			self.writeReturnStatement(func() {
 				self.writeStructConstruction(self.frontendName, func() {
-					self.text.WriteString("frontend,")
+					self.text.WriteString("frontendRef,")
 				})
 			})
 		},
@@ -68,14 +68,14 @@ func (self *generator) writeObjectMethod(object *ObjectDef) {
 		},
 		"",
 		func() {
-			self.text.WriteString("self.frontend.StartNewObject(")
+			self.text.WriteString("self.frontendRef.Current.StartNewObject(")
 			self.writeStringLiteral(object.Name)
 			self.text.WriteString(")\n")
 
-			self.text.WriteString("self.frontend.SetAttributes(attributes)\n")
-			self.text.WriteString("self.frontend.CurrentChildrenFunc = children\n")
+			self.text.WriteString("self.frontendRef.Current.SetAttributes(attributes)\n")
+			self.text.WriteString("self.frontendRef.Current.CurrentChildrenFunc = children\n")
 			self.text.WriteString("children()\n")
-			self.text.WriteString("self.frontend.FinishObject()")
+			self.text.WriteString("self.frontendRef.Current.FinishObject()")
 		},
 	)
 

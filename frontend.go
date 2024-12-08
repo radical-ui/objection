@@ -13,6 +13,10 @@ type object struct {
 	Children   []object
 }
 
+type FrontendRef struct {
+	Current *Frontend
+}
+
 type Frontend struct {
 	CurrentChildrenFunc func()
 	stack               []object
