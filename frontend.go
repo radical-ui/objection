@@ -7,10 +7,10 @@ import (
 )
 
 type object struct {
-	Kind       string
-	ResetKey   string
-	Attributes any
-	Children   []object
+	Kind       string   `json:"$"`
+	ResetKey   string   `json:"k,omitempty"`
+	Attributes any      `json:"a"`
+	Children   []object `json:"_,omitempty"`
 }
 
 type FrontendRef struct {
