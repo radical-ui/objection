@@ -52,6 +52,7 @@ const generateElementPicker = (elements: ResolvedElement[]) => {
 	return `${imports}\n\n${defaultExport}`
 }
 
+// TODO get rid of `specificElements` in favor of fragments, which will need to be a different plugin
 export async function elementPickerPlugin(sdkPath: string, specificElements: string[] | null): Promise<BunPlugin> {
 	const elements = specificElements ? await resolveElements(sdkPath, specificElements) : await getAllElements(sdkPath)
 	const code = generateElementPicker(elements)

@@ -1,7 +1,7 @@
 import { program } from 'commander'
 import { elements } from '~/schema'
 import { generateTypes } from './gen_types'
-import { build } from './build'
+import { buildAndWriteAll } from './build'
 
 program
 	.command('build')
@@ -9,7 +9,7 @@ program
 	.action(async options => {
 		const out: string = options.out ?? './dist'
 
-		await build({
+		await buildAndWriteAll({
 			outDir: out,
 			specificElements: null,
 			sdkPath: '.',
