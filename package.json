@@ -1,0 +1,16 @@
+{
+	"name": "ui",
+	"module": "index.ts",
+	"private": true,
+	"devDependencies": {
+		"@types/bun": "latest"
+	},
+	"peerDependencies": {
+		"typescript": "^5"
+	},
+	"dependencies": {
+		"case": "^1.6.3",
+		"commander": "^13.1.0",
+		"svelte": "^5.28.2"
+	}
+}

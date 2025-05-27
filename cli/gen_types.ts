@@ -1,0 +1,79 @@
+import { elements, staticSizes, type ElementInfo, type ElementListParam, type ElementParam, type Param } from '~/schema'
+import { pascal } from 'case'
+
+const indent = (level: number): string => '\t'.repeat(level)
+
+const generateElementType = (param: ElementParam | ElementListParam, level: number): string => {
+	if (!param.extend_params) return 'Element'
+
+	const extendedFields = Object.entries(param.extend_params)
+		.map(([childId, childParam]) => {
+			const childLevel = level + 1
+			const docComment = generateDocComment(childParam.description, childLevel)
+
+			return `${docComment}\n${indent(childLevel)}${childId}: ${generateParamType(childParam, childLevel)}`
+		})
+		.join('\n')
+
+	return `(Element & {\n${extendedFields}\n${indent(level)}})`
+}
+
+const generateParamType = (param: Param, level: number): string => {
+	if (param.type === 'text') return 'string'
+	if (param.type === 'boolean') return 'boolean'
+	if (param.type === 'number') return 'number'
+	if (param.type === 'size') return 'Size'
+	if (param.type === 'enum') return param.options.map(opt => `'${opt.id}'`).join(' | ')
+	if (param.type === 'element') return generateElementType(param, level)
+	if (param.type === 'element_list') return `${generateElementType(param, level)}[]`
+	if (param.type === 'record') {
+		const fields = Object.entries(param.items)
+			.map(([key, value]) => {
+				const docComment = value.description ? `${indent(level + 1)}/** ${value.description} */\n` : ''
+				return `${docComment}${indent(level + 1)}${key}: ${generateParamType(value, level + 1)}`
+			})
+			.join('\n')
+		return `{\n${fields}\n${indent(level)}}`
+	}
+
+	throw new Error(`Invalid param type`)
+}
+
+const generateDocComment = (description: string, level: number) => {
+	return `${indent(level)}/** ${description.split('\n').join(`\n${indent(level)} * `)} */`
+}
+
+const generateTypesForElement = (name: string, info: ElementInfo, level: number): string => {
+	const typeName = pascal(name)
+	const elementDoc = generateDocComment(info.description, level)
+
+	const params = Object.entries(info.params)
+		.map(([key, param]) => {
+			const paramDoc = generateDocComment(param.description, level + 1)
+			return `${paramDoc}\n${indent(level + 1)}${key}: ${generateParamType(param, level + 1)}`
+		})
+		.join('\n\n')
+
+	return `${elementDoc}\n${indent(level)}export type ${typeName} = {\n${indent(level + 1)}$: '${name}'\n\n${params}\n${indent(level)}}`
+}
+
+const generateSizeType = () => {
+	const comment = `/** Accepts pixels (number) or preset sizes */`
+	const staticTs = staticSizes.map(item => `'${item}'`).join(' | ')
+	return `${comment}\nexport type Size = number | ${staticTs}`
+}
+
+export function generateTypes(): string {
+	const unionType = Object.keys(elements)
+		.map(name => pascal(name))
+		.join(' | ')
+
+	const elementTypes = Object.entries(elements)
+		.map(([name, info]) => generateTypesForElement(name, info, 0))
+		.join('\n\n')
+
+	const header = '// This file is auto-generated. Do not edit directly.'
+	const element = `export type Element = ${unionType}\n\n${elementTypes}`
+
+	return `${header}\n\n${generateSizeType()}\n\n${element}`
+}
