@@ -1,5 +1,5 @@
 {
-	"name": "ui",
+	"name": "objection",
 	"module": "index.ts",
 	"private": true,
 	"devDependencies": {
