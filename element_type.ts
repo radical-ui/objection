@@ -10,19 +10,19 @@ export type Flex = {
 	$: 'flex'
 
 	/** The direction of the flex layout. */
-	direction: 'row' | 'column' | 'row-reverse' | 'column-reverse'
+	direction?: 'row' | 'column' | 'row-reverse' | 'column-reverse'
 
 	/** Spacing between children. */
-	gap: Size
+	gap?: Size
 
 	/** Horizontal alignment of children within the container. */
-	justify: 'flex-start' | 'center' | 'flex-end' | 'space-between' | 'space-around' | 'space-evenly'
+	justify?: 'flex-start' | 'center' | 'flex-end' | 'space-between' | 'space-around' | 'space-evenly'
 
 	/** Vertical alignment of children within the container. */
-	align: 'stretch' | 'flex-start' | 'center' | 'flex-end' | 'baseline'
+	align?: 'stretch' | 'flex-start' | 'center' | 'flex-end' | 'baseline'
 
 	/** Child elements inside the flex container. */
-	children: (Element & {
+	children?: (Element & {
 		/** Whether the element should expand to fill available space */
 		expand: boolean
 		/** The flex-grow factor determining how much available space the element should take up relative to other expanding elements */

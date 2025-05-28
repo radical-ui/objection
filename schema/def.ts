@@ -4,7 +4,7 @@ export function defineElement<T extends ElementInfo>(element: T): T {
 
 export type ElementInfo = {
 	description: string
-	params: Record<string, { description: string } & Param>
+	params: Record<string, { description: string; required?: boolean } & Param>
 }
 
 export type Param = RecordParam | TextParam | EnumParam | SizeParam | ElementParam | ElementListParam | BooleanParam | NumberParam
@@ -19,7 +19,7 @@ export type NumberParam = {
 
 export type RecordParam = {
 	type: 'record'
-	items: Record<string, { description: string } & Param>
+	items: Record<string, { description: string; required?: boolean } & Param>
 }
 
 export type TextParam = {
@@ -42,10 +42,10 @@ export const staticSizes = ['xs', 'sm', 'md', 'lg', 'xl', '2xl', '3xl', '4xl', '
 
 export type ElementParam = {
 	type: 'element'
-	extend_params?: Record<string, Param & { description: string }>
+	extend_params?: Record<string, Param & { description: string; required?: boolean }>
 }
 
 export type ElementListParam = {
 	type: 'element_list'
-	extend_params?: Record<string, Param & { description: string }>
+	extend_params?: Record<string, Param & { description: string; required?: boolean }>
 }

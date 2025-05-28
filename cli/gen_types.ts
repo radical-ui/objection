@@ -30,7 +30,8 @@ const generateParamType = (param: Param, level: number): string => {
 		const fields = Object.entries(param.items)
 			.map(([key, value]) => {
 				const docComment = value.description ? `${indent(level + 1)}/** ${value.description} */\n` : ''
-				return `${docComment}${indent(level + 1)}${key}: ${generateParamType(value, level + 1)}`
+				const requiredness = value.required ? '' : '?'
+				return `${docComment}${indent(level + 1)}${key}${requiredness}: ${generateParamType(value, level + 1)}`
 			})
 			.join('\n')
 		return `{\n${fields}\n${indent(level)}}`
@@ -50,7 +51,8 @@ const generateTypesForElement = (name: string, info: ElementInfo, level: number)
 	const params = Object.entries(info.params)
 		.map(([key, param]) => {
 			const paramDoc = generateDocComment(param.description, level + 1)
-			return `${paramDoc}\n${indent(level + 1)}${key}: ${generateParamType(param, level + 1)}`
+			const requiredness = param.required ? '' : '?'
+			return `${paramDoc}\n${indent(level + 1)}${key}${requiredness}: ${generateParamType(param, level + 1)}`
 		})
 		.join('\n\n')
 
