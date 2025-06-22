@@ -1,6 +1,6 @@
 import { program } from 'commander'
 import { elements } from '~/schema'
-import { generateTypes } from './gen_types'
+import { generateTypes } from './gen_typescript'
 import { buildAndWriteAll } from './build'
 
 program
@@ -11,7 +11,6 @@ program
 
 		await buildAndWriteAll({
 			outDir: out,
-			specificElements: null,
 			sdkPath: '.',
 		})
 	})

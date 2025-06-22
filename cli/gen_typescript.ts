@@ -59,6 +59,54 @@ const generateTypesForElement = (name: string, info: ElementInfo, level: number)
 	return `${elementDoc}\n${indent(level)}export type ${typeName} = {\n${indent(level + 1)}$: '${name}'\n\n${params}\n${indent(level)}}`
 }
 
+const generateBuilderClass = (name: string, info: ElementInfo, level: number): string => {
+	const typeName = pascal(name)
+	const builderName = `${typeName}Builder`
+	const elementDoc = generateDocComment(info.description, level)
+
+	const methods = Object.entries(info.params)
+		.filter(([key]) => key !== '$') // Skip the $ property as it's set in constructor
+		.map(([key, param]) => {
+			// Format the description to be more specific
+			const description = `${param.description}${param.type === 'enum' ? '\n * ' + param.options.map(opt => `\`${opt.id}\``).join(' | ') : ''}`
+			const methodDoc = `${indent(level + 1)}/** ${description} */`
+			const paramType = generateParamType(param, level + 1)
+			return `${methodDoc}\n${indent(level + 1)}${key}(${key}: ${paramType}) {\n${indent(level + 2)}this.state.${key} = ${key}\n${indent(level + 2)}return this\n${indent(level + 1)}}`
+		})
+		.join('\n\n')
+
+	return `${elementDoc}\nexport class ${builderName} {\n${indent(level + 1)}state: ${typeName}\n\n${indent(level + 1)}constructor(state: ${typeName}) {\n${indent(level + 2)}this.state = state\n${indent(level + 1)}}\n\n${methods}\n${indent(level)}}`
+}
+
+const generateFactoryFunction = (name: string, info: ElementInfo, level: number): string => {
+	const typeName = pascal(name)
+	const funcName = name // Keep original name for function
+
+	// Get parameter based on element type
+	let paramDef = ''
+	if (name === 'flex') {
+		paramDef = 'gap: number'
+	} else {
+		// Default to required parameters for other elements
+		paramDef = Object.entries(info.params)
+			.filter(([key, param]) => param.required && key !== '$')
+			.map(([key, param]) => `${key}: ${generateParamType(param, level)}`)
+			.join(', ')
+	}
+
+	return `${indent(level)}export function ${funcName}(${paramDef}) {\n${indent(level + 1)}return new ${typeName}Builder({ $: '${name}'${
+		paramDef
+			? ', ' +
+				(name === 'flex'
+					? 'gap'
+					: Object.entries(info.params)
+							.filter(([key, param]) => param.required && key !== '$')
+							.map(([key]) => key)
+							.join(', '))
+			: ''
+	} })\n${indent(level)}}`
+}
+
 const generateSizeType = () => {
 	const comment = `/** Accepts pixels (number) or preset sizes */`
 	const staticTs = staticSizes.map(item => `'${item}'`).join(' | ')
@@ -74,8 +122,16 @@ export function generateTypes(): string {
 		.map(([name, info]) => generateTypesForElement(name, info, 0))
 		.join('\n\n')
 
+	const builderClasses = Object.entries(elements)
+		.map(([name, info]) => generateBuilderClass(name, info, 0))
+		.join('\n\n')
+
+	const factoryFunctions = Object.entries(elements)
+		.map(([name, info]) => generateFactoryFunction(name, info, 0))
+		.join('\n\n')
+
 	const header = '// This file is auto-generated. Do not edit directly.'
 	const element = `export type Element = ${unionType}\n\n${elementTypes}`
 
-	return `${header}\n\n${generateSizeType()}\n\n${element}`
+	return `${header}\n\n${generateSizeType()}\n\n${element}\n\n${builderClasses}\n\n${factoryFunctions}`
 }

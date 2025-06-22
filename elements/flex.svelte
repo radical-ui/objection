@@ -1,6 +1,10 @@
+<script module>
+	export const hello = flex(30).direction('column')
+</script>
+
 <script lang="ts">
 	import ElementIndex from '~/element_index.svelte'
-	import type { Flex } from '~/element_type'
+	import { type Flex, flex } from '~/element_type'
 
 	const { direction, gap = 0, justify = 'flex-start', align = 'stretch', children = [] }: Flex = $props()
 </script>
