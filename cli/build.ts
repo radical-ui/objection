@@ -1,6 +1,7 @@
 import { elementPickerPlugin } from './element_picker'
 import pathUtils from 'path'
 import { sveltePlugin } from './svelte'
+import modernNormalize from './modern_normalize'
 
 export type BuildMode = 'ssr_worker' | 'standalone' | 'hydrate'
 
@@ -38,13 +39,13 @@ export type BuildParams = {
 }
 
 export async function build(params: BuildParams) {
-	let combinedCss = ''
+	let combinedCss = modernNormalize
 
 	const result = await Bun.build({
 		target: params.mode === 'ssr_worker' ? 'bun' : 'browser',
 		entrypoints: [`./main/${entryFileForMode(params.mode)}`],
 		plugins: [
-			await elementPickerPlugin(params.sdkPath, null),
+			await elementPickerPlugin(params.sdkPath),
 			sveltePlugin({ onCss: params.emitCss ? css => (combinedCss += css) : undefined }),
 		],
 	})

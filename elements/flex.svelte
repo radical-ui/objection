@@ -16,10 +16,16 @@
 		gap: {gap};
 		justify-content: {justify};
 		align-items: {align};
+		width: 100%;
+		height: 100%;
 	"
 >
 	{#each children as child}
-		<div style:flex={child.expand ? '1' : null} style="">
+		<div
+			style:flex={child.expand ? '1' : null}
+			style:min-height={direction === 'column' && child.expand ? '0' : null}
+			style:min-width={direction === 'row' && child.expand ? '0' : null}
+		>
 			<ElementIndex {...child} />
 		</div>
 	{/each}

@@ -1,30 +1,10 @@
-import { file, type BunPlugin } from 'bun'
+import { type BunPlugin } from 'bun'
 import { readdir } from 'fs/promises'
 import pathUtils from 'path'
-
-const resolveElement = async (sdkPath: string, element: string) => {
-	const path = pathUtils.join(sdkPath, 'elements', `${element}.svelte`)
-	if (await file(path).exists()) return path
-
-	throw new Error(`element '${element}' not found`)
-}
 
 type ResolvedElement = {
 	name: string
 	path: string
-}
-
-const resolveElements = async (sdkPath: string, elements: string[]): Promise<ResolvedElement[]> => {
-	const paths: ResolvedElement[] = []
-
-	for (const element of elements) {
-		paths.push({
-			name: element,
-			path: await resolveElement(sdkPath, element),
-		})
-	}
-
-	return paths
 }
 
 const getAllElements = async (sdkPath: string): Promise<ResolvedElement[]> => {
@@ -53,8 +33,8 @@ const generateElementPicker = (elements: ResolvedElement[]) => {
 }
 
 // TODO get rid of `specificElements` in favor of fragments, which will need to be a different plugin
-export async function elementPickerPlugin(sdkPath: string, specificElements: string[] | null): Promise<BunPlugin> {
-	const elements = specificElements ? await resolveElements(sdkPath, specificElements) : await getAllElements(sdkPath)
+export async function elementPickerPlugin(sdkPath: string): Promise<BunPlugin> {
+	const elements = await getAllElements(sdkPath)
 	const code = generateElementPicker(elements)
 
 	return {
