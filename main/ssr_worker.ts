@@ -6,7 +6,7 @@ import Root from '../root.svelte'
 declare const self: Worker
 
 self.onmessage = event => {
-	const incomingMessage = event.data as SsrWorker.IncomingMessage
+	const incomingMessage = event.data as SsrWorker.WorkerIncomingMessage
 	const syncUrl = incomingMessage.syncUrl ? new URL(incomingMessage.syncUrl) : null
 
 	const result = render(Root, {
@@ -20,7 +20,7 @@ self.onmessage = event => {
 	const body = `<body sync-url="${incomingMessage.syncUrl}">${result.body}</body>`
 	const html = `<!DOCTYPE html><html>${head}${body}</html>`
 
-	const outgoingMessage: SsrWorker.OutgoingMessage = {
+	const outgoingMessage: SsrWorker.WorkerOutgoingMessage = {
 		id: incomingMessage.id,
 		html,
 	}

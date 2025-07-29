@@ -18,7 +18,7 @@ export class WorkerCache {
 			this.#htmlListeners.set(id, resolve)
 		})
 
-		const message: SsrWorker.IncomingMessage = {
+		const message: SsrWorker.WorkerIncomingMessage = {
 			id,
 			assetBaseUrl: `${this.#baseUrl}/${version}`,
 			syncUrl,
@@ -50,7 +50,7 @@ export class WorkerCache {
 		const object = URL.createObjectURL(blob)
 		const worker = new Worker(object)
 
-		worker.onmessage = (event: MessageEvent<SsrWorker.OutgoingMessage>) => {
+		worker.onmessage = (event: MessageEvent<SsrWorker.WorkerOutgoingMessage>) => {
 			const { id, html } = event.data
 			console.info('recieved event from worker', { version, id })
 

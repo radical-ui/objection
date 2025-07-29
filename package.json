@@ -9,6 +9,7 @@
 		"typescript": "^5"
 	},
 	"dependencies": {
+		"@emooring/observable": "^1.0.0",
 		"case": "^1.6.3",
 		"commander": "^13.1.0",
 		"svelte": "^5.28.2"
