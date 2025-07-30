@@ -8,9 +8,8 @@ export const slot = {
 			type: 'text',
 			required: true,
 		},
-		initial_content: {
-			description:
-				'The initial element inside the slot. This content can be replaced using the slot id and the `slot` downstream message.',
+		content: {
+			description: 'The element inside the slot. This content can be replaced using the slot id and the `slot` downstream message.',
 			type: 'element',
 		},
 	},

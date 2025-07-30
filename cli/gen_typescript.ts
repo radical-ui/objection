@@ -97,6 +97,43 @@ const generateSizeType = () => {
 	return `${comment}\nexport type Size = number | ${staticTs}`
 }
 
+const generateGetChildElements = (): string => {
+	const cases = Object.entries(elements)
+		.map(([name, info]) => {
+			// Find all parameters that are of type 'element' or 'element_list'
+			const childParams = Object.entries(info.params)
+				.filter(([_, param]) => param.type === 'element' || param.type === 'element_list')
+				.map(([paramName, param]) => {
+					if (param.type === 'element') {
+						return `if (element.${paramName}) children.push(element.${paramName})`
+					} else if (param.type === 'element_list') {
+						return `if (element.${paramName}) children.push(...element.${paramName})`
+					}
+					return ''
+				})
+				.filter(Boolean)
+
+			if (childParams.length === 0) {
+				return `${indent(2)}case '${name}':\n${indent(3)}break`
+			}
+
+			const childLogic = childParams.join(`\n${indent(3)}`)
+			return `${indent(2)}case '${name}':\n${indent(3)}${childLogic}\n${indent(3)}break`
+		})
+		.join('\n')
+
+	return `/** Gets all child elements for a given element */
+export function getChildElements(element: Element): Element[] {
+${indent(1)}const children: Element[] = []
+${indent(1)}
+${indent(1)}switch (element.$) {
+${cases}
+${indent(1)}}
+${indent(1)}
+${indent(1)}return children
+}`
+}
+
 export function generateTypes(): string {
 	const unionType = Object.keys(elements)
 		.map(name => pascal(name))
@@ -117,5 +154,7 @@ export function generateTypes(): string {
 	const header = '// This file is auto-generated. Do not edit directly.'
 	const element = `export type Element = ${unionType}\n\n${elementTypes}`
 
-	return `${header}\n\n${generateSizeType()}\n\n${element}\n\n${builderClasses}\n\n${factoryFunctions}`
+	const getChildElementsFunction = generateGetChildElements()
+
+	return `${header}\n\n${generateSizeType()}\n\n${element}\n\n${builderClasses}\n\n${factoryFunctions}\n\n${getChildElementsFunction}`
 }

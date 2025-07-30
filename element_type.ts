@@ -37,8 +37,8 @@ export type Slot = {
 	/** The unique identifier for this slot. */
 	slot_id: string
 
-	/** The initial element inside the slot. This content can be replaced using the slot id and the `slot` downstream message. */
-	initial_content?: Element
+	/** The element inside the slot. This content can be replaced using the slot id and the `slot` downstream message. */
+	content?: Element
 }
 
 /** A flexible layout container */
@@ -102,9 +102,9 @@ export class SlotBuilder {
 		return this
 	}
 
-	/** The initial element inside the slot. This content can be replaced using the slot id and the `slot` downstream message. */
-	initial_content(initial_content: Element) {
-		this.state.initial_content = initial_content
+	/** The element inside the slot. This content can be replaced using the slot id and the `slot` downstream message. */
+	content(content: Element) {
+		this.state.content = content
 		return this
 	}
 }
@@ -115,4 +115,20 @@ export function flex() {
 
 export function slot(slot_id: string) {
 	return new SlotBuilder({ $: 'slot', slot_id })
+}
+
+/** Gets all child elements for a given element */
+export function getChildElements(element: Element): Element[] {
+	const children: Element[] = []
+	
+	switch (element.$) {
+		case 'flex':
+			if (element.children) children.push(...element.children)
+			break
+		case 'slot':
+			if (element.content) children.push(element.content)
+			break
+	}
+	
+	return children
 }

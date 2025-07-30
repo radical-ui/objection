@@ -100,7 +100,10 @@ export class SyncTool {
 		if (message.kind === 'meta') return this.#windowMetaObservable.set(message.meta)
 		if (message.kind === 'root') return this.#rootElementObservable.set(message.element)
 		if (message.kind === 'slot') {
-			return this.#rootElementObservable.set(reconcileSlot(this.#rootElementObservable.get(), message.slotId, message.element))
+			const value = this.#rootElementObservable.get()
+			reconcileSlot(this.#rootElementObservable.get(), message.slotId, message.element)
+
+			return this.#rootElementObservable.set(value)
 		}
 
 		throw new Error('unknown message kind')
