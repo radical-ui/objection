@@ -67,7 +67,6 @@ const generateBuilderClass = (name: string, info: ElementInfo, level: number): s
 	const methods = Object.entries(info.params)
 		.filter(([key]) => key !== '$') // Skip the $ property as it's set in constructor
 		.map(([key, param]) => {
-			// Format the description to be more specific
 			const description = `${param.description}${param.type === 'enum' ? '\n * ' + param.options.map(opt => `\`${opt.id}\``).join(' | ') : ''}`
 			const methodDoc = `${indent(level + 1)}/** ${description} */`
 			const paramType = generateParamType(param, level + 1)
@@ -80,31 +79,16 @@ const generateBuilderClass = (name: string, info: ElementInfo, level: number): s
 
 const generateFactoryFunction = (name: string, info: ElementInfo, level: number): string => {
 	const typeName = pascal(name)
-	const funcName = name // Keep original name for function
 
-	// Get parameter based on element type
-	let paramDef = ''
-	if (name === 'flex') {
-		paramDef = 'gap: number'
-	} else {
-		// Default to required parameters for other elements
-		paramDef = Object.entries(info.params)
-			.filter(([key, param]) => param.required && key !== '$')
-			.map(([key, param]) => `${key}: ${generateParamType(param, level)}`)
-			.join(', ')
-	}
+	const requiredParams = Object.entries(info.params).filter(([_, param]) => param.required)
+	const funcArgs = requiredParams.map(([key, param]) => `${key}: ${generateParamType(param, level)}`).join(', ')
+	const suppliedBuilderParams = requiredParams.map(([key, _]) => key).join(', ')
+	const builderParams = requiredParams.length ? `{ $: '${name}', ${suppliedBuilderParams} }` : `{ $: '${name}' }`
 
-	return `${indent(level)}export function ${funcName}(${paramDef}) {\n${indent(level + 1)}return new ${typeName}Builder({ $: '${name}'${
-		paramDef
-			? ', ' +
-				(name === 'flex'
-					? 'gap'
-					: Object.entries(info.params)
-							.filter(([key, param]) => param.required && key !== '$')
-							.map(([key]) => key)
-							.join(', '))
-			: ''
-	} })\n${indent(level)}}`
+	const contents = `return new ${typeName}Builder(${builderParams})`
+	const funcSignature = `export function ${name}(${funcArgs})`
+
+	return `${indent(level)}${funcSignature} {\n${indent(level + 1)}${contents}\n${indent(level)}}`
 }
 
 const generateSizeType = () => {
