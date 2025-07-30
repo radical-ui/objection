@@ -1,4 +1,6 @@
-export type DownstreamMessage = RootDownstreamMessage | SlotDownstreamMessage
+import type { Element } from '~/element_type'
+
+export type DownstreamMessage = RootDownstreamMessage | SlotDownstreamMessage | MetaDownstreamMessage
 
 export type RootDownstreamMessage = {
 	kind: 'root'
@@ -11,7 +13,7 @@ export type SlotDownstreamMessage = {
 	element: Element
 }
 
-export type MetaDownstreamMeessage = {
+export type MetaDownstreamMessage = {
 	kind: 'meta'
 	meta: WindowMeta
 }

@@ -3,7 +3,7 @@
 /** Accepts pixels (number) or preset sizes */
 export type Size = number | 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | 'full'
 
-export type Element = Flex
+export type Element = Flex | Slot
 
 /** A flexible layout container */
 export type Flex = {
@@ -30,6 +30,17 @@ export type Flex = {
 	})[]
 }
 
+/** An ephemeral container for replaceable content */
+export type Slot = {
+	$: 'slot'
+
+	/** The unique identifier for this slot. */
+	slot_id: string
+
+	/** The initial element inside the slot. This content can be replaced using the slot id and the `slot` downstream message. */
+	initial_content?: Element
+}
+
 /** A flexible layout container */
 export class FlexBuilder {
 	state: Flex
@@ -39,7 +50,7 @@ export class FlexBuilder {
 	}
 
 	/** The direction of the flex layout.
-	 * `row` | `column` | `row-reverse` | `column-reverse` */
+ * `row` | `column` | `row-reverse` | `column-reverse` */
 	direction(direction: 'row' | 'column' | 'row-reverse' | 'column-reverse') {
 		this.state.direction = direction
 		return this
@@ -52,33 +63,56 @@ export class FlexBuilder {
 	}
 
 	/** Horizontal alignment of children within the container.
-	 * `flex-start` | `center` | `flex-end` | `space-between` | `space-around` | `space-evenly` */
+ * `flex-start` | `center` | `flex-end` | `space-between` | `space-around` | `space-evenly` */
 	justify(justify: 'flex-start' | 'center' | 'flex-end' | 'space-between' | 'space-around' | 'space-evenly') {
 		this.state.justify = justify
 		return this
 	}
 
 	/** Vertical alignment of children within the container.
-	 * `stretch` | `flex-start` | `center` | `flex-end` | `baseline` */
+ * `stretch` | `flex-start` | `center` | `flex-end` | `baseline` */
 	align(align: 'stretch' | 'flex-start' | 'center' | 'flex-end' | 'baseline') {
 		this.state.align = align
 		return this
 	}
 
 	/** Child elements inside the flex container. */
-	children(
-		children: (Element & {
-			/** Whether the element should expand to fill available space */
-			expand: boolean
-			/** The flex-grow factor determining how much available space the element should take up relative to other expanding elements */
-			expansionBasis: number
-		})[]
-	) {
+	children(children: (Element & {
+		/** Whether the element should expand to fill available space */
+		expand: boolean
+		/** The flex-grow factor determining how much available space the element should take up relative to other expanding elements */
+		expansionBasis: number
+	})[]) {
 		this.state.children = children
 		return this
 	}
 }
 
-export function flex(gap: number) {
-	return new FlexBuilder({ $: 'flex', gap })
+/** An ephemeral container for replaceable content */
+export class SlotBuilder {
+	state: Slot
+
+	constructor(state: Slot) {
+		this.state = state
+	}
+
+	/** The unique identifier for this slot. */
+	slot_id(slot_id: string) {
+		this.state.slot_id = slot_id
+		return this
+	}
+
+	/** The initial element inside the slot. This content can be replaced using the slot id and the `slot` downstream message. */
+	initial_content(initial_content: Element) {
+		this.state.initial_content = initial_content
+		return this
+	}
+}
+
+export function flex() {
+	return new FlexBuilder({ $: 'flex' })
+}
+
+export function slot(slot_id: string) {
+	return new SlotBuilder({ $: 'slot', slot_id })
 }
