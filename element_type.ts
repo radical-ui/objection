@@ -3,6 +3,11 @@
 /** Accepts pixels (number) or preset sizes */
 export type Size = number | 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | 'full'
 
+export type RgbaColor = [number, number, number, number]
+export type StaticColor = 'primary' | 'success' | 'danger' | 'warning' | 'info' | 'foreground' | 'background' | 'border' | 'focus' | 'muted' | 'muted_foreground'
+/** Accepts RGBA values (array of 4 numbers) or a static color */
+export type Color = RgbaColor | StaticColor
+
 export type Element = Flex | Slot
 
 /** A flexible layout container */

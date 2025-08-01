@@ -103,9 +103,9 @@ const generateColorType = () => {
 	const staticTs = staticColors.map(item => `'${item}'`).join(' | ')
 	const rgbaBase = `export type RgbaColor = [number, number, number, number]`
 	const staticColor = `export type StaticColor = ${staticTs}`
-	const color = `export type Color = ${rgbaBase} | ${staticColor}`
+	const color = `export type Color = RgbaColor | StaticColor`
 
-	return `${comment}\n${color}`
+	return `${rgbaBase}\n${staticColor}\n${comment}\n${color}`
 }
 
 const generateGetChildElements = (): string => {
