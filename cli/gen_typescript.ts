@@ -1,4 +1,4 @@
-import { elements, staticSizes, type ElementInfo, type ElementListParam, type ElementParam, type Param } from '~/schema'
+import { elements, staticColors, staticSizes, type ElementInfo, type ElementListParam, type ElementParam, type Param } from '~/schema'
 import { pascal } from 'case'
 
 const indent = (level: number): string => '\t'.repeat(level)
@@ -23,6 +23,7 @@ const generateParamType = (param: Param, level: number): string => {
 	if (param.type === 'boolean') return 'boolean'
 	if (param.type === 'number') return 'number'
 	if (param.type === 'size') return 'Size'
+	if (param.type === 'color') return 'Color'
 	if (param.type === 'enum') return param.options.map(opt => `'${opt.id}'`).join(' | ')
 	if (param.type === 'element') return generateElementType(param, level)
 	if (param.type === 'element_list') return `${generateElementType(param, level)}[]`
@@ -97,6 +98,16 @@ const generateSizeType = () => {
 	return `${comment}\nexport type Size = number | ${staticTs}`
 }
 
+const generateColorType = () => {
+	const comment = `/** Accepts RGBA values (array of 4 numbers) or a static color */`
+	const staticTs = staticColors.map(item => `'${item}'`).join(' | ')
+	const rgbaBase = `export type RgbaColor = [number, number, number, number]`
+	const staticColor = `export type StaticColor = ${staticTs}`
+	const color = `export type Color = ${rgbaBase} | ${staticColor}`
+
+	return `${comment}\n${color}`
+}
+
 const generateGetChildElements = (): string => {
 	const cases = Object.entries(elements)
 		.map(([name, info]) => {
@@ -156,5 +167,5 @@ export function generateTypes(): string {
 
 	const getChildElementsFunction = generateGetChildElements()
 
-	return `${header}\n\n${generateSizeType()}\n\n${element}\n\n${builderClasses}\n\n${factoryFunctions}\n\n${getChildElementsFunction}`
+	return `${header}\n\n${generateSizeType()}\n\n${generateColorType()}\n\n${element}\n\n${builderClasses}\n\n${factoryFunctions}\n\n${getChildElementsFunction}`
 }

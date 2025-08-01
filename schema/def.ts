@@ -7,7 +7,16 @@ export type ElementInfo = {
 	params: Record<string, { description: string; required?: boolean } & Param>
 }
 
-export type Param = RecordParam | TextParam | EnumParam | SizeParam | ElementParam | ElementListParam | BooleanParam | NumberParam
+export type Param =
+	| RecordParam
+	| TextParam
+	| EnumParam
+	| SizeParam
+	| ColorParam
+	| ElementParam
+	| ElementListParam
+	| BooleanParam
+	| NumberParam
 
 export type BooleanParam = {
 	type: 'boolean'
@@ -39,6 +48,27 @@ export type SizeParam = {
 }
 
 export const staticSizes = ['xs', 'sm', 'md', 'lg', 'xl', '2xl', '3xl', '4xl', 'full']
+
+/**
+ * Represents a color value.  The expected values must be an array of 4 numbers representing the RGBA values,
+ * or a static color, the options for which are defined in `staticColors` */
+export type ColorParam = {
+	type: 'color'
+}
+
+export const staticColors = [
+	'primary',
+	'success',
+	'danger',
+	'warning',
+	'info',
+	'foreground',
+	'background',
+	'border',
+	'focus',
+	'muted',
+	'muted_foreground',
+]
 
 export type ElementParam = {
 	type: 'element'
