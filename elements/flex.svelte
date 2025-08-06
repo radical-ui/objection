@@ -1,15 +1,19 @@
 <script lang="ts">
 	import ElementIndex from './index.svelte'
 	import { type Flex } from '~/element_type'
+	import { getCSSContext } from '~/theme'
 
 	const { direction, gap = 0, justify = 'flex-start', align = 'stretch', children = [] }: Flex = $props()
+
+	// Get CSS context
+	const { sizeToCSS } = getCSSContext()
 </script>
 
 <div
 	style:display="flex"
 	style="
 		flex-direction: {direction};
-		gap: {gap};
+		gap: {sizeToCSS(gap) || '0'};
 		justify-content: {justify};
 		align-items: {align};
 		width: 100%;

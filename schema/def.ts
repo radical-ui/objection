@@ -47,7 +47,7 @@ export type SizeParam = {
 	type: 'size'
 }
 
-export const staticSizes = ['xs', 'sm', 'md', 'lg', 'xl', '2xl', '3xl', '4xl', 'full']
+export const staticSizes = ['border-rounding', 'sm', 'md', 'lg', 'xl', '2xl', '3xl', '4xl', 'full']
 
 /**
  * Represents a color value.  The expected values must be an array of 4 numbers representing the RGBA values,
